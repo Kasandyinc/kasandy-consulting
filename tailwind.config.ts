@@ -10,12 +10,13 @@ const config: Config = {
     extend: {
       colors: {
         kc: {
-          red:        '#C41230',
-          black:      '#0A0A0A',
-          white:      '#FFFFFF',
-          cream:      '#F8F4EF',
-          'gray-mid': '#9A9189',
-          'gray-dark':'#3C3835',
+          brown:       '#712f1e',
+          black:       '#0A0A0A',
+          white:       '#FFFFFF',
+          'gray-light':'#F7F5F2',
+          'gray-mid':  '#6B6560',
+          'gray-border':'#E0DCD6',
+          red:         '#C41230',
         },
       },
       fontFamily: {

@@ -5,21 +5,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap');
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
-  }
+  html { scroll-behavior: smooth; }
+  body { @apply bg-white text-kc-black font-sans antialiased; }
+  h1, h2, h3, h4 { @apply font-display; }
+}
 
-  body {
-    @apply bg-kc-white text-kc-black font-sans antialiased;
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center px-7 py-3.5 bg-kc-black text-white text-xs tracking-widest uppercase font-sans font-medium transition-colors hover:bg-kc-brown;
   }
-
-  h1, h2, h3, h4 {
-    @apply font-display;
+  .btn-outline {
+    @apply inline-flex items-center px-7 py-3.5 border border-kc-black text-kc-black text-xs tracking-widest uppercase font-sans font-medium transition-colors hover:bg-kc-black hover:text-white;
+  }
+  .btn-brown {
+    @apply inline-flex items-center px-7 py-3.5 bg-kc-brown text-white text-xs tracking-widest uppercase font-sans font-medium transition-colors hover:bg-kc-black;
+  }
+  .section-label {
+    @apply font-sans text-xs tracking-[0.3em] uppercase text-kc-brown mb-4 block;
+  }
+  .section-heading {
+    @apply font-display text-4xl md:text-5xl font-light text-kc-black;
+  }
+  .card {
+    @apply border border-kc-gray-border p-8 hover:border-kc-brown transition-colors;
+  }
+  .input-field {
+    @apply w-full border border-kc-gray-border px-4 py-3 text-sm font-sans text-kc-black placeholder-kc-gray-mid focus:outline-none focus:border-kc-black transition-colors bg-white;
   }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 }

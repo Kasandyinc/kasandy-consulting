@@ -1,0 +1,49 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { Resend } from 'resend'
+
+export async function POST(req: NextRequest) {
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const TO = process.env.CONTACT_TO_EMAIL || 'jackee@kasandy.com'
+  try {
+    const {
+      name,
+      organisation,
+      eventName,
+      eventDate,
+      location,
+      audienceSize,
+      format,
+      topicInterest,
+      budget,
+      notes,
+    } = await req.json()
+
+    if (!name || !organisation || !eventName) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    await resend.emails.send({
+      from: 'Kasandy Consulting <noreply@kasandyconsulting.com>',
+      to: TO,
+      subject: `Speaking Inquiry — ${eventName} — ${name}`,
+      text: [
+        `Name: ${name}`,
+        `Organisation: ${organisation}`,
+        `Event Name: ${eventName}`,
+        `Event Date: ${eventDate || '—'}`,
+        `Location: ${location || '—'}`,
+        `Audience Size: ${audienceSize || '—'}`,
+        `Format: ${format || '—'}`,
+        `Topic Interest: ${topicInterest || '—'}`,
+        `Budget / Honorarium: ${budget || '—'}`,
+        '',
+        'Additional Notes:',
+        notes || '—',
+      ].join('\n'),
+    })
+
+    return NextResponse.json({ success: true })
+  } catch {
+    return NextResponse.json({ error: 'Failed to send speaking inquiry' }, { status: 500 })
+  }
+}

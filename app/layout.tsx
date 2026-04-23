@@ -1,35 +1,43 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import './globals.css'
+import Nav from '@/components/Nav'
+import Footer from '@/components/Footer'
 
 const GA4_ID        = process.env.NEXT_PUBLIC_GA4_ID
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID
 
 export const metadata: Metadata = {
-  title: 'Kasandy Consulting',
-  description: 'Strategic consulting with Jackee Kasandy — helping organizations build inclusive, purpose-driven brands.',
   metadataBase: new URL('https://kasandyconsulting.com'),
-  alternates: { canonical: '/' },
+  title: {
+    default: 'Kasandy Consulting | Where Ambition Meets Access',
+    template: '%s | Kasandy Consulting',
+  },
+  description: 'Procurement strategy, business coaching, non-profit transformation, and Canadian market entry programs. Led by Jackee Kasandy — creator of Canada\'s first procurement readiness course.',
+  keywords: [
+    'procurement readiness training Canada', 'business coach Black entrepreneurs',
+    'supplier diversity certification Canada', 'how to win government contracts Canada',
+    'Indigenous procurement training Canada', 'non-profit strategic planning consultant Canada',
+    'Kenya Canada market entry', 'Jackee Kasandy', 'BEBC Society',
+  ],
+  authors: [{ name: 'Kasandy Consulting', url: 'https://kasandyconsulting.com' }],
+  creator: 'Kasandy Consulting',
   openGraph: {
     type: 'website',
     locale: 'en_CA',
     url: 'https://kasandyconsulting.com',
     siteName: 'Kasandy Consulting',
-    title: 'Kasandy Consulting',
-    description: 'Strategic consulting with Jackee Kasandy.',
+    title: 'Kasandy Consulting — Where Ambition Meets Access',
+    description: 'Procurement strategy, business coaching, and market entry programs. Led by Jackee Kasandy — designer of Canada\'s first procurement readiness course.',
     images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Kasandy Consulting' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Kasandy Consulting',
-    description: 'Strategic consulting with Jackee Kasandy.',
+    title: 'Kasandy Consulting — Where Ambition Meets Access',
+    description: 'Procurement strategy, business coaching, and market entry programs.',
     images: ['/images/og-image.jpg'],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, 'max-image-preview': 'large' },
-  },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large' } },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -57,7 +65,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');fbq('track','PageView');`}
           </Script>
         )}
+        <Nav />
         <main>{children}</main>
+        <Footer />
       </body>
     </html>
   )
