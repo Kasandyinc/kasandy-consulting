@@ -80,21 +80,26 @@ export default function Home() {
     <div className="pt-16">
 
       {/* ── Hero ── */}
-      <section className="min-h-[92vh] flex flex-col justify-center relative overflow-hidden px-6">
-        <div className="absolute inset-0 bg-[url('/images/jackee-hero.jpg')] bg-cover bg-center" />
-        <div className="absolute inset-0 bg-kc-black/70" />
-        <div className="relative max-w-7xl mx-auto w-full py-24">
-          <p className="section-label text-kc-brown mb-6">Canada's Leading Procurement Strategist & Business Coach</p>
-          <h1 className="font-display text-6xl md:text-8xl font-light text-white leading-[0.95] mb-8 text-balance">
+      <section className="min-h-[92vh] flex flex-col md:flex-row">
+        {/* Left: copy */}
+        <div className="flex-1 bg-kc-gray-light flex flex-col justify-center px-8 lg:px-20 py-24 md:py-0">
+          <p className="section-label text-kc-brown mb-4">Canada's Leading Procurement Strategist & Business Coach</p>
+          <h1 className="font-display text-5xl md:text-7xl font-light text-kc-black leading-[0.95] mb-8 text-balance">
             Where Ambition<br />Meets Access.
           </h1>
-          <p className="font-sans text-lg md:text-xl text-white/80 max-w-2xl mb-12 leading-relaxed">
+          <p className="font-sans text-base md:text-lg text-kc-gray-mid max-w-lg mb-10 leading-relaxed">
             We help entrepreneurs win contracts, governments build inclusive procurement systems, non-profits grow sustainably, and Kenyan businesses enter the Canadian market.
           </p>
           <div className="flex flex-wrap gap-4">
             <Link href="/contact" className="btn-brown">Work With Me</Link>
-            <Link href="/services" className="btn-outline border-white text-white hover:bg-white hover:text-kc-black">Explore Our Services</Link>
+            <Link href="/services" className="btn-outline">Explore Our Services</Link>
           </div>
+        </div>
+        {/* Right: photo */}
+        <div className="w-full md:w-[46%] min-h-[60vw] md:min-h-full overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/hero-2.jpg" alt="Jackee Kasandy at the United Nations"
+            className="w-full h-full object-cover object-center" style={{minHeight: '500px'}} />
         </div>
       </section>
 
@@ -190,8 +195,25 @@ export default function Home() {
           </div>
           <div className="bg-kc-gray-light aspect-[4/5] flex items-center justify-center border border-kc-gray-border overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/jackee-portrait.jpg" alt="Jackee Kasandy"
-              className="w-full h-full object-cover" />
+            <img src="/images/hero-5.jpg" alt="Jackee Kasandy"
+              className="w-full h-full object-cover object-top" />
+          </div>
+        </div>
+      </section>
+
+      {/* ── Gallery ── */}
+      <section className="py-16 px-6 bg-kc-gray-light">
+        <div className="max-w-7xl mx-auto">
+          <span className="section-label">In The Room</span>
+          <h2 className="section-heading mb-10">Where the work happens.</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map((n) => (
+              <div key={n} className="aspect-square overflow-hidden bg-kc-gray-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/images/gallery-${n}.jpg`} alt=""
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+              </div>
+            ))}
           </div>
         </div>
       </section>
