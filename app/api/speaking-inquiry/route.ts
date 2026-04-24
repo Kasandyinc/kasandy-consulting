@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const TO = process.env.CONTACT_TO_EMAIL || 'jackee@kasandy.com'
+  const TO = process.env.CONTACT_TO_EMAIL || 'consulting@kasandy.com'
   try {
     const {
       name,
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     await resend.emails.send({
-      from: 'Kasandy Consulting <noreply@kasandyconsulting.com>',
+      from: 'Kasandy Consulting <consulting@kasandy.com>',
       to: TO,
       subject: `Speaking Inquiry — ${eventName} — ${name}`,
       text: [

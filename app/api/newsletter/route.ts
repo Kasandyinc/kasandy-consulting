@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const NOTIFY = process.env.CONTACT_TO_EMAIL || 'jackee@kasandy.com'
+  const NOTIFY = process.env.CONTACT_TO_EMAIL || 'consulting@kasandy.com'
   try {
     const { email, resource } = await req.json()
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
     await Promise.all([
       resend.emails.send({
-        from: 'Jackee Kasandy <noreply@kasandyconsulting.com>',
+        from: 'Jackee Kasandy <consulting@kasandy.com>',
         to: email,
         subject: isLeadMagnet
           ? `Your download: ${resource}`
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
             ].join('\n'),
       }),
       resend.emails.send({
-        from: 'Kasandy Consulting <noreply@kasandyconsulting.com>',
+        from: 'Kasandy Consulting <consulting@kasandy.com>',
         to: NOTIFY,
         subject: isLeadMagnet
           ? `Lead Magnet Download — ${resource} — ${email}`
