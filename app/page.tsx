@@ -80,14 +80,15 @@ export default function Home() {
     <div className="pt-16">
 
       {/* ── Hero ── */}
-      <section className="min-h-[92vh] flex flex-col justify-center bg-kc-black text-white relative overflow-hidden px-6">
-        <div className="absolute inset-0 bg-[url('/images/jackee-hero.jpg')] bg-cover bg-center opacity-20" />
+      <section className="min-h-[92vh] flex flex-col justify-center relative overflow-hidden px-6">
+        <div className="absolute inset-0 bg-[url('/images/jackee-hero.jpg')] bg-cover bg-center" />
+        <div className="absolute inset-0 bg-kc-black/70" />
         <div className="relative max-w-7xl mx-auto w-full py-24">
           <p className="section-label text-kc-brown mb-6">Canada's Leading Procurement Strategist & Business Coach</p>
           <h1 className="font-display text-6xl md:text-8xl font-light text-white leading-[0.95] mb-8 text-balance">
             Where Ambition<br />Meets Access.
           </h1>
-          <p className="font-sans text-base md:text-lg text-white/70 max-w-2xl mb-12 leading-relaxed">
+          <p className="font-sans text-lg md:text-xl text-white/80 max-w-2xl mb-12 leading-relaxed">
             We help entrepreneurs win contracts, governments build inclusive procurement systems, non-profits grow sustainably, and Kenyan businesses enter the Canadian market.
           </p>
           <div className="flex flex-wrap gap-4">
@@ -113,16 +114,15 @@ export default function Home() {
       <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Who We Work With</span>
-          <h2 className="section-heading mb-4">Four audiences. One standard: real results.</h2>
-          <p className="font-sans text-sm text-kc-gray-mid mb-16 max-w-xl"></p>
+          <h2 className="section-heading mb-16">Four audiences. One standard: real results.</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {audiences.map((a) => (
               <Link key={a.href} href={a.href}
                 className="group border border-kc-gray-border p-10 hover:border-kc-brown transition-all hover:shadow-sm">
                 <p className="font-sans text-[11px] tracking-widest text-kc-brown mb-3">{a.number}</p>
                 <h3 className="font-display text-3xl font-light mb-4 group-hover:text-kc-brown transition-colors">{a.headline}</h3>
-                <p className="font-sans text-sm text-kc-gray-mid leading-relaxed mb-6">{a.body}</p>
-                <span className="font-sans text-xs tracking-wide text-kc-black flex items-center gap-2 group-hover:gap-3 transition-all">
+                <p className="font-sans text-base text-kc-gray-mid leading-relaxed mb-6">{a.body}</p>
+                <span className="font-sans text-sm tracking-wide text-kc-black flex items-center gap-2 group-hover:gap-3 transition-all">
                   {a.cta} <ArrowRight size={13} />
                 </span>
               </Link>
@@ -142,23 +142,33 @@ export default function Home() {
               <div key={p.title}>
                 <div className="w-8 h-0.5 bg-kc-brown mb-4" />
                 <h3 className="font-display text-2xl font-light mb-3">{p.title}</h3>
-                <p className="font-sans text-sm text-kc-gray-mid leading-relaxed">{p.body}</p>
+                <p className="font-sans text-base text-kc-gray-mid leading-relaxed">{p.body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* ── Speaking Image Strip ── */}
+      <section className="grid grid-cols-3 h-64 md:h-80">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/jackee-speaking-1.jpg" alt="Jackee Kasandy speaking" className="w-full h-full object-cover" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/jackee-workshop-1.jpg" alt="Jackee Kasandy workshop" className="w-full h-full object-cover" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/jackee-speaking-3.jpg" alt="Jackee Kasandy panel" className="w-full h-full object-cover" />
+      </section>
+
       {/* ── Impact Numbers ── */}
-      <section className="py-24 px-6 bg-kc-black text-white">
+      <section className="py-24 px-6 bg-kc-brown text-white">
         <div className="max-w-7xl mx-auto">
-          <span className="section-label text-kc-brown">Impact</span>
+          <span className="section-label text-white/60">Impact</span>
           <h2 className="font-display text-4xl md:text-5xl font-light text-white mb-16">The Numbers Speak.</h2>
           <div className="grid md:grid-cols-3 gap-x-12 gap-y-12">
             {stats.map((s) => (
-              <div key={s.number} className="border-t border-white/10 pt-8">
-                <p className="font-display text-4xl md:text-5xl font-light text-kc-brown mb-3">{s.number}</p>
-                <p className="font-sans text-xs text-white/60 leading-relaxed">{s.label}</p>
+              <div key={s.number} className="border-t border-white/20 pt-8">
+                <p className="font-display text-4xl md:text-5xl font-light text-white mb-3">{s.number}</p>
+                <p className="font-sans text-sm text-white/70 leading-relaxed">{s.label}</p>
               </div>
             ))}
           </div>
@@ -171,7 +181,7 @@ export default function Home() {
           <div>
             <span className="section-label">Meet Your Strategic Partner</span>
             <h2 className="section-heading mb-8">Jackee Kasandy</h2>
-            <p className="font-sans text-sm text-kc-gray-mid leading-relaxed mb-8">
+            <p className="font-sans text-base text-kc-gray-mid leading-relaxed mb-8">
               Jackee Kasandy has spent 25 years at the intersection of marketing, business, and systemic change. She designed Canada's first supplier-focused procurement readiness course, founded the Black Entrepreneurs & Businesses of Canada Society, and currently serves as a BC Housing Board Commissioner appointed by the provincial government. She built a 7-figure lifestyle brand on Granville Island. She knows exactly what it takes to get from idea to institution — and she will help you do the same.
             </p>
             <Link href="/about" className="btn-outline">Meet Jackee <ArrowRight size={13} className="ml-2" /></Link>
