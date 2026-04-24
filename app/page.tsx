@@ -149,28 +149,30 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Speaking Image Strip ── */}
-      <section className="grid grid-cols-3 h-64 md:h-80">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/jackee-speaking-1.jpg" alt="Jackee Kasandy speaking" className="w-full h-full object-cover" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/jackee-workshop-1.jpg" alt="Jackee Kasandy workshop" className="w-full h-full object-cover" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/images/jackee-speaking-3.jpg" alt="Jackee Kasandy panel" className="w-full h-full object-cover" />
-      </section>
-
       {/* ── Impact Numbers ── */}
-      <section className="py-24 px-6 bg-kc-brown text-white">
+      <section className="py-24 px-6 bg-kc-black text-white">
         <div className="max-w-7xl mx-auto">
-          <span className="section-label text-white/60">Impact</span>
+          <span className="section-label text-kc-brown">Impact</span>
           <h2 className="font-display text-4xl md:text-5xl font-light text-white mb-16">The Numbers Speak.</h2>
-          <div className="grid md:grid-cols-3 gap-x-12 gap-y-12">
-            {stats.map((s) => (
-              <div key={s.number} className="border-t border-white/20 pt-8">
-                <p className="font-display text-4xl md:text-5xl font-light text-white mb-3">{s.number}</p>
-                <p className="font-sans text-sm text-white/70 leading-relaxed">{s.label}</p>
-              </div>
-            ))}
+          <div className="grid md:grid-cols-3 gap-6">
+            {stats.map((s, i) => {
+              const photos = ['/images/jackee-speaking-1.jpg', '/images/jackee-workshop-1.jpg', '/images/jackee-speaking-3.jpg']
+              return (
+                <div key={s.number} className="relative overflow-hidden min-h-[320px] flex flex-col justify-end">
+                  {i < 3 && (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={photos[i]} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-kc-black/65" />
+                    </>
+                  )}
+                  <div className={`relative p-8 ${i >= 3 ? 'border border-white/10' : ''}`}>
+                    <p className="font-display text-4xl md:text-5xl font-light text-kc-brown mb-3">{s.number}</p>
+                    <p className="font-sans text-sm text-white/80 leading-relaxed">{s.label}</p>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
