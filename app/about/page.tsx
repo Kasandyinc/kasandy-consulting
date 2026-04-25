@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'About Kasandy Consulting | Jackee Kasandy, Procurement Strategist & Business Coach',
@@ -43,25 +44,13 @@ export default function About() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-black text-white">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-end">
-          <div>
-            <span className="section-label text-kc-brown">About Kasandy Consulting</span>
-            <h1 className="font-display text-6xl md:text-7xl font-light text-white leading-tight mb-6">
-              A firm built on proof,<br />not promises.
-            </h1>
-            <p className="font-sans text-base text-white/60 leading-relaxed max-w-lg">
-              Twenty-five years of corporate marketing, entrepreneurship, and systemic change — distilled into strategy you can actually use.
-            </p>
-          </div>
-          <div className="aspect-[4/5] bg-white/5 border border-white/10 flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/jackee-portrait.jpg" alt="Jackee Kasandy"
-              className="w-full h-full object-cover opacity-80" />
-          </div>
-        </div>
-      </section>
+      <PageHero
+        image="/images/hero-2.jpg"
+        label="About Kasandy Consulting"
+        title="A firm built on proof, not promises."
+        subtitle="Twenty-five years of corporate marketing, entrepreneurship, and systemic change — distilled into strategy you can actually use."
+        position="object-top"
+      />
 
       {/* The Firm */}
       <section className="py-20 px-6">

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Non-Profit Strategy, Fundraising & Leadership Coaching | Kasandy Consulting',
@@ -38,19 +39,13 @@ export default function Nonprofits() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-black text-white">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label text-kc-brown">For Non-Profit Organizations</span>
-          <h1 className="font-display text-5xl md:text-7xl font-light text-white leading-tight mb-8 text-balance">
-            Your mission is powerful. Your business model needs to match.
-          </h1>
-          <p className="font-sans text-base text-white/70 max-w-2xl leading-relaxed mb-12">
-            Strategic planning, fundraising strategy, leadership coaching, and sustainability models for mission-driven organisations that are ready to stop surviving and start thriving.
-          </p>
-          <Link href="/contact" className="btn-brown">Book a Consultation</Link>
-        </div>
-      </section>
+      <PageHero
+        image="/images/hero-5.jpg"
+        label="For Non-Profit Organizations"
+        title="Your mission is powerful. Your business model needs to match."
+        subtitle="Strategic planning, fundraising strategy, leadership coaching, and sustainability models for mission-driven organisations that are ready to stop surviving and start thriving."
+        position="object-top"
+      />
 
       {/* Qualification + Context */}
       <section className="py-20 px-6">

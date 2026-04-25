@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Business Coaching & Procurement Strategy for Entrepreneurs | Kasandy Consulting',
@@ -55,22 +56,13 @@ export default function Entrepreneurs() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-black text-white">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label text-kc-brown">For Entrepreneurs & Founders</span>
-          <h1 className="font-display text-6xl md:text-8xl font-light text-white leading-tight mb-8 text-balance">
-            Stop leaving contracts<br />on the table.
-          </h1>
-          <p className="font-sans text-base text-white/70 max-w-2xl leading-relaxed mb-12">
-            Full-service business coaching and procurement strategy for founders who are ready to grow — and ready to win.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/contact" className="btn-brown">Book a Strategy Call</Link>
-            <Link href="#programs" className="btn-outline border-white text-white hover:bg-white hover:text-kc-black">See Our Programs ↓</Link>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        image="/images/jackee-speaking-1.jpg"
+        label="For Entrepreneurs & Founders"
+        title="Stop leaving contracts on the table."
+        subtitle="Full-service business coaching and procurement strategy for founders who are ready to grow — and ready to win."
+        position="object-top"
+      />
 
       {/* Qualification */}
       <section className="py-20 px-6">

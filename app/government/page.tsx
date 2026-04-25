@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Procurement Strategy & Supplier Diversity Consulting | Kasandy Consulting',
@@ -46,19 +47,13 @@ export default function Government() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-black text-white">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label text-kc-brown">For Government & Public Sector</span>
-          <h1 className="font-display text-5xl md:text-7xl font-light text-white leading-tight mb-8 text-balance">
-            Supplier diversity policy without delivery is just paperwork.
-          </h1>
-          <p className="font-sans text-base text-white/70 max-w-2xl leading-relaxed mb-12">
-            Procurement strategy, training, and facilitation for government agencies and public sector organisations serious about building inclusive supply chains that work.
-          </p>
-          <Link href="/contact" className="btn-brown">Request a Proposal</Link>
-        </div>
-      </section>
+      <PageHero
+        image="/images/hero-4.jpg"
+        label="For Government & Public Sector"
+        title="Supplier diversity policy without delivery is just paperwork."
+        subtitle="Procurement strategy, training, and facilitation for government agencies and public sector organisations serious about building inclusive supply chains that work."
+        position="object-center"
+      />
 
       {/* Qualification */}
       <section className="py-20 px-6">

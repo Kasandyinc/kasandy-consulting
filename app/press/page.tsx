@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Press & Media | Kasandy Consulting',
@@ -133,18 +134,13 @@ export default function Press() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-24 px-6 bg-kc-black text-white">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label text-kc-brown">Press & Media</span>
-          <h1 className="font-display text-6xl md:text-7xl font-light text-white leading-tight mb-6">
-            In the News.
-          </h1>
-          <p className="font-sans text-base text-white/60 max-w-2xl leading-relaxed">
-            Jackee Kasandy and BEBC Society have been covered by Canada's most trusted media outlets. Over 380 national mentions and $2.4M in earned media value — driven by real work, real outcomes, and a story worth telling.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        image="/images/jackee-speaking-2.jpg"
+        label="Press & Media"
+        title="In the News."
+        subtitle="Jackee Kasandy and BEBC Society have been covered by Canada's most trusted media outlets. Over 380 national mentions and $2.4M in earned media value."
+        position="object-top"
+      />
 
       {/* Stats */}
       <section className="py-12 px-6 bg-kc-brown">

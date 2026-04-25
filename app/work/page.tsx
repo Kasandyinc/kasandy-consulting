@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Client Results & Case Studies | Kasandy Consulting',
@@ -99,18 +100,13 @@ export default function Work() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-gray-light border-b border-kc-gray-border">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label">Client Results</span>
-          <h1 className="font-display text-6xl md:text-7xl font-light text-kc-black leading-tight mb-6">
-            What we've built together.
-          </h1>
-          <p className="font-sans text-base text-kc-gray-mid max-w-2xl leading-relaxed">
-            We do not lead with testimonials. We lead with results. Every engagement is scoped to produce measurable outcomes — and we document them.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        image="/images/hero-8.jpg"
+        label="Client Results"
+        title="What we've built together."
+        subtitle="We do not lead with testimonials. We lead with results. Every engagement is scoped to produce measurable outcomes — and we document them."
+        position="object-center"
+      />
 
       {/* Impact Numbers */}
       <section className="py-20 px-6 bg-kc-black text-white">

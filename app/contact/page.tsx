@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Mail, Phone, MapPin, Clock } from 'lucide-react'
 import ContactForm from './ContactForm'
 import CalendlyEmbed from './CalendlyEmbed'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Book a Strategy Call | Kasandy Consulting',
@@ -13,18 +14,13 @@ export default function Contact() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-black text-white">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label text-kc-brown">Contact</span>
-          <h1 className="font-display text-6xl md:text-7xl font-light text-white leading-tight mb-6">
-            Let's get to work.
-          </h1>
-          <p className="font-sans text-base text-white/60 leading-relaxed max-w-xl">
-            Book a complimentary 15-minute strategy call, submit a project inquiry, or reach out directly. We respond to all inquiries within 2 business days.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        image="/images/hero-8.jpg"
+        label="Contact"
+        title="Let's get to work."
+        subtitle="Book a complimentary 15-minute strategy call, submit a project inquiry, or reach out directly. We respond to all inquiries within 2 business days."
+        position="object-center"
+      />
 
       {/* Calendly */}
       <section className="py-20 px-6 bg-kc-gray-light border-b border-kc-gray-border">

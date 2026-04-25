@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Consulting Services | Kasandy Consulting',
@@ -86,18 +87,13 @@ export default function Services() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-gray-light border-b border-kc-gray-border">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label">Our Services</span>
-          <h1 className="font-display text-6xl md:text-7xl font-light text-kc-black leading-tight mb-6">
-            Strategy that works<br />in the real world.
-          </h1>
-          <p className="font-sans text-base text-kc-gray-mid max-w-2xl leading-relaxed">
-            We work across four areas of practice. Every engagement is tailored — but the standard is always the same: honest counsel, clear deliverables, and results you can measure.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        image="/images/jackee-workshop-1.jpg"
+        label="Our Services"
+        title="Strategy that works in the real world."
+        subtitle="We work across four areas of practice. Every engagement is tailored — but the standard is always the same: honest counsel, clear deliverables, and results you can measure."
+        position="object-top"
+      />
 
       {/* Four Service Areas */}
       <section className="py-20 px-6">

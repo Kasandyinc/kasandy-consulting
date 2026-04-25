@@ -98,8 +98,8 @@ export default function Home() {
         {/* Right: photo */}
         <div className="w-full md:w-[46%] min-h-[60vw] md:min-h-full overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/hero-2.jpg" alt="Jackee Kasandy at the United Nations"
-            className="w-full h-full object-cover object-center" style={{minHeight: '500px'}} />
+          <img src="/images/hero-1.jpg" alt="Jackee Kasandy"
+            className="w-full h-full object-cover object-top" style={{minHeight: '500px'}} />
         </div>
       </section>
 
@@ -202,19 +202,19 @@ export default function Home() {
       </section>
 
       {/* ── Gallery ── */}
-      <section className="py-16 px-6 bg-kc-gray-light">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-16 bg-kc-gray-light">
+        <div className="max-w-7xl mx-auto px-6">
           <span className="section-label">In The Room</span>
           <h2 className="section-heading mb-10">Where the work happens.</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[1,2,4,5,6,7,8,9,10,11,12,13,14,15,16,17].map((n) => (
-              <div key={n} className="aspect-square overflow-hidden bg-kc-gray-border">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/images/gallery-${n}.jpg`} alt=""
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-              </div>
-            ))}
-          </div>
+        </div>
+        <div className="flex gap-3 overflow-x-auto px-6 pb-3 snap-x snap-mandatory">
+          {[1,2,4,5,6,7,8,9].map((n) => (
+            <div key={n} className="shrink-0 w-64 md:w-72 aspect-square overflow-hidden bg-kc-gray-border snap-start">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/images/gallery-${n}.jpg`} alt=""
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+            </div>
+          ))}
         </div>
       </section>
 

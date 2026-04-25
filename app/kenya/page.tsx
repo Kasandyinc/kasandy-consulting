@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Canadian Market Entry & Procurement Bootcamps for Kenyan Entrepreneurs | Kasandy Consulting',
@@ -48,23 +49,13 @@ export default function Kenya() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-black text-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <span className="section-label text-kc-brown">For Kenyan & International Entrepreneurs</span>
-          <h1 className="font-display text-5xl md:text-7xl font-light text-white leading-tight mb-8 text-balance">
-            Canada's procurement market is open.<br />
-            <span className="text-white/50">Most international businesses don't know how to walk in.</span>
-          </h1>
-          <p className="font-sans text-base text-white/70 max-w-2xl leading-relaxed mb-12">
-            Procurement bootcamps, market entry strategy, and network connections for Kenyan entrepreneurs ready to compete for Canadian contracts.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/contact?ref=kenya-bootcamp" className="btn-brown">Register for the Next Bootcamp</Link>
-            <Link href="/contact" className="btn-outline border-white text-white hover:bg-white hover:text-kc-black">Book a Market Entry Call</Link>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        image="/images/hero-9.jpg"
+        label="For Kenyan & International Entrepreneurs"
+        title="Canada's procurement market is open."
+        subtitle="Procurement bootcamps, market entry strategy, and network connections for Kenyan entrepreneurs ready to compete for Canadian contracts."
+        position="object-center"
+      />
 
       {/* The Opportunity */}
       <section className="py-20 px-6">

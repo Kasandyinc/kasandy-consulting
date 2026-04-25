@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ArrowRight, Download } from 'lucide-react'
 import SpeakingInquiryForm from './SpeakingInquiryForm'
 import SpeakingMedia from './SpeakingMedia'
+import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Book Jackee Kasandy to Speak | Procurement, Supplier Diversity & Entrepreneurship Keynotes',
@@ -63,24 +64,13 @@ export default function Speaking() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-black text-white">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label text-kc-brown">Jackee Kasandy — Speaker</span>
-          <h1 className="font-display text-6xl md:text-7xl font-light text-white leading-tight mb-8 max-w-4xl">
-            A voice that bridges boardrooms and communities.
-          </h1>
-          <p className="font-sans text-base text-white/60 leading-relaxed max-w-2xl mb-12">
-            Jackee Kasandy brings twenty-five years of corporate strategy, entrepreneurship, and systemic advocacy to the stage. Her sessions are direct, evidence-based, and designed to move rooms — not just inspire them.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a href="#inquiry" className="btn-brown">Enquire About Booking Jackee</a>
-            <a href="/files/jackee-kasandy-speaker-kit.pdf" download className="btn-outline border-white text-white hover:bg-white hover:text-kc-black flex items-center gap-2">
-              <Download size={14} /> Download Speaker Kit
-            </a>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        image="/images/hero-7.jpg"
+        label="Jackee Kasandy — Speaker"
+        title="A voice that bridges boardrooms and communities."
+        subtitle="Jackee Kasandy brings twenty-five years of corporate strategy, entrepreneurship, and systemic advocacy to the stage. Her sessions are direct, evidence-based, and designed to move rooms — not just inspire them."
+        position="object-top"
+      />
 
       {/* About Jackee as Speaker */}
       <section className="py-20 px-6 bg-kc-gray-light">
