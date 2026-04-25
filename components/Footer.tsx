@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Mail, Phone, Linkedin, Instagram } from 'lucide-react'
+import { Linkedin, Instagram, MessageCircle, ArrowRight } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -57,17 +57,11 @@ export default function Footer() {
           {/* Col 4 — Connect */}
           <div>
             <p className="font-sans text-[10px] tracking-widest uppercase text-kc-brown mb-4">Connect</p>
+            <Link href="/contact"
+              className="flex items-center gap-2 font-sans text-xs text-white border border-white/20 px-4 py-3 hover:bg-white hover:text-kc-black transition-colors mb-5">
+              <ArrowRight size={13} /> Send a Message
+            </Link>
             <ul className="space-y-3">
-              <li>
-                <a href="mailto:jackee@kasandy.com" className="flex items-center gap-2 font-sans text-xs text-white/60 hover:text-white transition-colors">
-                  <Mail size={13} /> jackee@kasandy.com
-                </a>
-              </li>
-              <li>
-                <a href="tel:+17783854480" className="flex items-center gap-2 font-sans text-xs text-white/60 hover:text-white transition-colors">
-                  <Phone size={13} /> 778-385-4480
-                </a>
-              </li>
               <li>
                 <a href="https://www.linkedin.com/in/jackeekasandy" target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 font-sans text-xs text-white/60 hover:text-white transition-colors">
@@ -82,8 +76,8 @@ export default function Footer() {
               </li>
               <li>
                 <a href="https://wa.me/17783854480" target="_blank" rel="noopener noreferrer"
-                  className="font-sans text-xs text-white/60 hover:text-white transition-colors">
-                  💬 WhatsApp
+                  className="flex items-center gap-2 font-sans text-xs text-white/60 hover:text-white transition-colors">
+                  <MessageCircle size={13} /> WhatsApp
                 </a>
               </li>
             </ul>
