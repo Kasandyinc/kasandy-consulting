@@ -163,17 +163,17 @@ export default function Home() {
             {stats.map((s, i) => {
               const photos = ['/images/jackee-speaking-1.jpg', '/images/jackee-workshop-1.jpg', '/images/jackee-speaking-3.jpg']
               return (
-                <div key={s.number} className="relative overflow-hidden min-h-[320px] flex flex-col justify-end">
+                <div key={s.number} className={`relative overflow-hidden min-h-[320px] flex flex-col justify-end ${i >= 3 ? 'border border-white/10' : ''}`}>
                   {i < 3 && (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={photos[i]} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-kc-black/65" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-kc-black via-kc-black/70 to-kc-black/10" />
                     </>
                   )}
-                  <div className={`relative p-8 ${i >= 3 ? 'border border-white/10' : ''}`}>
+                  <div className="relative p-8">
                     <p className="font-display text-4xl md:text-5xl font-light text-kc-brown mb-3">{s.number}</p>
-                    <p className="font-sans text-sm text-white/80 leading-relaxed">{s.label}</p>
+                    <p className="font-sans text-sm text-white leading-relaxed">{s.label}</p>
                   </div>
                 </div>
               )
