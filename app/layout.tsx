@@ -29,15 +29,17 @@ export const metadata: Metadata = {
     siteName: 'Kasandy Consulting',
     title: 'Kasandy Consulting — Where Ambition Meets Access',
     description: 'Procurement strategy, business coaching, and market entry programs. Led by Jackee Kasandy — designer of Canada\'s first procurement readiness course.',
-    images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Kasandy Consulting' }],
+    images: [{ url: '/images/hero-1.jpg', width: 1200, height: 630, alt: 'Kasandy Consulting' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Kasandy Consulting — Where Ambition Meets Access',
     description: 'Procurement strategy, business coaching, and market entry programs.',
-    images: ['/images/og-image.jpg'],
+    images: ['/images/hero-1.jpg'],
   },
   robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large' } },
+  alternates: { canonical: 'https://kasandyconsulting.com' },
+  verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -65,6 +67,35 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');fbq('track','PageView');`}
           </Script>
         )}
+        <Script id="ld-organization" type="application/ld+json" strategy="afterInteractive">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@graph': [
+              {
+                '@type': 'Organization',
+                '@id': 'https://kasandyconsulting.com/#organization',
+                name: 'Kasandy Consulting',
+                url: 'https://kasandyconsulting.com',
+                logo: 'https://kasandyconsulting.com/images/kc-logo.png',
+                description: 'Procurement strategy, business coaching, non-profit transformation, and Canadian market entry programs.',
+                address: { '@type': 'PostalAddress', addressLocality: 'Vancouver', addressRegion: 'BC', addressCountry: 'CA' },
+                founder: { '@type': 'Person', name: 'Jackee Kasandy' },
+                sameAs: ['https://www.linkedin.com/company/kasandy-consulting'],
+              },
+              {
+                '@type': 'Person',
+                '@id': 'https://kasandyconsulting.com/#jackee',
+                name: 'Jackee Kasandy',
+                jobTitle: 'Founder & Principal Consultant',
+                worksFor: { '@id': 'https://kasandyconsulting.com/#organization' },
+                url: 'https://kasandyconsulting.com/about',
+                description: 'Canada\'s leading procurement strategist and business coach. Creator of Canada\'s first national procurement readiness course.',
+                knowsAbout: ['Procurement Strategy', 'Supplier Diversity', 'Business Coaching', 'Non-Profit Strategy'],
+                address: { '@type': 'PostalAddress', addressLocality: 'Vancouver', addressRegion: 'BC', addressCountry: 'CA' },
+              },
+            ],
+          })}
+        </Script>
         <Nav />
         <main>{children}</main>
         <Footer />
