@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Canadian Market Entry & Procurement Bootcamps for Kenyan Entrepreneurs | Kasandy Consulting',

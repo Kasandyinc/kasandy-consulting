@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { articles } from '@/data/articles'
 import LeadMagnetCard from './LeadMagnetCard'
 import NewsletterSignup from './NewsletterSignup'
