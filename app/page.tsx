@@ -80,26 +80,64 @@ export default function Home() {
     <div className="pt-16">
 
       {/* ── Hero ── */}
-      <section className="min-h-[92vh] flex flex-col md:flex-row">
+      <section className="relative min-h-[92vh] flex flex-col md:flex-row overflow-hidden bg-kc-warm-white">
+        {/* K watermark */}
+        <span className="hidden md:block absolute font-display font-bold text-kc-brown/[0.04] select-none pointer-events-none z-[1]"
+          style={{ fontSize: 'clamp(300px,42vw,600px)', right: '42%', top: '-60px', lineHeight: 1 }}>
+          K
+        </span>
+
         {/* Left: copy */}
-        <div className="flex-1 bg-kc-gray-light flex flex-col justify-center px-8 lg:px-20 py-24 md:py-0">
-          <p className="section-label text-kc-brown mb-4">Canada's Leading Procurement Strategist & Business Coach</p>
-          <h1 className="font-display text-5xl md:text-7xl font-light text-kc-black leading-[0.95] mb-8 text-balance">
-            Where Ambition<br />Meets Access.
+        <div className="relative z-[3] flex-1 flex flex-col justify-center px-8 lg:px-20 py-24 md:py-0">
+          {/* Eyebrow */}
+          <div className="flex items-center gap-3 mb-5">
+            <span className="block w-7 h-px bg-kc-brown flex-shrink-0" />
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-brown">
+              Canada's Leading Procurement Strategist &amp; Business Coach
+            </span>
+          </div>
+
+          <h1 className="font-display font-bold text-kc-charcoal leading-[0.98] mb-6 tracking-[-0.01em]"
+            style={{ fontSize: 'clamp(54px,5.8vw,84px)' }}>
+            Where <em className="not-italic text-kc-brown italic">Ambition</em><br />
+            Meets Access.
           </h1>
-          <p className="font-sans text-base md:text-lg text-kc-gray-mid max-w-lg mb-10 leading-relaxed">
-            We help entrepreneurs win contracts, governments build inclusive procurement systems, non-profits grow sustainably, and Kenyan businesses enter the Canadian market.
+
+          <p className="font-sans text-[17px] leading-[1.72] text-kc-text-mid max-w-[480px] mb-8">
+            We help entrepreneurs win contracts, governments build inclusive procurement systems,
+            non-profits grow sustainably, and Kenyan businesses enter the Canadian market.
           </p>
-          <div className="flex flex-wrap gap-4">
+
+          <div className="flex flex-wrap gap-3 mb-10">
             <Link href="/contact" className="btn-brown">Work With Me</Link>
             <Link href="/services" className="btn-outline">Explore Our Services</Link>
           </div>
+
+          {/* Credential tags */}
+          <div className="flex flex-wrap gap-2 pt-8 border-t border-kc-linen">
+            {['3,000+ Trained', "Canada's First Procurement Course", 'BC Housing Commissioner',
+              'BEBC Society Founder', '23 Black Leaders — VEC', '2.4M Earned Media'].map(cred => (
+              <span key={cred}
+                className="font-mono text-[9.5px] tracking-[0.1em] uppercase text-kc-text-lt
+                  px-3 py-1.5 border border-kc-linen bg-kc-cream hover:border-kc-brown
+                  hover:text-kc-brown transition-colors cursor-default">
+                {cred}
+              </span>
+            ))}
+          </div>
         </div>
+
         {/* Right: photo */}
-        <div className="w-full md:w-[46%] min-h-[60vw] md:min-h-full overflow-hidden">
+        <div className="relative z-[2] w-full md:w-[46%] min-h-[60vw] md:min-h-full overflow-hidden">
+          {/* Gradient fade on left edge */}
+          <div className="absolute inset-0 z-10 pointer-events-none"
+            style={{ background: 'linear-gradient(90deg,#FDFCFA 0%,transparent 28%)' }} />
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/hero-1.jpg" alt="Jackee Kasandy"
-            className="w-full h-full object-cover object-top" style={{minHeight: '500px'}} />
+          <img src="/images/hero-home.jpg" alt="Jackee Kasandy"
+            className="w-full h-full object-cover object-top" style={{ minHeight: '500px' }} />
+          {/* Thin brick line at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] z-10"
+            style={{ background: 'linear-gradient(90deg,transparent,#712f1e,transparent)' }} />
         </div>
       </section>
 

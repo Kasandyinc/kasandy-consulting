@@ -10,18 +10,29 @@ const config: Config = {
     extend: {
       colors: {
         kc: {
-          brown:       '#712f1e',
-          black:       '#0A0A0A',
-          white:       '#FFFFFF',
-          'gray-light':'#F7F5F2',
-          'gray-mid':  '#6B6560',
+          brown:        '#712f1e',   // = HTML --brick
+          'brown-dk':   '#531808',   // = HTML --brick-dk
+          black:        '#0A0A0A',
+          charcoal:     '#1e1e1e',   // = HTML --charcoal
+          white:        '#FFFFFF',
+          'warm-white': '#FDFCFA',   // = HTML --warm-white
+          cream:        '#F5F0E8',   // = HTML --cream
+          linen:        '#EDE5D8',   // = HTML --linen
+          mist:         '#F0EDE8',   // = HTML --mist
+          sand:         '#D9CFC0',   // = HTML --sand
+          gold:         '#B8922A',   // = HTML --gold
+          'text-mid':   '#6B5C52',   // = HTML --text-mid
+          'text-lt':    '#A89990',   // = HTML --text-lt
+          'gray-light': '#F7F5F2',
+          'gray-mid':   '#6B6560',
           'gray-border':'#E0DCD6',
-          red:         '#C41230',
+          red:          '#C41230',
         },
       },
       fontFamily: {
         display: ['Cormorant Garamond', 'Georgia', 'serif'],
         sans:    ['DM Sans', 'system-ui', 'sans-serif'],
+        mono:    ['DM Mono', 'ui-monospace', 'monospace'],
       },
       letterSpacing: {
         logo:   '0.35em',

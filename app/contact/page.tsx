@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Mail, Phone, MapPin, Clock } from 'lucide-react'
 import ContactForm from './ContactForm'
 import CalendlyEmbed from './CalendlyEmbed'
-import PageHero from '@/components/PageHero'
+
 
 export const metadata: Metadata = {
   title: 'Book a Strategy Call | Kasandy Consulting',
@@ -14,13 +14,58 @@ export default function Contact() {
   return (
     <div className="pt-16">
 
-      <PageHero
-        image="/images/hero-contact.jpg"
-        label="Contact & Book"
-        titleHtml="Let's get<br>to <em>work.</em>"
-        subtitle="Book a complimentary 15-minute strategy call, submit a project inquiry, or send a message. We typically respond within one business day."
-        position="object-center"
-      />
+      {/* ── Hero ── */}
+      <section className="relative flex items-center overflow-hidden bg-kc-warm-white" style={{ minHeight: '78vh' }}>
+        {/* Faint photo right */}
+        <div className="absolute right-0 top-0 w-[44%] h-full z-[1] overflow-hidden pointer-events-none">
+          <div className="absolute inset-0 z-10"
+            style={{ background: 'linear-gradient(90deg,#FDFCFA 0%,transparent 36%)' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/hero-contact.jpg" alt=""
+            className="w-full h-full object-cover object-top" style={{ opacity: 0.45 }} />
+        </div>
+
+        <div className="relative z-[2] w-full max-w-7xl mx-auto px-6 md:px-20 py-24 grid md:grid-cols-[1fr_340px] gap-16 md:gap-20 items-center">
+          {/* Left */}
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <span className="block w-7 h-px bg-kc-sand flex-shrink-0" />
+              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-text-lt">Contact &amp; Book</span>
+            </div>
+
+            <h1 className="font-display font-bold text-kc-charcoal leading-[1.0] mb-6 tracking-[-0.01em]"
+              style={{ fontSize: 'clamp(46px,5.5vw,74px)' }}>
+              Let's get<br />to <em className="italic text-kc-brown">work.</em>
+            </h1>
+
+            <p className="font-sans text-[17px] leading-[1.7] text-kc-text-mid max-w-[480px] mb-9">
+              Book a complimentary 15-minute strategy call, submit a project inquiry, or send a message. We typically respond within one business day.
+            </p>
+
+            <Link href="#book" className="btn-brown">Book a 15-Minute Strategy Call</Link>
+          </div>
+
+          {/* Right: contact options */}
+          <div className="hidden md:flex flex-col gap-2.5">
+            {[
+              { icon: <Mail size={16} />, label: 'Email', value: 'consulting@kasandy.com' },
+              { icon: <Phone size={16} />, label: 'Phone / WhatsApp', value: '778-385-4480' },
+              { icon: <MapPin size={16} />, label: 'Location', value: 'Vancouver, BC — Canada & International' },
+            ].map((opt, i) => (
+              <div key={i} className="flex items-center gap-4 px-5 py-4 bg-white border-[1.5px] border-kc-linen hover:border-kc-brown transition-colors">
+                <div className="w-[34px] h-[34px] bg-kc-brown flex items-center justify-center flex-shrink-0 text-white">
+                  {opt.icon}
+                </div>
+                <div>
+                  <div className="font-sans text-[12px] font-semibold text-kc-charcoal tracking-[0.04em]">{opt.label}</div>
+                  <div className="font-sans text-[11px] text-kc-text-lt mt-0.5">{opt.value}</div>
+                </div>
+              </div>
+            ))}
+            <Link href="#inquiry" className="btn-outline text-center justify-center mt-1">Submit a Project Inquiry</Link>
+          </div>
+        </div>
+      </section>
 
       {/* Calendly */}
       <section className="py-20 px-6 bg-kc-gray-light border-b border-kc-gray-border">

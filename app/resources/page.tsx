@@ -55,16 +55,44 @@ export default function Resources() {
   return (
     <div className="pt-16">
 
-      {/* Hero */}
-      <section className="py-28 px-6 bg-kc-gray-light border-b border-kc-gray-border">
-        <div className="max-w-7xl mx-auto">
-          <span className="section-label">Resources & Insights</span>
-          <h1 className="font-display text-6xl md:text-7xl font-light text-kc-black leading-tight mb-6">
-            Knowledge that moves you forward.
-          </h1>
-          <p className="font-sans text-base text-kc-gray-mid max-w-2xl leading-relaxed">
-            Free tools, guides, and insights drawn from 3,000+ entrepreneurs trained and years of frontline consulting work. Take what's useful.
-          </p>
+      {/* ── Hero ── */}
+      <section className="relative flex items-center overflow-hidden bg-kc-mist" style={{ minHeight: '70vh' }}>
+        {/* R watermark */}
+        <span className="absolute font-display font-bold text-kc-brown/[0.04] select-none pointer-events-none"
+          style={{ fontSize: '520px', right: '-30px', top: '-80px', lineHeight: 1 }}>R</span>
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-20 py-24 grid md:grid-cols-2 gap-20 items-center">
+          {/* Left */}
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <span className="block w-7 h-px bg-kc-brown flex-shrink-0" />
+              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-brown">Resources</span>
+            </div>
+            <h1 className="font-display font-bold text-kc-charcoal leading-[1.08] mb-5 tracking-[-0.01em]"
+              style={{ fontSize: 'clamp(40px,4.5vw,64px)' }}>
+              Knowledge that<br />moves you forward.
+            </h1>
+            <p className="font-sans text-[16px] leading-[1.74] text-kc-text-mid max-w-[440px] mb-9">
+              Practical guides, tools, and insights for entrepreneurs, non-profits, government teams, and international businesses. Free to download. Built from the work.
+            </p>
+            <Link href="#downloads" className="btn-brown">Browse All Resources</Link>
+          </div>
+
+          {/* Right: resource cards */}
+          <div className="grid grid-cols-2 gap-0.5">
+            {[
+              { tag: 'Free PDF', title: 'Canadian Procurement Readiness Checklist' },
+              { tag: 'Free PDF', title: 'How to Write a Capability Statement' },
+              { tag: 'Free PDF', title: 'Non-Profit Sustainability Scorecard' },
+              { tag: 'Free PDF', title: 'Kenya to Canada: Market Entry Roadmap' },
+            ].map((c, i) => (
+              <div key={i} className="group bg-kc-charcoal px-6 py-7 hover:bg-kc-brown transition-colors cursor-pointer">
+                <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-[#555] mb-2.5">{c.tag}</div>
+                <div className="font-sans text-[13px] font-semibold text-white leading-[1.45]">{c.title}</div>
+                <div className="font-mono text-[10px] text-kc-brown/60 mt-3.5 tracking-[0.1em] group-hover:text-white/60 transition-colors">Download →</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

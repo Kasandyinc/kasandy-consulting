@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Procurement Strategy & Supplier Diversity Consulting | Kasandy Consulting',
@@ -47,13 +46,59 @@ export default function Government() {
   return (
     <div className="pt-16">
 
-      <PageHero
-        image="/images/hero-government.jpg"
-        label="For Government & Public Sector"
-        titleHtml="Supplier diversity policy<br>without delivery is<br><em>just paperwork.</em>"
-        subtitle="Procurement strategy, training, and facilitation for government agencies serious about building inclusive supply chains that actually work."
-        position="object-center"
-      />
+      {/* ── Hero ── */}
+      <section className="relative flex items-center overflow-hidden" style={{ minHeight: '86vh' }}>
+        {/* Full-bleed photo */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/hero-government.jpg" alt=""
+          className="absolute inset-0 w-full h-full object-cover object-[center_35%]"
+          style={{ filter: 'brightness(0.92) saturate(0.9)' }} />
+        {/* Overlay: warm-white from left fading to transparent right */}
+        <div className="absolute inset-0"
+          style={{ background: 'linear-gradient(110deg,rgba(253,252,250,.96) 0%,rgba(253,252,250,.82) 45%,rgba(253,252,250,.3) 100%)' }} />
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-20 py-24 grid md:grid-cols-[1fr_340px] gap-16 md:gap-20 items-center">
+          {/* Left */}
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <span className="block w-7 h-px bg-kc-brown flex-shrink-0" />
+              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-brown">For Government &amp; Public Sector</span>
+            </div>
+
+            <h1 className="font-display font-bold text-kc-charcoal leading-[1.06] mb-6 tracking-[-0.01em]"
+              style={{ fontSize: 'clamp(40px,4.5vw,64px)' }}>
+              Supplier diversity policy<br />without delivery is<br />
+              <em className="italic text-kc-brown block">just paperwork.</em>
+            </h1>
+
+            <p className="font-sans text-[16px] leading-[1.74] text-kc-text-mid max-w-[520px] mb-9">
+              Procurement strategy, training, and facilitation for government agencies serious about building inclusive supply chains that actually work.
+            </p>
+
+            <div className="flex flex-wrap gap-3">
+              <Link href="/contact" className="btn-brown">Request a Proposal</Link>
+              <Link href="/work" className="btn-outline">See Our Track Record</Link>
+            </div>
+          </div>
+
+          {/* Right: credentials */}
+          <div className="hidden md:flex flex-col gap-2">
+            {[
+              "Canada's First National Procurement Readiness Course",
+              "BC Housing Board Commissioner — appointed by Minister Ravi Kahlon",
+              "Partners: Shared Services Canada | Procurement Assistance Canada",
+              "Funded by: ISED Canada | SBCCI | FFBC",
+              "Indigenous procurement training via ISET | 250+ trained",
+            ].map((c, i) => (
+              <div key={i} className="flex items-start gap-3 px-4 py-3.5 border-l-2 border-kc-linen"
+                style={{ background: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(4px)' }}>
+                <span className="w-1.5 h-1.5 bg-kc-brown rounded-full flex-shrink-0 mt-1" />
+                <span className="font-sans text-[12.5px] text-kc-text-mid leading-[1.45]">{c}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Qualification */}
       <section className="py-20 px-6">

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ArrowRight, Download } from 'lucide-react'
 import SpeakingInquiryForm from './SpeakingInquiryForm'
 import SpeakingMedia from './SpeakingMedia'
-import PageHero from '@/components/PageHero'
+
 
 export const metadata: Metadata = {
   title: 'Book Jackee Kasandy to Speak | Procurement, Supplier Diversity & Entrepreneurship Keynotes',
@@ -64,13 +64,79 @@ export default function Speaking() {
   return (
     <div className="pt-16">
 
-      <PageHero
-        image="/images/hero-speaking.jpg"
-        label="Speaking & Keynotes"
-        titleHtml="A voice that bridges<br><em>boardrooms</em><br>and communities."
-        subtitle="25 years of hard-won experience on every stage. Direct, practical, designed to move people from inspired to equipped."
-        position="object-top"
-      />
+      {/* ── Hero ── */}
+      <section className="relative flex items-center overflow-hidden" style={{ minHeight: '94vh' }}>
+        {/* Full photo with warm-white overlay from left */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/hero-speaking.jpg" alt=""
+          className="absolute inset-0 w-full h-full object-cover object-[center_18%]" />
+        <div className="absolute inset-0"
+          style={{ background: 'linear-gradient(110deg,rgba(253,252,250,.97) 0%,rgba(253,252,250,.88) 45%,rgba(253,252,250,.45) 100%)' }} />
+        {/* Decorative quote mark */}
+        <span className="absolute left-12 top-5 font-display font-bold text-kc-brown/[0.05] select-none pointer-events-none z-[1]"
+          style={{ fontSize: '320px', lineHeight: 1 }}>&ldquo;</span>
+
+        <div className="relative z-[2] w-full max-w-7xl mx-auto px-6 md:px-20 py-24 grid md:grid-cols-[1fr_360px] gap-16 md:gap-20 items-center">
+          {/* Left */}
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <span className="block w-7 h-px bg-kc-brown flex-shrink-0" />
+              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-brown">Speaking &amp; Keynotes</span>
+            </div>
+
+            <h1 className="font-display font-bold text-kc-charcoal leading-[1.0] mb-7 tracking-[-0.01em]"
+              style={{ fontSize: 'clamp(46px,5.5vw,76px)' }}>
+              A voice that bridges<br />
+              <em className="italic text-kc-brown block">boardrooms</em>
+              and communities.
+            </h1>
+
+            <p className="font-sans text-[17px] leading-[1.7] text-kc-text-mid max-w-[500px] mb-8">
+              25 years of hard-won experience on every stage. Direct, practical, designed to move people from inspired to equipped.
+            </p>
+
+            {/* Topics */}
+            <div className="flex flex-col mb-9">
+              {[
+                'From Kenya to Canada: Building a 7-Figure Ethical Brand',
+                'Procurement as a Growth Strategy: How Diverse Suppliers Win',
+                'Rewriting the Narrative: Black Entrepreneurship in Canada',
+                'Breaking Barriers: Women Leading in Business',
+                'Social Impact Through Business: The New Model of Entrepreneurship',
+              ].map((t, i) => (
+                <div key={i} className="flex items-center gap-3.5 py-3 border-b border-kc-linen text-[13.5px] text-kc-text-lt">
+                  <span className="block w-5 h-px bg-kc-brown flex-shrink-0" />
+                  {t}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Link href="/contact" className="btn-brown">Enquire About Booking Jackee</Link>
+              <Link href="#speaker-kit" className="btn-outline">Download Speaker Kit</Link>
+            </div>
+          </div>
+
+          {/* Right: Media coverage card */}
+          <div className="hidden md:block bg-white border border-kc-linen p-9"
+            style={{ boxShadow: '0 4px 32px rgba(113,47,30,.07)' }}>
+            <div className="font-mono text-[9px] tracking-[0.2em] text-kc-text-lt uppercase pb-4 mb-5 border-b border-kc-linen">
+              Media Coverage
+            </div>
+            {['Globe and Mail', 'Global News Morning', 'CP24 Live Interview', 'CBC Radio',
+              'CTV Montreal', 'The Morning Show', 'Vancouver Sun', 'Montecristo Magazine'].map(m => (
+              <div key={m} className="flex items-center gap-2.5 py-2.5 border-b border-kc-linen text-[13px] text-kc-text-mid">
+                <span className="w-1 h-1 bg-kc-brown rounded-full flex-shrink-0" />
+                {m}
+              </div>
+            ))}
+            <div className="mt-5 pt-4 border-t border-kc-linen">
+              <div className="font-display font-bold text-kc-charcoal leading-none" style={{ fontSize: '36px' }}>2.4M</div>
+              <div className="font-sans text-[11px] text-kc-text-lt mt-1">Earned Media Value | 380+ national mentions</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* About Jackee as Speaker */}
       <section className="py-20 px-6 bg-kc-gray-light">

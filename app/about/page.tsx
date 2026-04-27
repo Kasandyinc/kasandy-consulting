@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'About Kasandy Consulting | Jackee Kasandy, Procurement Strategist & Business Coach',
@@ -44,13 +43,59 @@ export default function About() {
   return (
     <div className="pt-16">
 
-      <PageHero
-        image="/images/hero-about.jpg"
-        label="About Kasandy Consulting"
-        titleHtml="A firm built on proof,<br><em>not promises.</em>"
-        subtitle="Twenty-five years of corporate marketing, entrepreneurship, and systemic change — distilled into strategy you can use."
-        position="object-top"
-      />
+      {/* ── Hero ── */}
+      <section className="relative flex items-end overflow-hidden" style={{ minHeight: '86vh' }}>
+        {/* Full-bleed photo */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/hero-about.jpg" alt=""
+          className="absolute inset-0 w-full h-full object-cover object-[center_20%]"
+          style={{ filter: 'sepia(15%) brightness(0.9)' }} />
+        {/* Warm-white fade from bottom */}
+        <div className="absolute inset-0"
+          style={{ background: 'linear-gradient(180deg,rgba(253,252,250,.05) 0%,rgba(253,252,250,.3) 40%,rgba(253,252,250,.96) 100%)' }} />
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-20 pb-16">
+          {/* Eyebrow */}
+          <div className="flex items-center gap-3 mb-5">
+            <span className="block w-7 h-px bg-kc-brown flex-shrink-0" />
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-brown">About Kasandy Consulting</span>
+          </div>
+
+          <h1 className="font-display font-bold text-kc-charcoal leading-[1.04] mb-5 tracking-[-0.01em] max-w-4xl"
+            style={{ fontSize: 'clamp(48px,5.5vw,76px)' }}>
+            A firm built on proof,<br />
+            <em className="italic text-kc-brown">not promises.</em>
+          </h1>
+
+          <p className="font-sans text-[18px] leading-[1.68] text-kc-text-mid max-w-[580px] mb-11">
+            Twenty-five years of corporate marketing, entrepreneurship, and systemic change — distilled into strategy you can use.
+          </p>
+
+          <div className="flex flex-wrap gap-3 mb-10">
+            <Link href="/about#jackee" className="btn-brown">Read Jackee's Story</Link>
+            <Link href="/contact" className="btn-outline">Book a Call</Link>
+          </div>
+
+          {/* Stats row */}
+          <div className="flex flex-wrap gap-0 border-t border-kc-linen pt-9">
+            {[
+              { val: '25', sup: '+', label: 'Years Experience' },
+              { val: '3,000', sup: '+', label: 'Entrepreneurs Trained' },
+              { val: "Canada's\nFirst", sup: '', label: 'Procurement Readiness Course', red: true },
+              { val: '380', sup: '+', label: 'National Media Mentions' },
+            ].map((s, i) => (
+              <div key={i} className={`pr-10 mr-10 ${i < 3 ? 'border-r border-kc-linen' : ''}`}>
+                <span className={`font-display font-bold leading-none block ${s.red ? 'text-kc-brown text-[26px]' : 'text-kc-charcoal'}`}
+                  style={!s.red ? { fontSize: '42px' } : {}}>
+                  {s.val.split('\n').map((line, j) => <span key={j}>{line}{j < s.val.split('\n').length - 1 && <br />}</span>)}
+                  {s.sup && <span className="text-kc-brown" style={{ fontSize: '0.5em' }}>{s.sup}</span>}
+                </span>
+                <div className="font-mono text-[11px] text-kc-text-lt tracking-[0.1em] uppercase mt-2">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* The Firm */}
       <section className="py-20 px-6">

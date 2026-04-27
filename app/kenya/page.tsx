@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
-import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Canadian Market Entry & Procurement Bootcamps for Kenyan Entrepreneurs | Kasandy Consulting',
@@ -49,13 +47,73 @@ export default function Kenya() {
   return (
     <div className="pt-16">
 
-      <PageHero
-        image="/images/hero-kenya.jpg"
-        label="For Kenyan & International Entrepreneurs"
-        titleHtml="Canada's procurement<br>market is open.<br><em>Walk in.</em>"
-        subtitle="Bootcamps, market entry strategy, and network connections for Kenyan entrepreneurs ready to compete for Canadian government and corporate contracts."
-        position="object-center"
-      />
+      {/* ── Hero ── */}
+      <section className="relative flex items-center overflow-hidden" style={{ minHeight: '92vh' }}>
+        {/* Full-bleed photo with sepia/warm treatment */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/images/hero-kenya.jpg" alt=""
+          className="absolute inset-0 w-full h-full object-cover object-[center_20%]"
+          style={{ filter: 'sepia(20%) brightness(0.88)' }} />
+        {/* Warm overlay from upper-left */}
+        <div className="absolute inset-0"
+          style={{ background: 'linear-gradient(160deg,rgba(253,252,250,.97) 0%,rgba(253,252,250,.75) 45%,rgba(240,220,180,.25) 100%)' }} />
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-20 py-28 grid md:grid-cols-[1fr_380px] gap-16 md:gap-20 items-center">
+          {/* Left */}
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <span className="block w-7 h-px bg-kc-gold flex-shrink-0" />
+              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-gold">For Kenyan &amp; International Entrepreneurs</span>
+            </div>
+
+            <h1 className="font-display font-bold text-kc-charcoal leading-[1.04] mb-7 tracking-[-0.01em]"
+              style={{ fontSize: 'clamp(44px,5.2vw,70px)' }}>
+              Canada's procurement<br />market is open.<br />
+              <em className="italic text-kc-gold">Walk in.</em>
+            </h1>
+
+            <p className="font-sans text-[17px] leading-[1.7] text-kc-text-mid max-w-[480px] mb-9">
+              Bootcamps, market entry strategy, and network connections for Kenyan entrepreneurs ready to compete for Canadian government and corporate contracts.
+            </p>
+
+            {/* Bridge device */}
+            <div className="flex items-center gap-4 py-4 border-y border-kc-linen mb-8">
+              <div className="flex flex-col gap-1">
+                <span className="text-[28px]">🇰🇪</span>
+                <span className="font-mono text-[10px] tracking-[0.2em] text-kc-text-lt uppercase">Kenya</span>
+              </div>
+              <div className="flex-1 text-center text-kc-gold text-xl">⟶</div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[28px]">🇨🇦</span>
+                <span className="font-mono text-[10px] tracking-[0.2em] text-kc-text-lt uppercase">Canada</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Link href="/contact" className="inline-flex items-center px-7 py-3.5 text-white text-xs tracking-widest uppercase font-sans font-bold transition-colors"
+                style={{ background: '#B8922A' }}>Register for the Next Bootcamp</Link>
+              <Link href="/contact" className="btn-outline">Book a Market Entry Call</Link>
+            </div>
+          </div>
+
+          {/* Right: stats panel */}
+          <div className="hidden md:flex flex-col gap-7 bg-white border border-kc-linen p-10"
+            style={{ boxShadow: '0 4px 32px rgba(113,47,30,.08)' }}>
+            {[
+              { val: '$1T+', desc: 'Annual Canadian government and corporate procurement spend' },
+              { val: '3,000+', desc: 'Entrepreneurs trained through Kasandy\'s procurement programs' },
+              { val: '17–21', desc: 'Businesses secured contracts including multi-million-dollar deals' },
+            ].map((s, i) => (
+              <div key={i}>
+                <div className="font-display font-bold text-kc-gold leading-none" style={{ fontSize: '44px' }}>
+                  {s.val}
+                </div>
+                <p className="font-sans text-[12px] text-kc-text-lt mt-1.5 leading-[1.5]">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* The Opportunity */}
       <section className="py-20 px-6">

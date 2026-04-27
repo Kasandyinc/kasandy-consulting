@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Business Coaching & Procurement Strategy for Entrepreneurs | Kasandy Consulting',
@@ -56,13 +55,51 @@ export default function Entrepreneurs() {
   return (
     <div className="pt-16">
 
-      <PageHero
-        image="/images/hero-entrepreneurs.jpg"
-        label="For Entrepreneurs & Founders"
-        titleHtml="Stop leaving<br>contracts on<br><em>the table.</em>"
-        subtitle="Full-service business coaching and procurement strategy for founders who are ready to grow — and ready to win."
-        position="object-top"
-      />
+      {/* ── Hero ── */}
+      <section className="relative flex items-center overflow-hidden bg-kc-linen" style={{ minHeight: '90vh' }}>
+        {/* Photo right */}
+        <div className="absolute right-0 top-0 w-[46%] h-full z-[1] overflow-hidden">
+          <div className="absolute inset-0 z-10 pointer-events-none"
+            style={{ background: 'linear-gradient(90deg,#EDE5D8 0%,transparent 28%)' }} />
+          <div className="absolute bottom-0 left-0 right-0 h-[30%] z-10 pointer-events-none"
+            style={{ background: 'linear-gradient(180deg,transparent,rgba(237,229,216,.7))' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/hero-entrepreneurs.jpg" alt=""
+            className="w-full h-full object-cover object-top" />
+        </div>
+
+        {/* Left copy */}
+        <div className="relative z-[2] px-8 lg:px-20 py-24 max-w-[580px]">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="block w-7 h-px bg-kc-brown flex-shrink-0" />
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-brown">For Entrepreneurs &amp; Founders</span>
+          </div>
+
+          <h1 className="font-display font-bold text-kc-charcoal leading-[1.0] mb-7 tracking-[-0.01em]"
+            style={{ fontSize: 'clamp(50px,5.5vw,78px)' }}>
+            Stop leaving<br />contracts on<br />
+            <em className="italic text-kc-brown">the table.</em>
+          </h1>
+
+          <p className="font-sans text-[17px] leading-[1.7] text-kc-text-mid max-w-[460px] mb-8">
+            Full-service business coaching and procurement strategy for founders who are ready to grow — and ready to win.
+          </p>
+
+          {/* Proof stat */}
+          <div className="mb-8 p-5 border-l-[3px] border-kc-brown max-w-[400px]"
+            style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(4px)' }}>
+            <div className="font-display font-bold text-kc-brown leading-none" style={{ fontSize: '48px' }}>17–21</div>
+            <p className="font-sans text-[13px] text-kc-text-mid mt-1.5 leading-[1.55]">
+              Businesses from Kasandy-led programs secured procurement contracts — including multi-million-dollar deals.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link href="/contact" className="btn-brown">Book a Strategy Call</Link>
+            <Link href="/services" className="btn-outline">See Our Programs</Link>
+          </div>
+        </div>
+      </section>
 
       {/* Qualification */}
       <section className="py-20 px-6">

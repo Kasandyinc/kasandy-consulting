@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
   title: 'Non-Profit Strategy, Fundraising & Leadership Coaching | Kasandy Consulting',
@@ -39,13 +38,48 @@ export default function Nonprofits() {
   return (
     <div className="pt-16">
 
-      <PageHero
-        image="/images/hero-nonprofits.jpg"
-        label="For Non-Profit Organizations"
-        titleHtml="Your mission is powerful.<br>Your business model<br>needs to <em>match.</em>"
-        subtitle="Strategic planning, fundraising strategy, leadership coaching, and sustainability models for mission-driven organisations ready to stop surviving and start thriving."
-        position="object-top"
-      />
+      {/* ── Hero ── */}
+      <section className="relative flex items-center overflow-hidden bg-kc-warm-white" style={{ minHeight: '88vh' }}>
+        {/* Photo right */}
+        <div className="absolute right-0 top-0 w-[42%] h-full z-[1] overflow-hidden">
+          <div className="absolute inset-0 z-10 pointer-events-none"
+            style={{ background: 'linear-gradient(90deg,#FDFCFA 0%,transparent 28%)' }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/images/hero-nonprofits.jpg" alt=""
+            className="w-full h-full object-cover object-top" />
+        </div>
+
+        {/* Left copy */}
+        <div className="relative z-[2] px-8 lg:px-20 py-24 max-w-[600px]">
+          <div className="flex items-center gap-3 mb-5">
+            <span className="block w-7 h-px bg-kc-brown flex-shrink-0" />
+            <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-brown">For Non-Profit Organizations</span>
+          </div>
+
+          <h1 className="font-display font-bold text-kc-charcoal leading-[1.08] mb-6 tracking-[-0.01em]"
+            style={{ fontSize: 'clamp(40px,4.5vw,64px)' }}>
+            Your mission is powerful.<br />Your business model<br />needs to{' '}
+            <em className="italic text-kc-brown">match.</em>
+          </h1>
+
+          <p className="font-sans text-[17px] leading-[1.7] text-kc-text-mid max-w-[480px] mb-9">
+            Strategic planning, fundraising strategy, leadership coaching, and sustainability models for mission-driven organisations ready to stop surviving and start thriving.
+          </p>
+
+          {/* Quote card */}
+          <div className="mb-8 px-7 py-6 bg-white border-l-4 border-kc-brown max-w-[460px]"
+            style={{ boxShadow: '0 2px 20px rgba(113,47,30,.08)' }}>
+            <p className="font-display italic text-[18px] text-kc-charcoal leading-[1.55]">
+              "The business model your mission deserves — not just the one grant cycles allow."
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <Link href="/contact" className="btn-brown">Book a Consultation</Link>
+            <Link href="/services" className="btn-outline">See Our Programs</Link>
+          </div>
+        </div>
+      </section>
 
       {/* Qualification + Context */}
       <section className="py-20 px-6">
