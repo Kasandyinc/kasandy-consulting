@@ -59,7 +59,7 @@ export default function Entrepreneurs() {
       <PageHero
         image="/images/hero-entrepreneurs.jpg"
         label="For Entrepreneurs & Founders"
-        title="Stop leaving contracts on the table."
+        titleHtml="Stop leaving<br>contracts on<br><em>the table.</em>"
         subtitle="Full-service business coaching and procurement strategy for founders who are ready to grow — and ready to win."
         position="object-top"
       />

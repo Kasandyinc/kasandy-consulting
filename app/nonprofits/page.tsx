@@ -42,8 +42,8 @@ export default function Nonprofits() {
       <PageHero
         image="/images/hero-nonprofits.jpg"
         label="For Non-Profit Organizations"
-        title="Your mission is powerful. Your business model needs to match."
-        subtitle="Strategic planning, fundraising strategy, leadership coaching, and sustainability models for mission-driven organisations that are ready to stop surviving and start thriving."
+        titleHtml="Your mission is powerful.<br>Your business model<br>needs to <em>match.</em>"
+        subtitle="Strategic planning, fundraising strategy, leadership coaching, and sustainability models for mission-driven organisations ready to stop surviving and start thriving."
         position="object-top"
       />
 

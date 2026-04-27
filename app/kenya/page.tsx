@@ -52,8 +52,8 @@ export default function Kenya() {
       <PageHero
         image="/images/hero-kenya.jpg"
         label="For Kenyan & International Entrepreneurs"
-        title="Canada's procurement market is open."
-        subtitle="Procurement bootcamps, market entry strategy, and network connections for Kenyan entrepreneurs ready to compete for Canadian contracts."
+        titleHtml="Canada's procurement<br>market is open.<br><em>Walk in.</em>"
+        subtitle="Bootcamps, market entry strategy, and network connections for Kenyan entrepreneurs ready to compete for Canadian government and corporate contracts."
         position="object-center"
       />
 

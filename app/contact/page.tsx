@@ -16,9 +16,9 @@ export default function Contact() {
 
       <PageHero
         image="/images/hero-contact.jpg"
-        label="Contact"
-        title="Let's get to work."
-        subtitle="Book a complimentary 15-minute strategy call, submit a project inquiry, or reach out directly. We respond to all inquiries within 2 business days."
+        label="Contact & Book"
+        titleHtml="Let's get<br>to <em>work.</em>"
+        subtitle="Book a complimentary 15-minute strategy call, submit a project inquiry, or send a message. We typically respond within one business day."
         position="object-center"
       />
 

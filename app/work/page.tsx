@@ -102,9 +102,9 @@ export default function Work() {
 
       <PageHero
         image="/images/hero-work.jpg"
-        label="Client Results"
-        title="What we've built together."
-        subtitle="We do not lead with testimonials. We lead with results. Every engagement is scoped to produce measurable outcomes — and we document them."
+        label="Our Work"
+        titleHtml="What we've<br>built together."
+        subtitle="Real outcomes for real clients — in numbers, in stories, and in the organisations we've helped transform."
         position="object-center"
       />
 

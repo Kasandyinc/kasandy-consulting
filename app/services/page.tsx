@@ -88,11 +88,9 @@ export default function Services() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/jackee-workshop-1.jpg"
         label="Our Services"
-        title="Strategy that works in the real world."
-        subtitle="We work across four areas of practice. Every engagement is tailored — but the standard is always the same: honest counsel, clear deliverables, and results you can measure."
-        position="object-top"
+        titleHtml="Strategy that works<br>in the real world."
+        subtitle="Four areas of practice. Every engagement tailored. One standard — honest counsel, clear deliverables, and results you can measure."
       />
 
       {/* Four Service Areas */}
