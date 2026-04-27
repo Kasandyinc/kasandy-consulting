@@ -40,7 +40,7 @@ export default function Nonprofits() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/hero-5.jpg"
+        image="/images/hero-nonprofits.jpg"
         label="For Non-Profit Organizations"
         title="Your mission is powerful. Your business model needs to match."
         subtitle="Strategic planning, fundraising strategy, leadership coaching, and sustainability models for mission-driven organisations that are ready to stop surviving and start thriving."

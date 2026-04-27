@@ -50,7 +50,7 @@ export default function Kenya() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/hero-9.jpg"
+        image="/images/hero-kenya.jpg"
         label="For Kenyan & International Entrepreneurs"
         title="Canada's procurement market is open."
         subtitle="Procurement bootcamps, market entry strategy, and network connections for Kenyan entrepreneurs ready to compete for Canadian contracts."

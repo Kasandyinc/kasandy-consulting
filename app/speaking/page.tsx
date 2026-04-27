@@ -65,7 +65,7 @@ export default function Speaking() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/hero-7.jpg"
+        image="/images/hero-speaking.jpg"
         label="Jackee Kasandy — Speaker"
         title="A voice that bridges boardrooms and communities."
         subtitle="Jackee Kasandy brings twenty-five years of corporate strategy, entrepreneurship, and systemic advocacy to the stage. Her sessions are direct, evidence-based, and designed to move rooms — not just inspire them."

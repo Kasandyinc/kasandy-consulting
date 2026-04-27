@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readFile, writeFile } from 'fs/promises'
-import path from 'path'
+import { kvGet, kvSet, KEYS } from '@/lib/kv'
 
-const FILE = path.join(process.cwd(), 'data', 'speaking-quotes.json')
-
-async function readQuotes() {
-  try {
-    const raw = await readFile(FILE, 'utf-8')
-    return JSON.parse(raw)
-  } catch {
-    return []
-  }
+type Quote = {
+  id: string
+  quote: string
+  name: string
+  title: string
+  organisation: string
 }
 
 export async function GET() {
-  const quotes = await readQuotes()
+  const quotes = await kvGet<Quote[]>(KEYS.speakingQuotes, [])
   return NextResponse.json(quotes)
 }
 
@@ -26,8 +22,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'quote and name are required' }, { status: 400 })
     }
 
-    const quotes = await readQuotes()
-    const newQuote = {
+    const quotes = await kvGet<Quote[]>(KEYS.speakingQuotes, [])
+    const newQuote: Quote = {
       id: Date.now().toString(),
       quote,
       name,
@@ -35,7 +31,7 @@ export async function POST(req: NextRequest) {
       organisation: organisation || '',
     }
     quotes.push(newQuote)
-    await writeFile(FILE, JSON.stringify(quotes, null, 2))
+    await kvSet(KEYS.speakingQuotes, quotes)
     return NextResponse.json(newQuote, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Failed to add quote' }, { status: 500 })
@@ -47,9 +43,9 @@ export async function DELETE(req: NextRequest) {
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-    const quotes = await readQuotes()
-    const filtered = quotes.filter((q: { id: string }) => q.id !== id)
-    await writeFile(FILE, JSON.stringify(filtered, null, 2))
+    const quotes = await kvGet<Quote[]>(KEYS.speakingQuotes, [])
+    const filtered = quotes.filter(q => q.id !== id)
+    await kvSet(KEYS.speakingQuotes, filtered)
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json({ error: 'Failed to delete quote' }, { status: 500 })

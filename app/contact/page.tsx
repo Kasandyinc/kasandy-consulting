@@ -15,7 +15,7 @@ export default function Contact() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/hero-8.jpg"
+        image="/images/hero-contact.jpg"
         label="Contact"
         title="Let's get to work."
         subtitle="Book a complimentary 15-minute strategy call, submit a project inquiry, or reach out directly. We respond to all inquiries within 2 business days."

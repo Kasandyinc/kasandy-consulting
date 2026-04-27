@@ -101,7 +101,7 @@ export default function Work() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/hero-8.jpg"
+        image="/images/hero-work.jpg"
         label="Client Results"
         title="What we've built together."
         subtitle="We do not lead with testimonials. We lead with results. Every engagement is scoped to produce measurable outcomes — and we document them."

@@ -45,7 +45,7 @@ export default function About() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/hero-2.jpg"
+        image="/images/hero-about.jpg"
         label="About Kasandy Consulting"
         title="A firm built on proof, not promises."
         subtitle="Twenty-five years of corporate marketing, entrepreneurship, and systemic change — distilled into strategy you can actually use."

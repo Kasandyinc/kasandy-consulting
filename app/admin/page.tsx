@@ -49,6 +49,20 @@ export default function AdminDashboard() {
             <h2 className="text-base font-semibold text-gray-900 mb-1">Articles</h2>
             <p className="text-xs text-gray-500">Manage and publish blog content</p>
           </Link>
+          <Link
+            href="/admin/heroes"
+            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
+          >
+            <h2 className="text-base font-semibold text-gray-900 mb-1">Page Heroes</h2>
+            <p className="text-xs text-gray-500">Edit hero titles and images for every page</p>
+          </Link>
+          <Link
+            href="/admin/settings"
+            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
+          >
+            <h2 className="text-base font-semibold text-gray-900 mb-1">Site Settings</h2>
+            <p className="text-xs text-gray-500">Tagline, CTAs, social links, and more</p>
+          </Link>
         </div>
       </main>
     </div>

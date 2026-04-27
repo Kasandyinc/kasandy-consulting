@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readFile, writeFile } from 'fs/promises'
-import path from 'path'
+import { kvGet, kvSet, KEYS } from '@/lib/kv'
 
-const FILE = path.join(process.cwd(), 'data', 'speaking-photos.json')
-
-async function readPhotos() {
-  try {
-    const raw = await readFile(FILE, 'utf-8')
-    return JSON.parse(raw)
-  } catch {
-    return []
-  }
+type Photo = {
+  id: string
+  src: string
+  alt: string
+  caption?: string
+  event?: string
 }
 
 export async function GET() {
-  const photos = await readPhotos()
+  const photos = await kvGet<Photo[]>(KEYS.speakingPhotos, [])
   return NextResponse.json(photos)
 }
 
@@ -27,8 +23,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'src and alt are required' }, { status: 400 })
     }
 
-    const photos = await readPhotos()
-    const newPhoto = {
+    const photos = await kvGet<Photo[]>(KEYS.speakingPhotos, [])
+    const newPhoto: Photo = {
       id: Date.now().toString(),
       src,
       alt,
@@ -36,7 +32,7 @@ export async function POST(req: NextRequest) {
       event: event || undefined,
     }
     photos.push(newPhoto)
-    await writeFile(FILE, JSON.stringify(photos, null, 2))
+    await kvSet(KEYS.speakingPhotos, photos)
     return NextResponse.json(newPhoto, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Failed to add photo' }, { status: 500 })
@@ -48,9 +44,9 @@ export async function DELETE(req: NextRequest) {
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-    const photos = await readPhotos()
-    const filtered = photos.filter((p: { id: string }) => p.id !== id)
-    await writeFile(FILE, JSON.stringify(filtered, null, 2))
+    const photos = await kvGet<Photo[]>(KEYS.speakingPhotos, [])
+    const filtered = photos.filter(p => p.id !== id)
+    await kvSet(KEYS.speakingPhotos, filtered)
     return NextResponse.json({ success: true })
   } catch {
     return NextResponse.json({ error: 'Failed to delete photo' }, { status: 500 })

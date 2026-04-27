@@ -48,7 +48,7 @@ export default function Government() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/hero-4.jpg"
+        image="/images/hero-government.jpg"
         label="For Government & Public Sector"
         title="Supplier diversity policy without delivery is just paperwork."
         subtitle="Procurement strategy, training, and facilitation for government agencies and public sector organisations serious about building inclusive supply chains that work."

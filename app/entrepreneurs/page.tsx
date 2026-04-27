@@ -57,7 +57,7 @@ export default function Entrepreneurs() {
     <div className="pt-16">
 
       <PageHero
-        image="/images/jackee-speaking-1.jpg"
+        image="/images/hero-entrepreneurs.jpg"
         label="For Entrepreneurs & Founders"
         title="Stop leaving contracts on the table."
         subtitle="Full-service business coaching and procurement strategy for founders who are ready to grow — and ready to win."
