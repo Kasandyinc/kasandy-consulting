@@ -3,7 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
-  title: 'Canadian Market Entry & Procurement Bootcamps for Kenyan Entrepreneurs | Kasandy Consulting',
+  title: 'Canadian Market Entry & Procurement Bootcamps for Kenyan Entrepreneurs',
   description: 'Prepare to compete in Canadian procurement markets. Bootcamps in Nairobi, market entry strategy, certification support, and buyer introductions for Kenyan and international businesses.',
 }
 

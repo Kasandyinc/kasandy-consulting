@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react'
 
 
 export const metadata: Metadata = {
-  title: 'Consulting Services | Kasandy Consulting',
+  title: 'Consulting Services',
   description: 'Business coaching, procurement strategy, non-profit transformation, and international market entry. Full-service consulting for entrepreneurs, governments, non-profits, and Kenyan businesses.',
 }
 

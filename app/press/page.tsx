@@ -4,7 +4,7 @@ import { ExternalLink } from 'lucide-react'
 import PageHero from '@/components/PageHero'
 
 export const metadata: Metadata = {
-  title: 'Press & Media | Kasandy Consulting',
+  title: 'Press & Media',
   description: 'Jackee Kasandy media coverage — Globe and Mail, CBC, CTV, Global News, Hill Times, Montecristo Magazine and more. 2.4M+ in earned media value.',
 }
 

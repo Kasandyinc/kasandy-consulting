@@ -18,14 +18,22 @@ export default function CalendlyEmbed() {
 
   if (!CALENDLY_URL) {
     return (
-      <div className="border border-dashed border-kc-gray-border bg-white p-12 text-center">
-        <p className="font-display text-2xl font-light text-kc-black mb-3">Calendly Booking</p>
-        <p className="font-sans text-sm text-kc-gray-mid leading-relaxed mb-4 max-w-lg mx-auto">
-          A Calendly widget will embed here. Add your Calendly URL to the <code className="bg-kc-gray-light px-2 py-0.5 text-kc-brown">NEXT_PUBLIC_CALENDLY_URL</code> environment variable to activate it.
+      <div className="bg-kc-charcoal text-white p-12 md:p-16 text-center max-w-2xl mx-auto">
+        <p className="font-mono text-[11px] tracking-[0.2em] uppercase text-kc-brown/80 mb-4">15-Minute Strategy Call</p>
+        <p className="font-display text-3xl font-light mb-5">
+          Book your free call with Jackee.
         </p>
-        <p className="font-sans text-xs text-kc-gray-mid">
-          In the meantime, use the project inquiry form below or contact us directly.
+        <p className="font-sans text-sm text-white/60 leading-relaxed mb-8 max-w-md mx-auto">
+          No pitch. No pressure. Bring your goals — we&apos;ll bring questions. 15 minutes of honest conversation about where you are and where you want to go.
         </p>
+        <a
+          href="https://calendly.com/kasandyconsulting"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center px-10 py-4 bg-kc-brown text-white text-xs tracking-widest uppercase font-sans font-medium hover:bg-white hover:text-kc-brown transition-colors"
+        >
+          Book on Calendly →
+        </a>
       </div>
     )
   }

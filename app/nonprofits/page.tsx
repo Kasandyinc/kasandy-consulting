@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Non-Profit Strategy, Fundraising & Leadership Coaching | Kasandy Consulting',
+  title: 'Non-Profit Strategy, Fundraising & Leadership Coaching',
   description: 'Strategic planning, fundraising strategy, ED coaching, and sustainability models for mission-driven organisations. Build the business model your mission deserves.',
 }
 
@@ -76,7 +76,7 @@ export default function Nonprofits() {
 
           <div className="flex flex-wrap gap-3">
             <Link href="/contact" className="btn-brown">Book a Consultation</Link>
-            <Link href="/services" className="btn-outline">See Our Programs</Link>
+            <Link href="/nonprofits#programs" className="btn-outline">See Our Programs</Link>
           </div>
         </div>
       </section>
@@ -110,7 +110,7 @@ export default function Nonprofits() {
       </section>
 
       {/* Programs */}
-      <section className="py-20 px-6 bg-kc-gray-light">
+      <section id="programs" className="py-20 px-6 bg-kc-gray-light">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Programs</span>
           <h2 className="section-heading mb-16">Non-Profit Programs</h2>
@@ -202,6 +202,38 @@ export default function Nonprofits() {
           <div className="mt-12">
             <Link href="/contact" className="btn-primary">Book a Consultation</Link>
           </div>
+        </div>
+      </section>
+
+      {/* Grant & Fundraising Support */}
+      <section className="py-20 px-6 bg-kc-gray-light">
+        <div className="max-w-7xl mx-auto">
+          <span className="section-label">Grant &amp; Fundraising Support</span>
+          <h2 className="section-heading mb-4">Grant writing isn&apos;t a commodity.</h2>
+          <p className="font-sans text-sm text-kc-gray-mid mb-10 max-w-2xl leading-relaxed">
+            Scope and complexity vary enormously based on where your organisation actually is — the clarity of your impact story, the quality of your data, and your previous funder experience. We price for the real work, not an average.
+          </p>
+          <p className="font-sans text-sm text-kc-gray-mid mb-10 max-w-2xl leading-relaxed">
+            Every grant engagement starts with a <strong className="text-kc-black">Grant Readiness Assessment ($500)</strong> — a 90-minute session that tells you which tier you&apos;re in, your best funder targets, and what needs to happen before submitting. Credited in full against any program booked within 60 days.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {[
+              { name: 'Grant Readiness Assessment', price: '$500', desc: '90-minute session + written report + funder shortlist. Required before any grant writing engagement.' },
+              { name: 'Grant Writing — Tier 1', sub: 'Grant-Ready Orgs', price: 'From $1,500', desc: 'Clear story, defined programs, available data. Narrative writing, budget review, compliance, submission.' },
+              { name: 'Grant Writing — Tier 2', sub: 'Developing Orgs', price: 'From $2,800', desc: 'Needs narrative development and program logic work before writing. Includes everything in Tier 1 plus development sessions.' },
+              { name: 'Grant Writing — Tier 3', sub: 'Federal / Complex', price: 'From $4,500', desc: 'Federal programs, $200K+ applications. Full logic models, evaluation frameworks, multi-year budgets.' },
+              { name: 'Grant Strategy Program', sub: '3 Months', price: 'From $5,500', desc: 'Funder mapping, readiness assessment, narrative development, support for up to 2 applications.' },
+              { name: 'Funder Mapping Session', price: '$300', desc: '60-minute session + written shortlist of 8–12 matched funders with eligibility notes and application windows.' },
+            ].map((item) => (
+              <div key={item.name} className="border border-kc-gray-border bg-white p-6">
+                <p className="font-sans text-[10px] tracking-widest uppercase text-kc-brown mb-1">{item.sub || 'Grant Support'}</p>
+                <h3 className="font-display text-lg font-light mb-1">{item.name}</h3>
+                <p className="font-display text-xl text-kc-brown mb-3">{item.price}</p>
+                <p className="font-sans text-xs text-kc-gray-mid leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          <Link href="/contact?tag=grant" className="btn-brown">Start with a Grant Readiness Assessment</Link>
         </div>
       </section>
 

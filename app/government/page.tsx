@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Procurement Strategy & Supplier Diversity Consulting | Kasandy Consulting',
+  title: 'Procurement Strategy & Supplier Diversity Consulting',
   description: 'Inclusive procurement program design, supplier diversity facilitation, and Indigenous procurement training for government agencies and public sector organisations. Canada-wide.',
 }
 
