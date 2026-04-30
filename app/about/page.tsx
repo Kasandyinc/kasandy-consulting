@@ -180,17 +180,36 @@ export default function About() {
           <h2 className="section-heading mb-12">Recognition & Media</h2>
           <div className="grid md:grid-cols-2 gap-4">
             {[
-              '"23 Black Leaders in Vancouver" — Vancouver Economic Commission',
-              'Featured in Montecristo Magazine',
-              'BC Housing Board Commissioner — Appointed by Minister Ravi Kahlon, Province of BC',
-              'Funded initiatives: Innovation, Science & Economic Development Canada | SBCCI | FFBC',
-              'Partners: Shared Services Canada | Procurement Assistance Canada | Women\'s Economic Council',
-              'Board: Union Gospel Mission, Vancouver',
+              {
+                label: '"23 Black Leaders in Vancouver" — Vancouver Economic Commission',
+                href: 'https://vancouvereconomic.com/news/announcing-the-23-black-leaders-in-vancouver/',
+              },
+              {
+                label: 'Featured in Montecristo Magazine',
+                href: 'https://montecristomagazine.com',
+              },
+              {
+                label: 'BC Housing Board Commissioner — Appointed by Minister Ravi Kahlon, Province of BC',
+                href: 'https://www.bchousing.org/about/board-of-commissioners',
+              },
+              {
+                label: 'Funded initiatives: Innovation, Science & Economic Development Canada | SBCCI | FFBC',
+                href: 'https://ised-isde.canada.ca/site/ised/en',
+              },
+              {
+                label: 'Partners: Shared Services Canada | Procurement Assistance Canada | Women\'s Economic Council',
+                href: 'https://buyandsell.gc.ca/procurement-assistance-canada',
+              },
+              {
+                label: 'Board: Union Gospel Mission, Vancouver',
+                href: 'https://www.ugm.ca',
+              },
             ].map((item) => (
-              <div key={item} className="flex items-start gap-3 border border-kc-gray-border bg-white p-5">
+              <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-3 border border-kc-gray-border bg-white p-5 hover:border-kc-brown transition-colors group">
                 <span className="text-kc-brown mt-0.5 shrink-0">—</span>
-                <p className="font-sans text-sm text-kc-gray-mid leading-relaxed">{item}</p>
-              </div>
+                <p className="font-sans text-sm text-kc-gray-mid leading-relaxed group-hover:text-kc-brown transition-colors">{item.label}</p>
+              </a>
             ))}
           </div>
         </div>
