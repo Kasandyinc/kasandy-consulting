@@ -9,6 +9,7 @@ import SpeakingMedia from './SpeakingMedia'
 export const metadata: Metadata = {
   title: 'Book Jackee Kasandy to Speak | Procurement, Supplier Diversity & Entrepreneurship Keynotes',
   description: 'Book Jackee Kasandy for keynotes, panels, workshops, and corporate sessions on procurement, supplier diversity, entrepreneurship, and equity-centred leadership.',
+  openGraph: { images: [{ url: '/images/hero-speaking.jpg', width: 1200, height: 630 }] },
 }
 
 const topics = [

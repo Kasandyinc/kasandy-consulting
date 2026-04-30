@@ -8,6 +8,7 @@ import CalendlyEmbed from './CalendlyEmbed'
 export const metadata: Metadata = {
   title: 'Book a Strategy Call',
   description: "Book a complimentary strategy call with Jackee Kasandy. Procurement strategy, business coaching, non-profit consulting, and Canadian market entry.",
+  openGraph: { images: [{ url: '/images/hero-contact.jpg', width: 1200, height: 630 }] },
 }
 
 export default function Contact() {

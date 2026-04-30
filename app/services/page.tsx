@@ -6,6 +6,7 @@ import { ArrowRight } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'Consulting Services',
   description: 'Business coaching, procurement strategy, non-profit transformation, and international market entry. Full-service consulting for entrepreneurs, governments, non-profits, and Kenyan businesses.',
+  openGraph: { images: [{ url: '/images/hero-services.jpg', width: 1200, height: 630 }] },
 }
 
 const services = [

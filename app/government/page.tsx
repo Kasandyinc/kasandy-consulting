@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import ProgramCard from '@/components/ProgramCard'
 
 export const metadata: Metadata = {
   title: 'Procurement Strategy & Supplier Diversity Consulting',
   description: 'Inclusive procurement program design, supplier diversity facilitation, and Indigenous procurement training for government agencies and public sector organisations. Canada-wide.',
+  openGraph: { images: [{ url: '/images/hero-government.jpg', width: 1200, height: 630 }] },
 }
 
 const qualifiers = [
@@ -134,67 +136,58 @@ export default function Government() {
           <span className="section-label">Services</span>
           <h2 className="section-heading mb-16">Government Services</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                tier: 'Advisory',
-                subtitle: 'Strategic Procurement Consulting',
-                scope: 'Project-based or retainer',
-                items: [
-                  'Supplier diversity audit and gap analysis',
-                  'Inclusive procurement policy and program co-design',
-                  'Stakeholder facilitation sessions (government + community)',
-                  'Written strategy report with implementation roadmap',
-                  'Buyer-facing supplier diversity toolkit',
-                ],
-                ideal: 'Federal, provincial, and municipal procurement teams | Crown corporations | Economic development agencies',
-              },
-              {
-                tier: 'Training',
-                subtitle: 'Procurement Readiness Program Delivery',
-                scope: 'Per cohort, per day, or multi-cohort contract',
-                items: [
-                  'Customised curriculum for your supplier community',
-                  'Indigenous procurement training (ISET-aligned, culturally grounded)',
-                  'Supplier readiness modules: capability statements, RFP response, certification',
-                  'Virtual and in-person delivery options',
-                  'Post-program outcome report for funders and evaluators',
-                ],
-                ideal: 'ISET partners | Indigenous Economic Development organisations | EDOs | Crown corporations with supplier diversity mandates',
-                featured: true,
-              },
-              {
-                tier: 'Retainer',
-                subtitle: 'Ongoing Procurement Inclusion Advisory',
-                scope: 'Monthly retainer | multi-year partnership',
-                items: [
-                  'Embedded advisory support for procurement team',
-                  'Program evaluation, reporting, and continuous improvement',
-                  'Stakeholder liaison: community, industry, government',
-                  'Annual curriculum review and update',
-                  'Government funder reporting and compliance support',
-                ],
-                ideal: 'Large departments and agencies with sustained supplier diversity mandates | Multi-year funded programs',
-              },
-            ].map((s) => (
-              <div key={s.tier} className={`bg-white p-8 border ${s.featured ? 'border-kc-brown' : 'border-kc-gray-border'}`}>
-                {s.featured && <p className="font-sans text-[10px] tracking-widest uppercase text-kc-brown mb-3">Most Requested</p>}
-                <h3 className="font-display text-2xl font-light mb-1">{s.tier}</h3>
-                <p className="font-sans text-xs text-kc-gray-mid mb-1">{s.subtitle}</p>
-                <p className="font-sans text-[11px] text-kc-brown mb-5">{s.scope}</p>
-                <ul className="space-y-2 mb-6">
-                  {s.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <span className="text-kc-brown shrink-0 text-xs">—</span>
-                      <span className="font-sans text-xs text-kc-gray-mid leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="border-t border-kc-gray-border pt-4">
-                  <p className="font-sans text-[10px] tracking-wide uppercase text-kc-gray-mid mb-1">Ideal for</p>
-                  <p className="font-sans text-xs text-kc-black italic">{s.ideal}</p>
-                </div>
-              </div>
-            ))}
+            <ProgramCard
+              tier="Advisory"
+              subtitle="Strategic Procurement Consulting"
+              fromPrice="Project-based or retainer"
+              description="For government teams that need an experienced partner to design and implement inclusive procurement strategy from the ground up."
+              includes={[
+                'Supplier diversity audit and gap analysis',
+                'Inclusive procurement policy and program co-design',
+                'Stakeholder facilitation sessions (government + community)',
+                'Written strategy report with implementation roadmap',
+                'Buyer-facing supplier diversity toolkit',
+              ]}
+              ideal="Federal, provincial, and municipal procurement teams | Crown corporations | Economic development agencies"
+              requestProposal
+              ctaLabel="Request a Proposal"
+              ctaHref="/contact"
+            />
+            <ProgramCard
+              tier="Training"
+              subtitle="Procurement Readiness Program Delivery"
+              fromPrice="Per cohort or multi-cohort contract"
+              description="Culturally grounded, outcomes-focused procurement training for diverse and Indigenous supplier communities. Delivered virtually or in-person."
+              includes={[
+                'Customised curriculum for your supplier community',
+                'Indigenous procurement training (ISET-aligned, culturally grounded)',
+                'Supplier readiness modules: capability statements, RFP response, certification',
+                'Virtual and in-person delivery options',
+                'Post-program outcome report for funders and evaluators',
+              ]}
+              ideal="ISET partners | Indigenous Economic Development organisations | EDOs | Crown corporations with supplier diversity mandates"
+              featured
+              requestProposal
+              ctaLabel="Request a Proposal"
+              ctaHref="/contact"
+            />
+            <ProgramCard
+              tier="Retainer"
+              subtitle="Ongoing Procurement Inclusion Advisory"
+              fromPrice="Monthly retainer | multi-year partnership"
+              description="Embedded, ongoing advisory for departments and agencies with sustained supplier diversity mandates. Program evaluation, reporting, and continuous improvement."
+              includes={[
+                'Embedded advisory support for procurement team',
+                'Program evaluation, reporting, and continuous improvement',
+                'Stakeholder liaison: community, industry, government',
+                'Annual curriculum review and update',
+                'Government funder reporting and compliance support',
+              ]}
+              ideal="Large departments and agencies with sustained supplier diversity mandates | Multi-year funded programs"
+              requestProposal
+              ctaLabel="Request a Proposal"
+              ctaHref="/contact"
+            />
           </div>
           <div className="mt-10 text-center">
             <Link href="/contact" className="btn-primary">Request a Proposal</Link>

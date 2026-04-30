@@ -4,6 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'About Kasandy Consulting | Jackee Kasandy, Procurement Strategist & Business Coach',
   description: 'Meet Jackee Kasandy — founder of BEBC Society, BC Housing Commissioner, and creator of Canada\'s first supplier-focused procurement readiness course. Black women-owned consulting firm, Vancouver BC.',
+  openGraph: { images: [{ url: '/images/hero-about.jpg', width: 1200, height: 630 }] },
 }
 
 const credentials = [

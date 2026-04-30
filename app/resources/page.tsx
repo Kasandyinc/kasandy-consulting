@@ -8,6 +8,7 @@ import NewsletterSignup from './NewsletterSignup'
 export const metadata: Metadata = {
   title: 'Free Resources & Insights',
   description: 'Free procurement checklists, capability statement guides, non-profit scorecards, and market entry roadmaps. Plus insights from Jackee Kasandy on procurement, leadership, and growth.',
+  openGraph: { images: [{ url: '/images/hero-resources.jpg', width: 1200, height: 630 }] },
 }
 
 const leadMagnets = [

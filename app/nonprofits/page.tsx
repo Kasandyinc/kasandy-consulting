@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import ProgramCard from '@/components/ProgramCard'
 
 export const metadata: Metadata = {
   title: 'Non-Profit Strategy, Fundraising & Leadership Coaching',
   description: 'Strategic planning, fundraising strategy, ED coaching, and sustainability models for mission-driven organisations. Build the business model your mission deserves.',
+  openGraph: { images: [{ url: '/images/hero-nonprofits.jpg', width: 1200, height: 630 }] },
 }
 
 const qualifiers = [
@@ -115,73 +117,60 @@ export default function Nonprofits() {
           <span className="section-label">Programs</span>
           <h2 className="section-heading mb-16">Non-Profit Programs</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                tier: 'Clarity',
-                subtitle: '60-Day Strategic Diagnosis',
-                for: 'Non-profits at a crossroads — scaling, restructuring, or facing sustainability pressure',
-                includes: [
-                  'Organisational assessment (programs, finances, governance, team)',
-                  '3-year strategic plan co-development (with ED and board input)',
-                  'Revenue diversification roadmap',
-                  'One board governance session',
-                  'Written strategy document + executive summary for funders',
-                ],
-                outcome: 'A clear-eyed picture of where you are, where you need to go, and what it will take — with a plan you can actually execute.',
-              },
-              {
-                tier: 'Transformation',
-                subtitle: '6-Month Program',
-                for: 'Non-profits committed to deep, lasting change in how they operate and grow',
-                includes: [
-                  'Everything in Clarity',
-                  'Fundraising strategy and funder mapping (earned revenue + grants + partnerships)',
-                  'Grant narrative support (up to 2 applications)',
-                  'ED leadership coaching (bi-weekly sessions)',
-                  'Brand and communications strategy',
-                  'Impact measurement framework design',
-                  'Staff capacity building workshop (1 session)',
-                ],
-                outcome: 'An organisation that is financially diversified, leadership-strong, and positioned to grow — with the documents and frameworks to show funders you mean it.',
-                featured: true,
-              },
-              {
-                tier: 'Centre of Excellence',
-                subtitle: 'Annual Partnership',
-                for: 'Non-profits that want Kasandy Consulting as their permanent strategic partner',
-                includes: [
-                  'Everything in Transformation',
-                  'Annual strategic review retreat facilitation',
-                  'Board training and governance facilitation (quarterly)',
-                  'Ongoing grant strategy and narrative support',
-                  'Staff capacity building workshops (up to 4 per year)',
-                  'ED executive coaching (monthly)',
-                  'Access to full Kasandy resource and template library',
-                ],
-                outcome: 'A high-functioning organisation that consistently attracts funding, retains strong leadership, and scales its impact year over year.',
-              },
-            ].map((p) => (
-              <div key={p.tier} className={`bg-white p-8 border ${p.featured ? 'border-kc-brown' : 'border-kc-gray-border'}`}>
-                {p.featured && <p className="font-sans text-[10px] tracking-widest uppercase text-kc-brown mb-3">Most Popular</p>}
-                <h3 className="font-display text-2xl font-light mb-1">{p.tier}</h3>
-                <p className="font-sans text-xs text-kc-gray-mid mb-5">{p.subtitle}</p>
-                <p className="font-sans text-[11px] text-kc-black mb-4"><strong>For:</strong> {p.for}</p>
-                <ul className="space-y-1.5 mb-6">
-                  {p.includes.map((item) => (
-                    <li key={item} className="flex items-start gap-2">
-                      <span className="text-kc-brown shrink-0 text-xs">—</span>
-                      <span className="font-sans text-xs text-kc-gray-mid leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="border-t border-kc-gray-border pt-4 mb-6">
-                  <p className="font-sans text-xs text-kc-black italic leading-relaxed">{p.outcome}</p>
-                </div>
-                <Link href="/contact" className={p.featured ? 'btn-brown w-full justify-center' : 'btn-outline w-full justify-center'}>
-                  Book a Consultation
-                </Link>
-              </div>
-            ))}
+            <ProgramCard
+              tier="Clarity"
+              subtitle="60-Day Strategic Diagnosis"
+              fromPrice="Investment — quoted after strategy call"
+              description="For non-profits at a crossroads — scaling, restructuring, or facing sustainability pressure. Gets you clear in 60 days."
+              includes={[
+                'Organisational assessment (programs, finances, governance, team)',
+                '3-year strategic plan co-development (with ED and board input)',
+                'Revenue diversification roadmap',
+                'One board governance session',
+                'Written strategy document + executive summary for funders',
+              ]}
+              outcome="A clear-eyed picture of where you are, where you need to go, and what it will take — with a plan you can actually execute."
+              ctaLabel="Book a Consultation"
+              ctaHref="/contact"
+            />
+            <ProgramCard
+              tier="Transformation"
+              subtitle="6-Month Program"
+              fromPrice="Investment — quoted after strategy call"
+              description="For non-profits committed to deep, lasting change in how they operate, fundraise, and grow. Full-service strategic support."
+              includes={[
+                'Everything in Clarity',
+                'Fundraising strategy and funder mapping (earned revenue + grants + partnerships)',
+                'Grant narrative support (up to 2 applications)',
+                'ED leadership coaching (bi-weekly sessions)',
+                'Brand and communications strategy',
+                'Impact measurement framework design',
+                'Staff capacity building workshop (1 session)',
+              ]}
+              outcome="An organisation that is financially diversified, leadership-strong, and positioned to grow — with the documents and frameworks to show funders you mean it."
+              featured
+              ctaLabel="Book a Consultation"
+              ctaHref="/contact"
+            />
+            <ProgramCard
+              tier="Centre of Excellence"
+              subtitle="Annual Partnership"
+              fromPrice="Custom proposal"
+              description="For non-profits that want Kasandy Consulting as their permanent strategic partner — year-round advisory and capacity building."
+              includes={[
+                'Everything in Transformation',
+                'Annual strategic review retreat facilitation',
+                'Board training and governance facilitation (quarterly)',
+                'Ongoing grant strategy and narrative support',
+                'Staff capacity building workshops (up to 4 per year)',
+                'ED executive coaching (monthly)',
+                'Access to full Kasandy resource and template library',
+              ]}
+              outcome="A high-functioning organisation that consistently attracts funding, retains strong leadership, and scales its impact year over year."
+              requestProposal
+              ctaLabel="Request a Proposal"
+              ctaHref="/contact"
+            />
           </div>
         </div>
       </section>

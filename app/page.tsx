@@ -239,7 +239,7 @@ export default function Home() {
             <div key={n} className="shrink-0 w-64 md:w-72 aspect-square overflow-hidden bg-kc-gray-border snap-start">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={`/images/gallery-${n}.jpg`} alt=""
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                className="w-full h-full object-cover" />
             </div>
           ))}
         </div>

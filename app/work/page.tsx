@@ -4,6 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = {
   title: 'Client Results & Case Studies',
   description: "Real results from real work. Explore Kasandy Consulting's case studies in procurement program design, Indigenous entrepreneur training, and non-profit transformation.",
+  openGraph: { images: [{ url: '/images/hero-work.jpg', width: 1200, height: 630 }] },
 }
 
 const stats = [

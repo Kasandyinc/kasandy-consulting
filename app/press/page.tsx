@@ -6,6 +6,7 @@ import PageHero from '@/components/PageHero'
 export const metadata: Metadata = {
   title: 'Press & Media',
   description: 'Jackee Kasandy media coverage — Globe and Mail, CBC, CTV, Global News, Hill Times, Montecristo Magazine and more. 2.4M+ in earned media value.',
+  openGraph: { images: [{ url: '/images/hero-press.jpg', width: 1200, height: 630 }] },
 }
 
 const mediaCoverage = [
