@@ -121,7 +121,7 @@ export default function About() {
       </section>
 
       {/* Bio */}
-      <section className="py-20 px-6 bg-kc-gray-light">
+      <section id="jackee" className="py-20 px-6 bg-kc-gray-light">
         <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-16">
           <div className="md:col-span-2">
             <span className="section-label">Meet Jackee Kasandy</span>

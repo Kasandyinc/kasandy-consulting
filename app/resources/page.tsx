@@ -82,23 +82,23 @@ export default function Resources() {
           {/* Right: resource cards */}
           <div className="grid grid-cols-2 gap-0.5">
             {[
-              { tag: 'Free PDF', title: 'Canadian Procurement Readiness Checklist' },
-              { tag: 'Free PDF', title: 'How to Write a Capability Statement' },
-              { tag: 'Free PDF', title: 'Non-Profit Sustainability Scorecard' },
-              { tag: 'Free PDF', title: 'Kenya to Canada: Market Entry Roadmap' },
+              { tag: 'Free PDF', title: 'Canadian Procurement Readiness Checklist', id: 'procurement-checklist' },
+              { tag: 'Free PDF', title: 'How to Write a Capability Statement', id: 'capability-statement' },
+              { tag: 'Free PDF', title: 'Non-Profit Sustainability Scorecard', id: 'nonprofit-scorecard' },
+              { tag: 'Free PDF', title: 'Kenya to Canada: Market Entry Roadmap', id: 'kenya-canada-roadmap' },
             ].map((c, i) => (
-              <div key={i} className="group bg-kc-charcoal px-6 py-7 hover:bg-kc-brown transition-colors cursor-pointer">
+              <Link key={i} href={`#downloads`} className="group bg-kc-charcoal px-6 py-7 hover:bg-kc-brown transition-colors block">
                 <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-[#555] mb-2.5">{c.tag}</div>
                 <div className="font-sans text-[13px] font-semibold text-white leading-[1.45]">{c.title}</div>
                 <div className="font-mono text-[10px] text-kc-brown/60 mt-3.5 tracking-[0.1em] group-hover:text-white/60 transition-colors">Download →</div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
       {/* Lead Magnets */}
-      <section className="py-20 px-6">
+      <section id="downloads" className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Free Downloads</span>
           <h2 className="section-heading mb-4">Practical Guides & Toolkits</h2>
