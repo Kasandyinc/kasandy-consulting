@@ -63,6 +63,13 @@ export default function AdminDashboard() {
             <h2 className="text-base font-semibold text-gray-900 mb-1">Site Settings</h2>
             <p className="text-xs text-gray-500">Tagline, CTAs, social links, and more</p>
           </Link>
+          <Link
+            href="/admin/bookings"
+            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
+          >
+            <h2 className="text-base font-semibold text-gray-900 mb-1">Bookings</h2>
+            <p className="text-xs text-gray-500">View upcoming calls, block slots, manage availability</p>
+          </Link>
         </div>
       </main>
     </div>

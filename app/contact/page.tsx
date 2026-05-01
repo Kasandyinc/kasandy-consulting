@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MapPin, Clock, Linkedin, Instagram } from 'lucide-react'
 import ContactForm from './ContactForm'
-import CalendlyEmbed from './CalendlyEmbed'
+import BookingCalendar from './BookingCalendar'
 
 
 export const metadata: Metadata = {
@@ -53,7 +53,7 @@ export default function Contact() {
           <p className="font-sans text-sm text-kc-gray-mid mb-12 max-w-xl">
             A complimentary 15-minute call to discuss your goals and whether we&apos;re the right fit. No pitch, no pressure.
           </p>
-          <CalendlyEmbed />
+          <BookingCalendar />
         </div>
       </section>
 
