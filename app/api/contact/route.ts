@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { kv, KEYS } from '@/lib/kv'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
@@ -18,6 +19,16 @@ export async function POST(req: NextRequest) {
       international: 'International Business',
       other: 'Other',
     }
+
+    // Persist to KV so it's visible in admin
+    const entry = {
+      id: Date.now().toString(),
+      name, email, organisation: organisation || '', phone: phone || '',
+      audienceType: audienceLabel[audienceType] || audienceType || 'General',
+      message, referral: referral || '',
+      createdAt: new Date().toISOString(),
+    }
+    await kv.lpush(KEYS.contactSubmissions, JSON.stringify(entry))
 
     await resend.emails.send({
       from: 'Kasandy Consulting <consulting@kasandy.com>',

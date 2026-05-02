@@ -114,7 +114,7 @@ export default function Speaking() {
 
             <div className="flex flex-wrap gap-3">
               <Link href="/contact" className="btn-brown">Enquire About Booking Jackee</Link>
-              <Link href="#speaker-kit" className="btn-outline">Download Speaker Kit</Link>
+              <a href="/files/jackee-kasandy-speaker-kit.pdf" download className="btn-outline inline-flex items-center gap-2"><Download size={14} /> Download Speaker Kit</a>
             </div>
           </div>
 

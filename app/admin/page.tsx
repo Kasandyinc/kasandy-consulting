@@ -3,6 +3,38 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+const sections = [
+  {
+    group: 'Inbox',
+    items: [
+      { href: '/admin/submissions', label: 'Submissions Inbox', desc: 'Contact inquiries, speaking bookings, Kenya waitlist registrations' },
+      { href: '/admin/subscribers', label: 'Subscribers & Leads', desc: 'Newsletter subscribers and resource download leads — export CSV' },
+      { href: '/admin/bookings', label: 'Discovery Calls', desc: 'View upcoming calls, block slots, manage availability' },
+    ],
+  },
+  {
+    group: 'Content',
+    items: [
+      { href: '/admin/speaking', label: 'Speaking Media', desc: 'Photos, videos, and speaking quotes' },
+      { href: '/admin/testimonials', label: 'Testimonials', desc: 'Approve, feature, and manage reviews' },
+      { href: '/admin/articles', label: 'Articles', desc: 'Manage and publish blog content' },
+      { href: '/admin/heroes', label: 'Page Heroes', desc: 'Edit hero titles and images for every page' },
+    ],
+  },
+  {
+    group: 'Resources',
+    items: [
+      { href: '/admin/downloads', label: 'Downloads Manager', desc: 'Link PDF files to lead magnets — go live when ready' },
+    ],
+  },
+  {
+    group: 'Settings',
+    items: [
+      { href: '/admin/settings', label: 'Site Settings', desc: 'Tagline, CTAs, social links, announcement bar, booking URL' },
+    ],
+  },
+]
+
 export default function AdminDashboard() {
   const router = useRouter()
 
@@ -14,63 +46,28 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-gray-900">Kasandy Consulting — Admin</h1>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
-        >
-          Sign Out
-        </button>
+        <h1 className="text-lg font-semibold text-gray-900">Kasandy Consulting — Admin</h1>
+        <button onClick={handleLogout} className="text-xs text-gray-500 hover:text-gray-900 transition-colors">Sign Out</button>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        <p className="text-sm text-gray-500 mb-10">Select a section to manage.</p>
-        <div className="grid sm:grid-cols-3 gap-4">
-          <Link
-            href="/admin/speaking"
-            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Speaking Media</h2>
-            <p className="text-xs text-gray-500">Photos, videos, and speaking quotes</p>
-          </Link>
-          <Link
-            href="/admin/testimonials"
-            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Testimonials</h2>
-            <p className="text-xs text-gray-500">Approve, feature, and manage reviews</p>
-          </Link>
-          <Link
-            href="/admin/articles"
-            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Articles</h2>
-            <p className="text-xs text-gray-500">Manage and publish blog content</p>
-          </Link>
-          <Link
-            href="/admin/heroes"
-            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Page Heroes</h2>
-            <p className="text-xs text-gray-500">Edit hero titles and images for every page</p>
-          </Link>
-          <Link
-            href="/admin/settings"
-            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Site Settings</h2>
-            <p className="text-xs text-gray-500">Tagline, CTAs, social links, and more</p>
-          </Link>
-          <Link
-            href="/admin/bookings"
-            className="block bg-white border border-gray-200 p-6 hover:border-gray-400 transition-colors"
-          >
-            <h2 className="text-base font-semibold text-gray-900 mb-1">Bookings</h2>
-            <p className="text-xs text-gray-500">View upcoming calls, block slots, manage availability</p>
-          </Link>
-        </div>
+      <main className="max-w-4xl mx-auto px-6 py-12 space-y-10">
+        {sections.map(section => (
+          <div key={section.group}>
+            <p className="text-[10px] font-semibold tracking-widest uppercase text-gray-400 mb-3">{section.group}</p>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {section.items.map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block bg-white border border-gray-200 p-5 hover:border-gray-400 transition-colors"
+                >
+                  <h2 className="text-sm font-semibold text-gray-900 mb-1">{item.label}</h2>
+                  <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
       </main>
     </div>
   )

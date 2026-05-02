@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { kv, KEYS } from '@/lib/kv'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
@@ -12,21 +13,47 @@ export async function POST(req: NextRequest) {
     }
 
     const isLeadMagnet = Boolean(resource)
+    const entry = {
+      id: Date.now().toString(),
+      email,
+      resource: resource || null,
+      createdAt: new Date().toISOString(),
+    }
+
+    // Save to appropriate KV list
+    if (isLeadMagnet) {
+      await kv.lpush(KEYS.resourceDownloads, JSON.stringify(entry))
+    } else {
+      await kv.lpush(KEYS.newsletterSubscribers, JSON.stringify(entry))
+    }
+
+    // Find the PDF download URL if it exists
+    type DownloadItem = { id: string; slug: string; title: string; filename: string; enabled: boolean }
+    let downloadUrl: string | null = null
+    if (isLeadMagnet) {
+      try {
+        const downloads = await kv.get<DownloadItem[]>(KEYS.downloads)
+        if (Array.isArray(downloads)) {
+          const match = downloads.find(d => d.title === resource && d.enabled)
+          if (match?.filename) downloadUrl = `/downloads/${match.filename}`
+        }
+      } catch { /* fall through */ }
+    }
 
     await Promise.all([
       resend.emails.send({
         from: 'Jackee Kasandy <consulting@kasandy.com>',
         to: email,
-        subject: isLeadMagnet
-          ? `Your download: ${resource}`
-          : 'Welcome to The Kasandy Brief',
+        subject: isLeadMagnet ? `Your download: ${resource}` : 'Welcome to The Kasandy Brief',
         text: isLeadMagnet
           ? [
               `Thank you for downloading "${resource}".`,
               '',
-              "Your guide will be sent to you shortly. In the meantime, if you have any questions, reply to this email — we read everything.",
+              downloadUrl
+                ? `Download your guide here: https://kasandyconsulting.com${downloadUrl}`
+                : "Your guide will be sent to you shortly.",
               '',
-              'You\'ll also receive The Kasandy Brief — our newsletter on procurement, supplier diversity, and entrepreneurship. Sent when there\'s something worth saying.',
+              "You'll also receive The Kasandy Brief — our newsletter on procurement, supplier diversity, and entrepreneurship.",
               '',
               'Jackee Kasandy',
               'Kasandy Consulting',
