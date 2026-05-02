@@ -1,66 +1,83 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ImageIcon, Play } from 'lucide-react'
 
 type Photo = { id: string; src: string; alt: string; caption?: string; event?: string }
 type Video = { id: string; embedUrl: string; title: string; event?: string }
 
+// Static gallery — always shown as base; admin photos prepend when available
+const FALLBACK_PHOTOS: Photo[] = [
+  { id: 'f1', src: '/images/jackee-speaking-1.jpg', alt: 'Jackee Kasandy speaking on stage' },
+  { id: 'f2', src: '/images/jackee-speaking-2.jpg', alt: 'Jackee Kasandy keynote presentation' },
+  { id: 'f3', src: '/images/jackee-speaking-3.jpg', alt: 'Jackee Kasandy at conference' },
+  { id: 'f4', src: '/images/jackee-workshop-1.jpg', alt: 'Jackee Kasandy workshop session' },
+  { id: 'f5', src: '/images/gallery-2.jpg',         alt: 'Kasandy Consulting event' },
+  { id: 'f6', src: '/images/gallery-5.jpg',         alt: 'Kasandy Consulting event' },
+  { id: 'f7', src: '/images/gallery-8.jpg',         alt: 'Kasandy Consulting event' },
+  { id: 'f8', src: '/images/gallery-11.jpg',        alt: 'Kasandy Consulting event' },
+  { id: 'f9', src: '/images/gallery-14.jpg',        alt: 'Kasandy Consulting event' },
+]
+
 export default function SpeakingMedia() {
-  const [photos, setPhotos] = useState<Photo[]>([])
+  const [adminPhotos, setAdminPhotos] = useState<Photo[]>([])
   const [videos, setVideos] = useState<Video[]>([])
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetch('/api/admin/speaking/photos').then(r => r.json()).then(setPhotos).catch(() => {})
-    fetch('/api/admin/speaking/videos').then(r => r.json()).then(setVideos).catch(() => {})
+    Promise.all([
+      fetch('/api/admin/speaking/photos').then(r => r.json()).catch(() => []),
+      fetch('/api/admin/speaking/videos').then(r => r.json()).catch(() => []),
+    ]).then(([p, v]) => {
+      setAdminPhotos(Array.isArray(p) ? p : [])
+      setVideos(Array.isArray(v) ? v : [])
+    })
   }, [])
 
-  const hasContent = photos.length > 0 || videos.length > 0
+  // Admin photos shown first; fallbacks always fill in behind
+  const allPhotos = adminPhotos.length > 0
+    ? [...adminPhotos, ...FALLBACK_PHOTOS.filter(f => !adminPhotos.some(a => a.src === f.src))]
+    : FALLBACK_PHOTOS
+
+  const displayPhotos = allPhotos.filter(p => !hiddenIds.has(p.id))
+
+  const hidePhoto = (id: string) =>
+    setHiddenIds(prev => { const next = new Set(prev); next.add(id); return next })
 
   return (
-    <section className="py-20 px-6">
+    <section className="py-20 px-6 bg-kc-gray-light">
       <div className="max-w-7xl mx-auto">
         <span className="section-label">Gallery</span>
         <h2 className="section-heading mb-12">On Stage</h2>
 
-        {!hasContent && (
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="aspect-[4/3] border border-dashed border-kc-gray-border bg-kc-gray-light flex flex-col items-center justify-center gap-3">
-              <ImageIcon size={28} className="text-kc-gray-mid" />
-              <p className="font-sans text-xs text-kc-gray-mid text-center px-4">Speaking Photos — managed via Admin</p>
-            </div>
-            <div className="aspect-[4/3] border border-dashed border-kc-gray-border bg-kc-gray-light flex flex-col items-center justify-center gap-3">
-              <ImageIcon size={28} className="text-kc-gray-mid" />
-              <p className="font-sans text-xs text-kc-gray-mid text-center px-4">Speaking Photos — managed via Admin</p>
-            </div>
-            <div className="aspect-[4/3] border border-dashed border-kc-gray-border bg-kc-gray-light flex flex-col items-center justify-center gap-3">
-              <Play size={28} className="text-kc-gray-mid" />
-              <p className="font-sans text-xs text-kc-gray-mid text-center px-4">Video Embeds — managed via Admin</p>
-            </div>
-          </div>
-        )}
-
-        {photos.length > 0 && (
-          <div className="mb-12">
-            <p className="font-sans text-xs tracking-widest uppercase text-kc-gray-mid mb-6">Photos</p>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {photos.map(p => (
-                <div key={p.id} className="group aspect-[4/3] overflow-hidden bg-kc-gray-light relative">
-                  <img src={p.src} alt={p.alt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  {(p.caption || p.event) && (
-                    <div className="absolute bottom-0 left-0 right-0 bg-kc-black/60 px-4 py-3">
-                      {p.event && <p className="font-sans text-[10px] tracking-wide uppercase text-white/60 mb-0.5">{p.event}</p>}
-                      {p.caption && <p className="font-sans text-xs text-white">{p.caption}</p>}
-                    </div>
-                  )}
+        {/* Photo grid — mixed sizes for visual interest */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+          {displayPhotos.map((p, i) => (
+            <div
+              key={p.id}
+              className={`overflow-hidden bg-kc-charcoal relative group
+                ${i === 0 ? 'col-span-2 md:col-span-2 aspect-[16/9]' : 'aspect-[4/3]'}
+              `}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={p.src}
+                alt={p.alt}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                onError={() => hidePhoto(p.id)}
+              />
+              {(p.caption || p.event) && (
+                <div className="absolute inset-0 bg-gradient-to-t from-kc-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end px-4 py-4">
+                  {p.event && <p className="font-sans text-[10px] tracking-widest uppercase text-white/70 mb-0.5">{p.event}</p>}
+                  {p.caption && <p className="font-sans text-xs text-white">{p.caption}</p>}
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-        )}
+          ))}
+        </div>
 
+        {/* Video section — only shown when admin has added videos */}
         {videos.length > 0 && (
-          <div>
+          <div className="mt-16">
             <p className="font-sans text-xs tracking-widest uppercase text-kc-gray-mid mb-6">Video</p>
             <div className="grid sm:grid-cols-2 gap-6">
               {videos.map(v => (

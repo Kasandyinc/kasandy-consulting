@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import Image from 'next/image'
+import KenyaWaitlistForm from './KenyaWaitlistForm'
 
 export const metadata: Metadata = {
   title: 'Canadian Market Entry & Procurement Bootcamps for Kenyan Entrepreneurs',
@@ -92,8 +92,8 @@ export default function Kenya() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link href="/contact" className="inline-flex items-center px-7 py-3.5 text-white text-xs tracking-widest uppercase font-sans font-bold transition-colors"
-                style={{ background: '#B8922A' }}>Register for the Next Bootcamp</Link>
+              <a href="#waitlist" className="inline-flex items-center px-7 py-3.5 text-white text-xs tracking-widest uppercase font-sans font-bold transition-colors"
+                style={{ background: '#B8922A' }}>Register for the Next Bootcamp</a>
               <Link href="/contact" className="btn-outline">Book a Market Entry Call</Link>
             </div>
           </div>
@@ -170,16 +170,98 @@ export default function Kenya() {
                 ))}
               </div>
               <div className="mt-10 flex flex-wrap gap-4">
-                <Link href="/contact?ref=kenya-seminar" className="btn-primary">Register for the Next Seminar</Link>
-                <Link href="/contact?ref=seminar-overview" className="btn-outline">Download the Seminar Overview</Link>
+                <a href="#waitlist" className="btn-primary">Register for the Next Seminar</a>
+                <a href="/downloads/kenya-seminar-overview.pdf" target="_blank" rel="noopener noreferrer" className="btn-outline">Download the Seminar Overview</a>
               </div>
             </div>
 
-            {/* Seminar Ad Images */}
-            <div className="space-y-4">
-              <div className="relative aspect-[3/4] border border-kc-gray-border overflow-hidden">
-                <Image src="/images/kenya-seminar-1.png" alt="Kenya-Canada Procurement Readiness Seminar"
-                  fill className="object-cover" />
+            {/* Seminar Card — v2 design */}
+            <div className="overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,.06),0_20px_60px_rgba(113,47,30,.12),0_0_0_1px_rgba(113,47,30,.08)]">
+              {/* Top stripe */}
+              <div className="h-1.5" style={{ background: 'linear-gradient(90deg,#712f1e 0%,#b85a3a 50%,#8B6914 100%)' }} />
+
+              {/* Hero band */}
+              <div className="bg-[#712f1e] px-10 py-8 relative overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none"
+                  style={{ background: 'repeating-linear-gradient(-45deg,transparent,transparent 18px,rgba(255,255,255,.03) 18px,rgba(255,255,255,.03) 19px)' }} />
+                <div className="absolute -right-12 -top-12 w-52 h-52 rounded-full border border-white/[0.07] pointer-events-none" />
+                <div className="relative z-10">
+                  <p className="font-mono text-[9.5px] tracking-[0.26em] uppercase text-[rgba(255,220,180,.7)] mb-3 flex items-center gap-2.5">
+                    <span className="block w-4 h-px bg-[rgba(255,220,180,.5)] flex-shrink-0" />
+                    Signature Event · Nairobi, Kenya
+                  </p>
+                  <h3 className="font-display font-semibold text-[#FDFCFA] leading-[0.96] tracking-[-0.02em]" style={{ fontSize: 'clamp(28px,4vw,42px)' }}>
+                    The Billion-<br />Dollar <em className="italic font-light text-[rgba(255,210,160,.9)]">Invitation.</em>
+                    <span className="block font-light not-italic text-white/45 mt-1.5" style={{ fontSize: '0.52em' }}>Canada&apos;s contracts. Your business.</span>
+                  </h3>
+                  <div className="flex items-center gap-2.5 mt-5">
+                    <span className="text-[22px] flex items-center gap-1.5">
+                      🇰🇪
+                      <span className="inline-block w-8 h-px bg-gradient-to-r from-[rgba(255,210,160,.5)] to-[rgba(255,210,160,.1)] relative">
+                        <span className="absolute -right-0.5 -top-0.5 border-l-[5px] border-l-[rgba(255,210,160,.4)] border-y-[3px] border-y-transparent" />
+                      </span>
+                      🇨🇦
+                    </span>
+                    <span className="font-mono text-[9px] tracking-[0.16em] uppercase text-white/35">Kenya · Canada · Market Access</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="bg-[#FDFCFA] px-10 py-7">
+                <p className="font-display italic text-[17px] leading-[1.6] text-[#3a2218] border-l-[3px] border-[#712f1e] pl-4 mb-6">
+                  Canadian corporations and governments spend <strong>$70 billion</strong> on procurement annually — and they&apos;re actively seeking new international suppliers.
+                </p>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    "Navigate Canada's $70B procurement system — federal, provincial, and corporate",
+                    'Get certified — CAMSC, CCAB, WBE — and position for contracts',
+                    'Write a capability statement that Canadian buyers actually read',
+                    "Access buyer introductions through Canada’s Kenyan diaspora network",
+                    'Leave with a market entry roadmap tailored to your business',
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-3 text-[13px] leading-[1.45] text-[#5a3d30]">
+                      <span className="mt-0.5 flex-shrink-0 w-[17px] h-[17px] rounded-full bg-[#f5ede6] border border-[rgba(113,47,30,.25)] flex items-center justify-center">
+                        <svg viewBox="0 0 10 10" fill="none" width={8} height={8}>
+                          <path d="M2 5.5L4 7.5L8 3" stroke="#712f1e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stat strip */}
+              <div className="grid grid-cols-3 gap-px bg-[#EDE5D8]">
+                {[
+                  { val: '3,000+', lbl: 'Entrepreneurs trained' },
+                  { val: '$70B', lbl: 'CA procurement annually' },
+                  { val: '17–21', lbl: 'Contracts secured' },
+                ].map(s => (
+                  <div key={s.lbl} className="bg-[#F8F4EF] py-4 px-3 text-center">
+                    <span className="font-display font-bold text-[#712f1e] text-[28px] leading-none block">{s.val}</span>
+                    <span className="font-mono text-[8px] tracking-[0.13em] uppercase text-[#A89990] mt-1 block">{s.lbl}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTAs */}
+              <div className="bg-[#FDFCFA] px-10 py-6 flex flex-col gap-2.5">
+                <a href="#waitlist"
+                  className="block w-full text-center py-3.5 bg-[#712f1e] hover:bg-[#531808] text-[#FDFCFA] font-sans font-semibold text-[11px] tracking-[0.14em] uppercase transition-colors">
+                  Register for the Next Seminar →
+                </a>
+                <a href="/downloads/kenya-seminar-overview.pdf" target="_blank" rel="noopener noreferrer"
+                  className="block w-full text-center py-3.5 border border-[rgba(113,47,30,.2)] hover:border-[#712f1e] hover:bg-[rgba(113,47,30,.04)] text-[#712f1e] font-sans font-medium text-[11px] tracking-[0.14em] uppercase transition-colors">
+                  Download the Seminar Overview
+                </a>
+              </div>
+
+              {/* Brand bar */}
+              <div className="bg-[#F0EAE0] border-t border-[#E5DDD0] px-10 py-3 flex items-center justify-between">
+                <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-[#A89990]">Kasandy Consulting</span>
+                <span className="font-mono text-[9px] tracking-[0.1em] text-[#C8BFBB]">kasandyconsulting.com</span>
               </div>
             </div>
           </div>
@@ -329,6 +411,52 @@ export default function Kenya() {
         </div>
       </section>
 
+      {/* ── Waitlist ── */}
+      <section id="waitlist" className="py-20 px-6 bg-kc-black">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-[1fr_1.4fr] gap-16 items-start">
+          {/* Left */}
+          <div>
+            <div className="flex items-center gap-3 mb-5">
+              <span className="block w-7 h-px bg-kc-gold flex-shrink-0" />
+              <span className="font-mono text-[11px] tracking-[0.22em] uppercase text-kc-gold">Next Bootcamp</span>
+            </div>
+            <h2 className="font-display font-bold text-white leading-[1.08] mb-5"
+              style={{ fontSize: 'clamp(32px,3.5vw,50px)' }}>
+              Be first to know.<br />
+              <em className="italic text-kc-gold">Priority access.</em>
+            </h2>
+            <p className="font-sans text-sm text-white/60 leading-relaxed mb-6">
+              The next Kenya–Canada Procurement Readiness Bootcamp is being confirmed now. Register your interest and you&apos;ll be the first to receive dates, pricing, and a reserved spot — before we open general registration.
+            </p>
+            <div className="space-y-3">
+              {[
+                'Priority registration access before public announcement',
+                'Early-bird pricing notification',
+                'Free Seminar Overview PDF sent to your inbox',
+                'Direct contact from Jackee Kasandy&apos;s team',
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-3">
+                  <span className="text-kc-gold shrink-0 mt-0.5">→</span>
+                  <p className="font-sans text-sm text-white/70 leading-relaxed" dangerouslySetInnerHTML={{ __html: item }} />
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex items-center gap-4 py-4 border-y border-white/10">
+              <span className="text-2xl">🇰🇪</span>
+              <span className="text-white/30 text-lg">⟶</span>
+              <span className="text-2xl">🇨🇦</span>
+              <span className="font-sans text-xs text-white/40 ml-2">Nairobi → Canada</span>
+            </div>
+          </div>
+
+          {/* Right: form */}
+          <div className="bg-white/5 border border-white/10 p-8">
+            <p className="font-sans text-[11px] tracking-widest uppercase text-kc-gold mb-6">Register Your Interest</p>
+            <KenyaWaitlistForm />
+          </div>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
@@ -343,7 +471,7 @@ export default function Kenya() {
             ))}
           </div>
           <div className="mt-12">
-            <Link href="/contact?ref=kenya-bootcamp" className="btn-primary">Register for the Next Bootcamp</Link>
+            <a href="#waitlist" className="btn-primary">Register for the Next Bootcamp</a>
           </div>
         </div>
       </section>

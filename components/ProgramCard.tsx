@@ -93,19 +93,21 @@ export default function ProgramCard({
             </div>
           )}
 
-          <Link
-            href={ctaHref}
-            className={featured ? 'btn-brown w-full justify-center' : 'btn-outline w-full justify-center'}
-          >
-            {ctaLabel}
-          </Link>
+          {!requestProposal && (
+            <Link
+              href={ctaHref}
+              className={featured ? 'btn-brown w-full justify-center' : 'btn-outline w-full justify-center'}
+            >
+              {ctaLabel}
+            </Link>
+          )}
         </div>
       </div>
 
       {/* Request proposal CTA (always visible for proposal-only cards) */}
       {requestProposal && (
         <div className="px-8 pb-8">
-          <Link href={ctaHref} className="btn-outline w-full justify-center">
+          <Link href={ctaHref} className={featured ? 'btn-brown w-full justify-center' : 'btn-outline w-full justify-center'}>
             {ctaLabel}
           </Link>
         </div>

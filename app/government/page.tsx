@@ -189,9 +189,6 @@ export default function Government() {
               ctaHref="/contact"
             />
           </div>
-          <div className="mt-10 text-center">
-            <Link href="/contact" className="btn-primary">Request a Proposal</Link>
-          </div>
         </div>
       </section>
 
