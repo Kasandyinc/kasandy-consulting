@@ -4,7 +4,7 @@ import './globals.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
-const GA4_ID        = process.env.NEXT_PUBLIC_GA4_ID
+const GA4_ID        = process.env.NEXT_PUBLIC_GA4_ID ?? 'G-1VML5MDPDG'
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID
 
 export const metadata: Metadata = {
