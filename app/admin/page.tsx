@@ -22,6 +22,16 @@ const sections = [
     ],
   },
   {
+    group: 'Pages',
+    items: [
+      { href: '/admin/press', label: 'Press & Media', desc: 'Add, edit, and remove press coverage. Toggle featured items.' },
+      { href: '/admin/work', label: 'Work & Case Studies', desc: 'Edit impact stats, partner list, and case studies.' },
+      { href: '/admin/programs', label: 'Programs & Pricing', desc: 'Edit program descriptions and includes for Entrepreneurs, Non-Profits, and Government pages.' },
+      { href: '/admin/kenya-seminar', label: 'Kenya Seminar', desc: 'Update seminar dates, pricing, and registration status.' },
+      { href: '/admin/about', label: 'About Page', desc: 'Edit credentials sidebar and bio content.' },
+    ],
+  },
+  {
     group: 'Resources',
     items: [
       { href: '/admin/downloads', label: 'Downloads Manager', desc: 'Link PDF files to lead magnets — go live when ready' },

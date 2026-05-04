@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import PageHero from '@/components/PageHero'
+import { kv } from '@vercel/kv'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Press & Media',
@@ -9,12 +12,24 @@ export const metadata: Metadata = {
   openGraph: { images: [{ url: '/images/hero-press.jpg', width: 1200, height: 630 }] },
 }
 
-const mediaCoverage = [
+type PressItem = {
+  id: string
+  outlet: string
+  title: string
+  url: string
+  summary: string
+  category: string
+  date?: string
+  featured: boolean
+  createdAt: string
+}
+
+const hardcodedCoverage = [
   {
     outlet: 'The Globe and Mail',
     title: 'How Black entrepreneurs are working to knock down barriers to capital',
     url: 'https://www.theglobeandmail.com/business/small-business/article-how-black-entrepreneurs-are-working-to-knock-down-barriers-to-capital/',
-    summary: 'Covers the BEBC Society\'s work and Jackee\'s experience with banking barriers when founding her business.',
+    summary: "Covers the BEBC Society's work and Jackee's experience with banking barriers when founding her business.",
     category: 'Print / Online',
     featured: true,
   },
@@ -22,7 +37,7 @@ const mediaCoverage = [
     outlet: 'The Globe and Mail',
     title: 'Black Business Certification Program is working with Ottawa to diversify procurement',
     url: 'https://www.theglobeandmail.com/business/small-business/article-black-business-certification-program-is-working-with-ottawa-to/',
-    summary: 'Details BEBC\'s certification program and its federal procurement initiatives.',
+    summary: "Details BEBC's certification program and its federal procurement initiatives.",
     category: 'Print / Online',
     featured: true,
   },
@@ -30,7 +45,7 @@ const mediaCoverage = [
     outlet: 'CTV News',
     title: "'Prove our value': Black-owned business program gives owners a shot at government, corporate contracts",
     url: 'https://bc.ctvnews.ca/prove-our-value-black-owned-business-program-gives-owners-a-shot-at-government-corporate-contracts-1.6904929',
-    summary: 'Coverage of BEBC\'s certification program and procurement opportunities for Black-owned businesses in BC.',
+    summary: "Coverage of BEBC's certification program and procurement opportunities for Black-owned businesses in BC.",
     category: 'TV / Online',
     featured: true,
   },
@@ -45,7 +60,7 @@ const mediaCoverage = [
     outlet: 'CBC News British Columbia',
     title: 'New program aims to help Black business owners land government, corporate contracts',
     url: 'https://www.cbc.ca/news/canada/british-columbia/black-owned-business-procurement-1.7218159',
-    summary: 'Features BEBC\'s national certification program for government and corporate procurement.',
+    summary: "Features BEBC's national certification program for government and corporate procurement.",
     category: 'TV / Radio / Online',
     featured: true,
   },
@@ -53,7 +68,7 @@ const mediaCoverage = [
     outlet: 'CBC News British Columbia',
     title: 'How a contest is helping to remove barriers for Black entrepreneurs',
     url: 'https://www.cbc.ca/news/canada/british-columbia/business-contest-black-entrepreneurs-b-c-1.6746732',
-    summary: 'Covers BEBC\'s Black Pitch Contest and Jackee\'s role as founder in removing barriers to capital.',
+    summary: "Covers BEBC's Black Pitch Contest and Jackee's role as founder in removing barriers to capital.",
     category: 'TV / Radio / Online',
   },
   {
@@ -67,7 +82,7 @@ const mediaCoverage = [
     outlet: 'The Hill Times',
     title: 'Black-owned businesses need more funding to compete for federal contracts, says founder of new training program',
     url: 'https://www.hilltimes.com/story/2024/05/30/black-owned-businesses-need-more-funding-to-compete-for-federal-contracts-says-founder-of-new-training-program/423615/',
-    summary: 'Jackee discusses funding barriers and BEBC\'s federal procurement training program in Ottawa\'s parliament hill publication.',
+    summary: "Jackee discusses funding barriers and BEBC's federal procurement training program in Ottawa's parliament hill publication.",
     category: 'Print / Online',
     date: 'May 30, 2024',
     featured: true,
@@ -126,9 +141,11 @@ const mediaStats = [
   { number: '28K+', label: 'Instagram followers across platforms' },
 ]
 
-const categories = ['All', 'Print / Online', 'TV / Online', 'TV / Radio / Online', 'Magazine', 'Recognition']
+export default async function Press() {
+  const kvItems = await kv.get<PressItem[]>('press:coverage')
+  const mediaCoverage: (PressItem | typeof hardcodedCoverage[number])[] =
+    Array.isArray(kvItems) && kvItems.length > 0 ? kvItems : hardcodedCoverage
 
-export default function Press() {
   const featured = mediaCoverage.filter(m => m.featured)
   const all = mediaCoverage
 

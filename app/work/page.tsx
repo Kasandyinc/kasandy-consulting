@@ -1,5 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { kv } from '@vercel/kv'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Client Results & Case Studies',
@@ -7,7 +10,21 @@ export const metadata: Metadata = {
   openGraph: { images: [{ url: '/images/hero-work.jpg', width: 1200, height: 630 }] },
 }
 
-const stats = [
+type WorkStat = { value: string; label: string }
+
+type CaseStudy = {
+  id?: string
+  number: string
+  label: string
+  client: string
+  tagline: string
+  challenge: string
+  approach: string[]
+  results: string[]
+  published?: boolean
+}
+
+const hardcodedStats: WorkStat[] = [
   { value: '3,000+', label: 'Entrepreneurs trained nationally' },
   { value: '17–21', label: 'Businesses secured procurement contracts' },
   { value: '250+', label: 'Indigenous entrepreneurs trained through ISET partnership' },
@@ -16,7 +33,7 @@ const stats = [
   { value: 'Multi-sector', label: 'Federal, provincial, municipal, corporate, non-profit' },
 ]
 
-const caseStudies = [
+const hardcodedCaseStudies: CaseStudy[] = [
   {
     number: '01',
     label: 'Procurement Program Design & National Delivery',
@@ -82,7 +99,7 @@ const caseStudies = [
   },
 ]
 
-const partners = [
+const hardcodedPartners: string[] = [
   'Innovation, Science & Economic Development Canada',
   'SBCCI',
   'FFBC',
@@ -96,7 +113,24 @@ const partners = [
   'BC Housing Corporation',
 ]
 
-export default function Work() {
+export default async function Work() {
+  const [kvStats, kvPartners, kvCaseStudies] = await Promise.all([
+    kv.get<WorkStat[]>('work:stats'),
+    kv.get<string[]>('work:partners'),
+    kv.get<CaseStudy[]>('work:casestudies'),
+  ])
+
+  const stats: WorkStat[] =
+    Array.isArray(kvStats) && kvStats.length > 0 ? kvStats : hardcodedStats
+
+  const partners: string[] =
+    Array.isArray(kvPartners) && kvPartners.length > 0 ? kvPartners : hardcodedPartners
+
+  const caseStudies: CaseStudy[] =
+    Array.isArray(kvCaseStudies) && kvCaseStudies.length > 0
+      ? kvCaseStudies.filter(c => c.published !== false)
+      : hardcodedCaseStudies
+
   return (
     <div className="pt-16">
 
@@ -170,7 +204,7 @@ export default function Work() {
       </section>
 
       {/* Case Studies */}
-      <section className="py-20 px-6">
+      <section id="case-studies" className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Case Studies</span>
           <h2 className="section-heading mb-4">Featured Work</h2>
@@ -195,8 +229,8 @@ export default function Work() {
                     <div>
                       <p className="font-sans text-[10px] tracking-widest uppercase text-kc-brown mb-3">Approach</p>
                       <div className="space-y-2">
-                        {cs.approach.map(a => (
-                          <div key={a} className="flex items-start gap-3">
+                        {cs.approach.map((a, ai) => (
+                          <div key={ai} className="flex items-start gap-3">
                             <span className="text-kc-brown shrink-0 mt-0.5 text-xs">—</span>
                             <p className="font-sans text-sm text-kc-gray-mid">{a}</p>
                           </div>
@@ -206,8 +240,8 @@ export default function Work() {
                     <div className="bg-kc-gray-light p-6">
                       <p className="font-sans text-[10px] tracking-widest uppercase text-kc-brown mb-3">Results</p>
                       <div className="space-y-2">
-                        {cs.results.map(r => (
-                          <div key={r} className="flex items-start gap-3">
+                        {cs.results.map((r, ri) => (
+                          <div key={ri} className="flex items-start gap-3">
                             <span className="text-kc-brown shrink-0 mt-0.5 text-xs">✓</span>
                             <p className="font-sans text-sm text-kc-black">{r}</p>
                           </div>
@@ -223,7 +257,7 @@ export default function Work() {
       </section>
 
       {/* Partners & Funders */}
-      <section className="py-20 px-6 bg-kc-gray-light">
+      <section id="partners" className="py-20 px-6 bg-kc-gray-light">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Partners & Funders</span>
           <h2 className="section-heading mb-12">Who We've Worked With</h2>

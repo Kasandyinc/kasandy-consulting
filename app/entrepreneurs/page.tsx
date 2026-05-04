@@ -1,12 +1,83 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ProgramCard from '@/components/ProgramCard'
+import { kv } from '@vercel/kv'
 
 export const metadata: Metadata = {
   title: 'Business Coaching & Procurement Strategy for Entrepreneurs',
   description: 'Win contracts, build systems, and grow your business with full-service coaching from Jackee Kasandy — who designed Canada\'s first procurement readiness course and has trained 3,000+ entrepreneurs.',
   openGraph: { images: [{ url: '/images/hero-entrepreneurs.jpg', width: 1200, height: 630 }] },
 }
+
+export const dynamic = 'force-dynamic'
+
+type ProgramData = {
+  tier: string
+  subtitle: string
+  fromPrice: string
+  description: string
+  includes: string[]
+  outcome?: string
+  ideal?: string
+  featured?: boolean
+  requestProposal?: boolean
+  ctaLabel?: string
+  ctaHref?: string
+}
+
+const hardcodedPrograms: ProgramData[] = [
+  {
+    tier: 'Foundation',
+    subtitle: '90-Day Coaching Program',
+    fromPrice: 'Investment — quoted after Discovery Session',
+    description: 'For founders establishing systems and direction — early stage to $500K revenue. Builds your foundation for procurement readiness in 90 days.',
+    includes: [
+      '6 × bi-weekly 90-minute coaching sessions',
+      'Business model and operations audit',
+      'Capability statement development',
+      'Procurement readiness assessment',
+      'Email support between sessions',
+      'Kasandy resource toolkit',
+    ],
+    outcome: 'A clear 90-day action plan, a polished capability statement, and a mapped procurement entry pathway.',
+    ctaLabel: 'Inquire About Foundation',
+  },
+  {
+    tier: 'Accelerator',
+    subtitle: '6-Month Full Service',
+    fromPrice: 'Investment — quoted after Discovery Session',
+    description: 'For founders ready to compete for contracts and scale — $200K–$2M revenue range. Full procurement support through to active bid submissions.',
+    includes: [
+      'Everything in Foundation',
+      'Bid and proposal review (up to 3 submissions)',
+      'Certification readiness roadmap (CAMSC, CCAB, WBE, etc.)',
+      'Marketing and brand positioning session',
+      'Fundraising and grant strategy session',
+      'Buyer introduction support (where applicable)',
+      'Monthly progress report',
+    ],
+    outcome: 'Active procurement submissions, certification application in progress, and at least one qualified buyer introduction.',
+    featured: true,
+    ctaLabel: 'Inquire About Accelerator',
+  },
+  {
+    tier: 'Partner',
+    subtitle: 'Annual Advisory Retainer',
+    fromPrice: 'Custom proposal',
+    description: 'For founders who want Jackee in their corner year-round — growth and scale stage. Ongoing strategic advisory with priority access.',
+    includes: [
+      'Everything in Accelerator',
+      'Monthly advisory retainer (ongoing strategic support)',
+      'Fractional COO / strategic advisor services',
+      'Priority bid and proposal turnaround',
+      'Speaking and pitch preparation support',
+      'VIP access to all Kasandy programs and events',
+    ],
+    outcome: 'A sustained competitive advantage in procurement — with a senior strategic partner permanently on your side.',
+    requestProposal: true,
+    ctaLabel: 'Request a Proposal',
+  },
+]
 
 const qualifiers = [
   "You're running a business but building it by intuition instead of strategy — and you know it.",
@@ -53,7 +124,12 @@ const faqs = [
   },
 ]
 
-export default function Entrepreneurs() {
+export default async function Entrepreneurs() {
+  const kvData = await kv.get<{ entrepreneurs?: ProgramData[] }>('programs:all')
+  const programs: ProgramData[] = kvData?.entrepreneurs && kvData.entrepreneurs.length > 0
+    ? kvData.entrepreneurs
+    : hardcodedPrograms
+
   return (
     <div className="pt-16">
 
@@ -153,57 +229,9 @@ export default function Entrepreneurs() {
 
           {/* Three tiers */}
           <div className="grid md:grid-cols-3 gap-6">
-            <ProgramCard
-              tier="Foundation"
-              subtitle="90-Day Coaching Program"
-              fromPrice="Investment — quoted after Discovery Session"
-              description="For founders establishing systems and direction — early stage to $500K revenue. Builds your foundation for procurement readiness in 90 days."
-              includes={[
-                '6 × bi-weekly 90-minute coaching sessions',
-                'Business model and operations audit',
-                'Capability statement development',
-                'Procurement readiness assessment',
-                'Email support between sessions',
-                'Kasandy resource toolkit',
-              ]}
-              outcome="A clear 90-day action plan, a polished capability statement, and a mapped procurement entry pathway."
-              ctaLabel="Inquire About Foundation"
-            />
-            <ProgramCard
-              tier="Accelerator"
-              subtitle="6-Month Full Service"
-              fromPrice="Investment — quoted after Discovery Session"
-              description="For founders ready to compete for contracts and scale — $200K–$2M revenue range. Full procurement support through to active bid submissions."
-              includes={[
-                'Everything in Foundation',
-                'Bid and proposal review (up to 3 submissions)',
-                'Certification readiness roadmap (CAMSC, CCAB, WBE, etc.)',
-                'Marketing and brand positioning session',
-                'Fundraising and grant strategy session',
-                'Buyer introduction support (where applicable)',
-                'Monthly progress report',
-              ]}
-              outcome="Active procurement submissions, certification application in progress, and at least one qualified buyer introduction."
-              featured
-              ctaLabel="Inquire About Accelerator"
-            />
-            <ProgramCard
-              tier="Partner"
-              subtitle="Annual Advisory Retainer"
-              fromPrice="Custom proposal"
-              description="For founders who want Jackee in their corner year-round — growth and scale stage. Ongoing strategic advisory with priority access."
-              includes={[
-                'Everything in Accelerator',
-                'Monthly advisory retainer (ongoing strategic support)',
-                'Fractional COO / strategic advisor services',
-                'Priority bid and proposal turnaround',
-                'Speaking and pitch preparation support',
-                'VIP access to all Kasandy programs and events',
-              ]}
-              outcome="A sustained competitive advantage in procurement — with a senior strategic partner permanently on your side."
-              requestProposal
-              ctaLabel="Request a Proposal"
-            />
+            {programs.map(p => (
+              <ProgramCard key={p.tier} {...p} />
+            ))}
           </div>
         </div>
       </section>

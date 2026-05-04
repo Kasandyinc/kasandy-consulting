@@ -1,11 +1,24 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import KenyaWaitlistForm from './KenyaWaitlistForm'
+import { kv } from '@vercel/kv'
 
 export const metadata: Metadata = {
   title: 'Canadian Market Entry & Procurement Bootcamps for Kenyan Entrepreneurs',
   description: 'Prepare to compete in Canadian procurement markets. Bootcamps in Nairobi, market entry strategy, certification support, and buyer introductions for Kenyan and international businesses.',
   openGraph: { images: [{ url: '/images/hero-kenya.jpg', width: 1200, height: 630 }] },
+}
+
+export const dynamic = 'force-dynamic'
+
+type SeminarInfo = {
+  nextDates: string
+  location: string
+  earlyBirdPrice: string
+  standardPrice: string
+  registrationOpen: boolean
+  registrationNote: string
+  sessionTime: string
 }
 
 const seminarTopics = [
@@ -45,7 +58,9 @@ const faqs = [
   },
 ]
 
-export default function Kenya() {
+export default async function Kenya() {
+  const seminar = await kv.get<SeminarInfo>('kenya:seminar')
+
   return (
     <div className="pt-16">
 
@@ -422,22 +437,64 @@ export default function Kenya() {
             </div>
             <h2 className="font-display font-bold text-white leading-[1.08] mb-5"
               style={{ fontSize: 'clamp(32px,3.5vw,50px)' }}>
-              Be first to know.<br />
-              <em className="italic text-kc-gold">Priority access.</em>
+              {seminar ? 'Register Now.' : 'Be first to know.'}<br />
+              <em className="italic text-kc-gold">{seminar ? 'Spots are limited.' : 'Priority access.'}</em>
             </h2>
-            <p className="font-sans text-sm text-white/60 leading-relaxed mb-6">
-              The next Kenya–Canada Procurement Readiness Bootcamp is being confirmed now. Register your interest and you&apos;ll be the first to receive dates, pricing, and a reserved spot — before we open general registration.
-            </p>
+
+            {seminar ? (
+              <div className="space-y-4 mb-6">
+                <div className="bg-white/5 border border-white/10 p-5 space-y-3">
+                  {seminar.nextDates && (
+                    <div className="flex gap-3">
+                      <span className="font-mono text-[10px] tracking-widest uppercase text-kc-gold/70 w-20 shrink-0 pt-0.5">Dates</span>
+                      <span className="font-sans text-sm text-white leading-relaxed">{seminar.nextDates}</span>
+                    </div>
+                  )}
+                  {seminar.sessionTime && (
+                    <div className="flex gap-3">
+                      <span className="font-mono text-[10px] tracking-widest uppercase text-kc-gold/70 w-20 shrink-0 pt-0.5">Time</span>
+                      <span className="font-sans text-sm text-white/80">{seminar.sessionTime}</span>
+                    </div>
+                  )}
+                  {seminar.location && (
+                    <div className="flex gap-3">
+                      <span className="font-mono text-[10px] tracking-widest uppercase text-kc-gold/70 w-20 shrink-0 pt-0.5">Location</span>
+                      <span className="font-sans text-sm text-white/80">{seminar.location}</span>
+                    </div>
+                  )}
+                  {seminar.earlyBirdPrice && (
+                    <div className="flex gap-3">
+                      <span className="font-mono text-[10px] tracking-widest uppercase text-kc-gold/70 w-20 shrink-0 pt-0.5">Early Bird</span>
+                      <span className="font-display text-lg text-kc-gold">{seminar.earlyBirdPrice}</span>
+                    </div>
+                  )}
+                  {seminar.standardPrice && (
+                    <div className="flex gap-3">
+                      <span className="font-mono text-[10px] tracking-widest uppercase text-kc-gold/70 w-20 shrink-0 pt-0.5">Standard</span>
+                      <span className="font-display text-lg text-white/80">{seminar.standardPrice}</span>
+                    </div>
+                  )}
+                </div>
+                {seminar.registrationNote && (
+                  <p className="font-sans text-xs text-white/50 leading-relaxed">{seminar.registrationNote}</p>
+                )}
+              </div>
+            ) : (
+              <p className="font-sans text-sm text-white/60 leading-relaxed mb-6">
+                The next Kenya–Canada Procurement Readiness Bootcamp is being confirmed now. Register your interest and you&apos;ll be the first to receive dates, pricing, and a reserved spot — before we open general registration.
+              </p>
+            )}
+
             <div className="space-y-3">
               {[
                 'Priority registration access before public announcement',
                 'Early-bird pricing notification',
                 'Free Seminar Overview PDF sent to your inbox',
-                'Direct contact from Jackee Kasandy&apos;s team',
+                "Direct contact from Jackee Kasandy's team",
               ].map((item) => (
                 <div key={item} className="flex items-start gap-3">
                   <span className="text-kc-gold shrink-0 mt-0.5">→</span>
-                  <p className="font-sans text-sm text-white/70 leading-relaxed" dangerouslySetInnerHTML={{ __html: item }} />
+                  <p className="font-sans text-sm text-white/70 leading-relaxed">{item}</p>
                 </div>
               ))}
             </div>

@@ -1,13 +1,22 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { kv } from '@vercel/kv'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'About Kasandy Consulting | Jackee Kasandy, Procurement Strategist & Business Coach',
-  description: 'Meet Jackee Kasandy — founder of BEBC Society, BC Housing Commissioner, and creator of Canada\'s first supplier-focused procurement readiness course. Black women-owned consulting firm, Vancouver BC.',
+  description: "Meet Jackee Kasandy — founder of BEBC Society, BC Housing Commissioner, and creator of Canada's first supplier-focused procurement readiness course. Black women-owned consulting firm, Vancouver BC.",
   openGraph: { images: [{ url: '/images/hero-about.jpg', width: 1200, height: 630 }] },
 }
 
-const credentials = [
+type AboutContent = {
+  credentials: { label: string; value: string }[]
+  firmBio: string[]
+  jBio: string[]
+}
+
+const hardcodedCredentials = [
   { label: 'Experience', value: '25+ years: corporate marketing, entrepreneurship, consulting' },
   { label: 'Corporate', value: 'Cossette | Bensimon Byrne | DDB Canada | BC Ferries | WorkSafeBC' },
   { label: 'Entrepreneurship', value: 'Founder & CEO, Kasandy Inc. (est. 2014) | Granville Island, Vancouver' },
@@ -18,7 +27,23 @@ const credentials = [
   { label: 'Programs', value: "Canada's First National Procurement Readiness Course" },
   { label: 'Impact', value: '3,000+ entrepreneurs trained | 17–21 businesses into procurement pipelines' },
   { label: 'Funded by', value: 'ISED Canada | SBCCI | FFBC' },
-  { label: 'Partners', value: 'Shared Services Canada | Procurement Assistance Canada | Women\'s Economic Council' },
+  { label: 'Partners', value: "Shared Services Canada | Procurement Assistance Canada | Women's Economic Council" },
+]
+
+const hardcodedFirmBio = [
+  'Kasandy Consulting is a Black woman-owned consulting and advisory firm based in Vancouver, BC. We work with entrepreneurs, governments, non-profits, and international businesses who are serious about growth — the kind that lasts.',
+  'We specialise in procurement strategy and supplier diversity, full-service business coaching, non-profit transformation, and international market entry. What connects all of it is a single belief: access to systems, knowledge, and networks should not depend on who you know or where you started.',
+  'Our clients range from solo founders preparing their first government bid to federal agencies designing supplier diversity programs. The work is different. The standard is the same — clear strategy, honest counsel, and measurable results.',
+]
+
+const hardcodedJBio = [
+  'Jackee Kasandy has spent over two decades at the intersection of marketing, entrepreneurship, and systemic change.',
+  "Her career began in some of Canada's leading advertising agencies — Cossette Communications, Bensimon Byrne, DDB Canada — where she managed accounts for McDonald's, Loblaw Brands, BC Ferries, Heinz Canada, and others. She developed deep expertise in integrated campaign strategy, consumer research, and brand positioning across TV, radio, print, and digital.",
+  'She moved into corporate marketing, serving as Manager of Corporate and Vacations Marketing at BC Ferries and Manager of Marketing and WorkSafeBC Experience at WorkSafeBC — leading large-scale, multi-year initiatives and learning what it takes to build brands and move people to action at an institutional level.',
+  'In 2014, she made the leap into entrepreneurship. She founded Kasandy Inc. — a thriving lifestyle brand with a flagship brick-and-mortar retail store at historic Granville Island in Vancouver, BC. A 7-figure business built from the ground up.',
+  "But it was her growing frustration with who gets access to corporate and government contracts that sparked her most significant work. In 2020, she founded the Black Entrepreneurs & Businesses of Canada Society (BEBC Society) — and designed Canada's first supplier-focused procurement and certification readiness course. That program has now supported over 3,000 participants nationally, helping underrepresented founders and newcomer entrepreneurs navigate and win government and corporate contracts. Seventeen to twenty-one of those businesses have reported securing procurement contracts, some at multi-million-dollar scale.",
+  'Today, Jackee serves as a BC Housing Board Commissioner, appointed by Minister Ravi Kahlon. She sits on the Board of Directors at Union Gospel Mission in Vancouver. She leads Kasandy Consulting as Principal Consultant — working with clients across Canada and internationally.',
+  'She was recognised by the Vancouver Economic Commission as one of the "23 Black Leaders in Vancouver" and featured in Montecristo Magazine. She is a keynote speaker, a relentless advocate for equity in procurement, and a mentor to hundreds of entrepreneurs and leaders across North America.',
 ]
 
 const values = [
@@ -40,7 +65,24 @@ const values = [
   },
 ]
 
-export default function About() {
+export default async function About() {
+  const aboutContent = await kv.get<AboutContent>('about:content')
+
+  const credentials =
+    aboutContent?.credentials && aboutContent.credentials.length > 0
+      ? aboutContent.credentials
+      : hardcodedCredentials
+
+  const firmBioParagraphs =
+    aboutContent?.firmBio && aboutContent.firmBio.length > 0
+      ? aboutContent.firmBio
+      : hardcodedFirmBio
+
+  const jBioParagraphs =
+    aboutContent?.jBio && aboutContent.jBio.length > 0
+      ? aboutContent.jBio
+      : hardcodedJBio
+
   return (
     <div className="pt-16">
 
@@ -105,9 +147,7 @@ export default function About() {
             <span className="section-label">About the Firm</span>
             <h2 className="section-heading mb-8">Kasandy Consulting</h2>
             <div className="space-y-5 font-sans text-sm text-kc-gray-mid leading-relaxed">
-              <p>Kasandy Consulting is a Black woman-owned consulting and advisory firm based in Vancouver, BC. We work with entrepreneurs, governments, non-profits, and international businesses who are serious about growth — the kind that lasts.</p>
-              <p>We specialise in procurement strategy and supplier diversity, full-service business coaching, non-profit transformation, and international market entry. What connects all of it is a single belief: access to systems, knowledge, and networks should not depend on who you know or where you started.</p>
-              <p>Our clients range from solo founders preparing their first government bid to federal agencies designing supplier diversity programs. The work is different. The standard is the same — clear strategy, honest counsel, and measurable results.</p>
+              {firmBioParagraphs.map((p, i) => p.trim() ? <p key={i}>{p}</p> : null)}
             </div>
           </div>
           <div className="border-l border-kc-gray-border pl-10 hidden md:block">
@@ -130,13 +170,7 @@ export default function About() {
             <p className="font-display text-xl italic text-kc-gray-mid mb-10">Her Story</p>
 
             <div className="space-y-5 font-sans text-sm text-kc-gray-mid leading-relaxed">
-              <p>Jackee Kasandy has spent over two decades at the intersection of marketing, entrepreneurship, and systemic change.</p>
-              <p>Her career began in some of Canada's leading advertising agencies — Cossette Communications, Bensimon Byrne, DDB Canada — where she managed accounts for McDonald's, Loblaw Brands, BC Ferries, Heinz Canada, and others. She developed deep expertise in integrated campaign strategy, consumer research, and brand positioning across TV, radio, print, and digital.</p>
-              <p>She moved into corporate marketing, serving as Manager of Corporate and Vacations Marketing at BC Ferries and Manager of Marketing and WorkSafeBC Experience at WorkSafeBC — leading large-scale, multi-year initiatives and learning what it takes to build brands and move people to action at an institutional level.</p>
-              <p>In 2014, she made the leap into entrepreneurship. She founded Kasandy Inc. — a thriving lifestyle brand with a flagship brick-and-mortar retail store at historic Granville Island in Vancouver, BC. A 7-figure business built from the ground up.</p>
-              <p>But it was her growing frustration with who gets access to corporate and government contracts that sparked her most significant work. In 2020, she founded the Black Entrepreneurs & Businesses of Canada Society (BEBC Society) — and designed Canada's first supplier-focused procurement and certification readiness course. That program has now supported over 3,000 participants nationally, helping underrepresented founders and newcomer entrepreneurs navigate and win government and corporate contracts. Seventeen to twenty-one of those businesses have reported securing procurement contracts, some at multi-million-dollar scale.</p>
-              <p>Today, Jackee serves as a BC Housing Board Commissioner, appointed by Minister Ravi Kahlon. She sits on the Board of Directors at Union Gospel Mission in Vancouver. She leads Kasandy Consulting as Principal Consultant — working with clients across Canada and internationally.</p>
-              <p>She was recognised by the Vancouver Economic Commission as one of the "23 Black Leaders in Vancouver" and featured in Montecristo Magazine. She is a keynote speaker, a relentless advocate for equity in procurement, and a mentor to hundreds of entrepreneurs and leaders across North America.</p>
+              {jBioParagraphs.map((p, i) => p.trim() ? <p key={i}>{p}</p> : null)}
             </div>
           </div>
 
@@ -198,7 +232,7 @@ export default function About() {
                 href: 'https://ised-isde.canada.ca/site/ised/en',
               },
               {
-                label: 'Partners: Shared Services Canada | Procurement Assistance Canada | Women\'s Economic Council',
+                label: "Partners: Shared Services Canada | Procurement Assistance Canada | Women's Economic Council",
                 href: 'https://buyandsell.gc.ca/procurement-assistance-canada',
               },
               {
