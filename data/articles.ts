@@ -19,7 +19,7 @@ export const articles: Article[] = [
     excerpt: "Most bids fail before they're read. Here's what Canadian buyers actually see when they open your submission — and the five fixable mistakes that are costing you contracts.",
     date: '2026-05-01',
     published: true,
-    readTime: '6 min',
+    readTime: '7 min',
     author: 'Jackee Kasandy',
   },
   {
