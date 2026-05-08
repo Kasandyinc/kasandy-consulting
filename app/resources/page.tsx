@@ -7,6 +7,7 @@ import PaidProductCard from './PaidProductCard'
 import NewsletterSignup from './NewsletterSignup'
 import { kvGet, KEYS } from '@/lib/kv'
 import type { Download } from '@/types/downloads'
+import { DEFAULT_DOWNLOADS } from '@/data/downloads'
 
 export const metadata: Metadata = {
   title: 'Free Resources, Guides & Digital Products',
@@ -25,7 +26,10 @@ const categoryColors: Record<string, string> = {
 
 export default async function Resources() {
   // Fetch downloads from KV (merged with defaults)
-  const downloads = await kvGet<Download[]>(KEYS.downloads, [])
+  const kvData = await kvGet<Download[]>(KEYS.downloads, DEFAULT_DOWNLOADS)
+  // Always merge with defaults so new products appear even before first admin save
+  const kvMap = new Map(kvData.map(d => [d.id, d]))
+  const downloads: Download[] = DEFAULT_DOWNLOADS.map(def => kvMap.get(def.id) ?? def)
 
   const freeDownloads = downloads.filter(d => d.isFree)
   const paidProducts = downloads.filter(d => !d.isFree)
