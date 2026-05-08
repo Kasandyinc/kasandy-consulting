@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canadian Procurement Readiness Checklist — Kasandy Consulting</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:10px}
+  body{font-family:'DM Sans',sans-serif;background:#EDE5D8;color:#1e1e1e;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  .page{
+    width:210mm;min-height:297mm;background:#FDFCFA;
+    margin:0 auto;padding:0;
+    display:flex;flex-direction:column;
+  }
+
+  /* HEADER */
+  .header{
+    background:#712f1e;
+    padding:28px 40px 24px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .brand{
+    font-family:'Cormorant Garamond',serif;
+    font-size:2rem;font-weight:700;color:#FDFCFA;
+    letter-spacing:.04em;
+  }
+  .brand-sub{font-family:'DM Mono',monospace;font-size:.85rem;color:rgba(255,255,255,.5);letter-spacing:.15em;text-transform:uppercase;margin-top:3px}
+  .doc-label{font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);text-align:right}
+  .doc-type{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-style:italic;color:rgba(255,220,180,.8);margin-top:3px;text-align:right}
+
+  /* TITLE BLOCK */
+  .title-block{padding:28px 40px 20px;border-bottom:1px solid #EDE5D8}
+  .eyebrow{font-family:'DM Mono',monospace;font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:#712f1e;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:'';width:18px;height:1px;background:#712f1e}
+  h1{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:700;line-height:1.05;color:#1e1e1e;margin-bottom:8px;letter-spacing:-.01em}
+  .intro{font-size:1.2rem;line-height:1.65;color:#555;max-width:520px}
+  .how-to{margin-top:14px;padding:12px 16px;background:#F5F0E8;border-left:3px solid #712f1e;font-size:1.1rem;color:#444;line-height:1.55}
+
+  /* CHECKLIST SECTIONS */
+  .content{padding:20px 40px 24px;flex:1}
+  .section{margin-bottom:20px}
+  .section-header{
+    background:#712f1e;color:#FDFCFA;
+    padding:8px 16px;
+    display:flex;align-items:center;gap:12px;
+    margin-bottom:10px;
+  }
+  .section-num{font-family:'DM Mono',monospace;font-size:.85rem;opacity:.6}
+  .section-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600}
+  .section-title em{font-style:italic;font-weight:400;opacity:.75}
+  .section-body{display:grid;grid-template-columns:1fr 1fr;gap:2px 20px}
+
+  /* INDIVIDUAL CHECK ITEM */
+  .item{
+    display:flex;align-items:flex-start;gap:10px;
+    padding:6px 0;border-bottom:1px solid #F0EAE0;
+  }
+  .item:last-child{border-bottom:none}
+  .checkbox{
+    width:16px;height:16px;border:1.5px solid #C8B8A8;border-radius:2px;
+    flex-shrink:0;margin-top:1px;background:#fff;
+  }
+  .item-text{font-size:1.1rem;line-height:1.4;color:#333}
+  .item-text strong{color:#1e1e1e;font-weight:600}
+  .item-note{font-size:.95rem;color:#888;margin-top:2px;font-style:italic}
+
+  /* WIDE ITEM (spans 2 cols) */
+  .item-wide{
+    grid-column:1/-1;
+    display:flex;align-items:flex-start;gap:10px;
+    padding:6px 0;border-bottom:1px solid #F0EAE0;
+  }
+
+  /* BEBC PROMO BOX */
+  .promo-box{
+    background:linear-gradient(135deg,#1e1e1e 0%,#2C2C2C 100%);
+    padding:16px 20px;margin:12px 0 0;
+    display:flex;align-items:flex-start;gap:16px;
+  }
+  .promo-icon{font-size:2.4rem;flex-shrink:0;margin-top:2px}
+  .promo-label{font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,210,160,.7);margin-bottom:4px}
+  .promo-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:#FDFCFA;margin-bottom:4px}
+  .promo-body{font-size:1.05rem;color:rgba(255,255,255,.55);line-height:1.5}
+  .promo-cta{font-family:'DM Mono',monospace;font-size:.85rem;color:rgba(255,210,160,.8);letter-spacing:.1em;margin-top:6px}
+
+  /* SCORING */
+  .scoring{
+    margin-top:12px;padding:14px 16px;
+    border:1px solid #EDE5D8;background:#F8F4EF;
+  }
+  .scoring-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:#1e1e1e;margin-bottom:10px}
+  .score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .score-cell{text-align:center;padding:8px 6px}
+  .score-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:#712f1e}
+  .score-lbl{font-size:.95rem;color:#666;line-height:1.3;margin-top:3px}
+
+  /* FOOTER */
+  .footer{
+    border-top:1px solid #EDE5D8;
+    padding:12px 40px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .footer-brand{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:#712f1e}
+  .footer-contact{font-family:'DM Mono',monospace;font-size:.85rem;color:#AAA;letter-spacing:.08em}
+  .footer-url{font-family:'DM Mono',monospace;font-size:.85rem;color:#888}
+
+  @media print{
+    body{background:#fff}
+    .page{margin:0;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="brand">Kasandy Consulting</div>
+      <div class="brand-sub">Where Ambition Meets Access</div>
+    </div>
+    <div>
+      <div class="doc-label">Free Download</div>
+      <div class="doc-type">Procurement Readiness</div>
+    </div>
+  </div>
+
+  <!-- TITLE -->
+  <div class="title-block">
+    <div class="eyebrow">For Entrepreneurs &amp; Founders</div>
+    <h1>Canadian Procurement<br>Readiness Checklist</h1>
+    <p class="intro">Before a buyer reads a single line of your proposal, they check 24 things. This checklist covers all of them — organized by the order buyers actually review them.</p>
+    <div class="how-to"><strong>How to use this:</strong> Work through each section before your next bid submission. Any unchecked item is a potential disqualifier. Aim for 22 or more before submitting.</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- SECTION 1 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <span class="section-title">Business Registration &amp; Legal Standing</span>
+      </div>
+      <div class="section-body">
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Business is legally registered</strong> in Canada (federal or provincial)<div class="item-note">Sole proprietorship, corporation, partnership, co-operative, or non-profit</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Business Number (BN)</strong> from CRA — 9-digit number starting with your GST/HST account<div class="item-note">Register at cra-arc.gc.ca or call 1-800-959-5525</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>GST/HST registration</strong> — required for contracts over $30,000/year<div class="item-note">Applies even if your current revenue is below the threshold</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Provincial business licence</strong> current and valid<div class="item-note">Requirements vary by province and business type</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>WSIB / WCB compliance</strong> certificate (current)<div class="item-note">Required for most federal and Ontario provincial contracts</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Articles of incorporation or business registration doc</strong> on file and accessible</div></div>
+      </div>
+    </div>
+
+    <!-- SECTION 2 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <span class="section-title">Insurance &amp; Financial Requirements</span>
+      </div>
+      <div class="section-body">
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Commercial general liability insurance</strong> — minimum $2M per occurrence<div class="item-note">Most federal tenders require $2M; some corporate buyers require $5M</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Professional liability / E&amp;O insurance</strong> if providing professional services</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Insurance certificate</strong> names the buyer as additional insured (if required by the RFP)</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>CRA tax compliance</strong> — no outstanding tax debts or payment plans in default<div class="item-note">Government buyers verify CRA status; a tax debt can disqualify a bid</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Banking &amp; financial capacity</strong> to deliver the contract scope<div class="item-note">Some large tenders require financial statements or credit references</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Bid bond / performance bond</strong> if required by the specific tender<div class="item-note">Required for some construction, IT, and large service contracts</div></div></div>
+      </div>
+    </div>
+
+    <!-- SECTION 3 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <span class="section-title">Supplier Certifications &amp; Registrations</span>
+      </div>
+      <div class="section-body">
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Registered on buyandsell.gc.ca</strong> (Supplier Registration Information)<div class="item-note">Federal government's primary supplier database — free to register</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>NAICS codes</strong> correctly assigned to your actual service/product categories</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Registered on provincial portals</strong> relevant to your target markets<div class="item-note">BC Bid, Biddingo (Ontario), MERX (multi-province), etc.</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Diversity certification</strong> obtained or in progress (CAMSC, CCAB, WBE, BEBC Society)<div class="item-note">Required for some supplier diversity programs; preferred in many others</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Industry-specific certifications</strong> current<div class="item-note">Health Canada, CFIA, ISO, professional designations — varies by sector</div></div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Security clearance</strong> if required<div class="item-note">Federal contracts often require Reliability Status or Secret clearance — plan 3–6 months ahead</div></div></div>
+      </div>
+    </div>
+
+    <!-- PROMO BOX -->
+    <div class="promo-box">
+      <div class="promo-icon">🎓</div>
+      <div>
+        <div class="promo-label">Certification Readiness</div>
+        <div class="promo-title">The BEBC Society Procurement &amp; Certification Readiness Course</div>
+        <div class="promo-body">Canada's first supplier-focused procurement readiness course. Covers certification navigation, capability statement development, RFP response, and buyer relationships. Designed by Jackee Kasandy — 3,000+ graduates nationally.</div>
+        <div class="promo-cta">→ bebcsociety.org &nbsp;|&nbsp; kasandyconsulting.com</div>
+      </div>
+    </div>
+
+    <!-- SECTION 4 -->
+    <div class="section" style="margin-top:12px">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <span class="section-title">Capability Statement &amp; Documentation</span>
+      </div>
+      <div class="section-body">
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Capability statement is current</strong> — updated in the last 6 months</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Core competencies listed</strong> by procurement category (not general descriptions)</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Past performance documented</strong> — 3–5 references with scope, outcome, client type</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>NAICS/commodity codes visible</strong> in capability statement</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Differentiators are specific</strong> — evidence-based, not marketing language</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Contact information is current</strong> and includes a primary contact name</div></div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <span class="section-title">Before You Submit — Final Check</span>
+      </div>
+      <div class="section-body">
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Read mandatory requirements section</strong> first — every item checked</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Response follows evaluation matrix</strong> structure and weighting</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Pricing is competitive</strong> (research comparable contracts before pricing)</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Submission format correct</strong> — file type, naming, page limits, font size</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Submission deadline confirmed</strong> — date, time, time zone</div></div>
+        <div class="item"><div class="checkbox"></div><div class="item-text"><strong>Debriefing requested</strong> after any unsuccessful bid</div></div>
+      </div>
+    </div>
+
+    <!-- SCORING -->
+    <div class="scoring">
+      <div class="scoring-title">How Did You Score?</div>
+      <div class="score-grid">
+        <div class="score-cell"><div class="score-num">22–24</div><div class="score-lbl">Submission-ready. Submit with confidence.</div></div>
+        <div class="score-cell"><div class="score-num">16–21</div><div class="score-lbl">Almost ready. Address gaps before submitting to a competitive tender.</div></div>
+        <div class="score-cell"><div class="score-num">Below 16</div><div class="score-lbl">Start with a Discovery Session to build your procurement entry plan.</div></div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-contact">consulting [at] kasandy.com</div>
+    <div class="footer-url">kasandyconsulting.com</div>
+  </div>
+
+</div>
+</body>
+</html>

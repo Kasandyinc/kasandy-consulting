@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Model Canvas — Business Version · Kasandy Consulting</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:10px}
+  body{font-family:'DM Sans',sans-serif;background:#EDE5D8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  /* ── PAGE WRAPPER ────────────────────────────────────── */
+  .page{
+    width:210mm;min-height:297mm;background:#FDFCFA;
+    margin:0 auto 20px;
+    display:flex;flex-direction:column;
+    page-break-after:always;
+  }
+
+  /* ── SHARED HEADER ───────────────────────────────────── */
+  .header{background:#712f1e;padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:700;color:#FDFCFA;letter-spacing:.03em}
+  .brand-tag{font-family:'DM Mono',monospace;font-size:.8rem;color:rgba(255,255,255,.45);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
+  .doc-badge{font-family:'DM Mono',monospace;font-size:.8rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,220,180,.7);text-align:right}
+  .doc-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-style:italic;color:rgba(255,255,255,.6);margin-top:3px;text-align:right}
+
+  /* ── PAGE 1: INSTRUCTIONS ────────────────────────────── */
+  .instr-content{padding:28px 36px;flex:1}
+  .instr-eyebrow{font-family:'DM Mono',monospace;font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:#712f1e;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .instr-eyebrow::before{content:'';width:18px;height:1px;background:#712f1e}
+  .instr-h1{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:700;line-height:1.04;color:#1e1e1e;margin-bottom:10px}
+  .instr-sub{font-size:1.25rem;line-height:1.65;color:#555;margin-bottom:20px}
+
+  .why-box{background:#F5F0E8;border-left:3px solid #712f1e;padding:14px 16px;margin-bottom:20px}
+  .why-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:#1e1e1e;margin-bottom:8px}
+  .why-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+  .why-list li{font-size:1.1rem;color:#444;padding-left:14px;position:relative;line-height:1.45}
+  .why-list li::before{content:'—';position:absolute;left:0;color:#712f1e;font-weight:600}
+
+  .section-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .section-card{border:1px solid #EDE5D8;padding:12px 14px}
+  .sc-header{background:#712f1e;color:#FDFCFA;padding:5px 10px;margin:-12px -14px 10px;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600}
+  .sc-sub{font-family:'DM Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.5);letter-spacing:.1em;display:inline-block;margin-left:8px}
+  .sc-desc{font-size:1.05rem;color:#444;line-height:1.5;margin-bottom:6px}
+  .sc-prompt{font-size:.95rem;color:#888;font-style:italic}
+
+  .tips-box{background:#1e1e1e;padding:14px 16px;margin-top:16px}
+  .tips-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:#FDFCFA;margin-bottom:10px}
+  .tips-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tip{font-size:1.05rem;color:rgba(255,255,255,.6);padding-left:12px;border-left:2px solid #712f1e;line-height:1.45}
+
+  /* ── PAGE 2: CANVAS ──────────────────────────────────── */
+  .canvas-wrap{padding:16px;flex:1;display:flex;flex-direction:column;gap:8px}
+  .canvas-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:#1e1e1e;text-align:center;margin-bottom:6px}
+  .canvas-sub{font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:#AAA;text-align:center;margin-bottom:10px}
+
+  /* Level labels */
+  .level-labels{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+  .level-label{font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:#712f1e;padding:4px 0;border-bottom:2px solid #712f1e;text-align:center}
+
+  /* Main grid */
+  .main-grid{
+    display:grid;
+    grid-template-columns:1fr 1.2fr 1.5fr 1.2fr 1fr;
+    grid-template-rows:auto auto;
+    gap:4px;flex:1;
+  }
+  .canvas-cell{
+    border:1.5px solid #EDE5D8;
+    padding:8px;
+    background:#fff;
+    display:flex;flex-direction:column;
+    min-height:80px;
+  }
+  .cell-title{
+    font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:#712f1e;
+    margin-bottom:2px;line-height:1.2;
+  }
+  .cell-hint{font-family:'DM Mono',monospace;font-size:.7rem;color:#C0B0A0;letter-spacing:.06em;margin-bottom:5px}
+  .cell-input{
+    flex:1;width:100%;border:none;outline:none;
+    font-family:'DM Sans',sans-serif;font-size:1rem;color:#333;
+    resize:none;background:transparent;line-height:1.5;
+    min-height:60px;
+  }
+  .cell-input::placeholder{color:#DDD;font-style:italic;font-size:.9rem}
+
+  /* Value Proposition (center, tall) */
+  .cell-vp{
+    grid-column:3;grid-row:1/3;
+    background:#F8F4EF;border-color:#C8B8A8;
+  }
+  .cell-vp .cell-title{font-size:1.3rem;color:#1e1e1e}
+  .cell-vp .cell-input{min-height:140px}
+
+  /* Key Resources (row 2, col 1) */
+  .cell-kr{grid-column:1;grid-row:2}
+  /* Key Activities (row 2, col 2) */
+  .cell-ka{grid-column:2;grid-row:2}
+  /* Channels (row 2, col 4) */
+  .cell-ch{grid-column:4;grid-row:2}
+  /* Customer Segments (row 2, col 5) */
+  .cell-cs{grid-column:5;grid-row:2}
+
+  /* Bottom row */
+  .bottom-row{
+    display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  }
+  .cell-cost{border:1.5px solid #EDE5D8;padding:8px;background:#fff;min-height:70px}
+  .cell-rev{border:1.5px solid #EDE5D8;padding:8px;background:#F8F4EF;min-height:70px}
+
+  /* Impact section (below) */
+  .impact-row{
+    display:grid;grid-template-columns:1fr 1fr;gap:4px;
+  }
+
+  /* Business label badges */
+  .version-badge{
+    display:inline-block;font-family:'DM Mono',monospace;font-size:.75rem;
+    letter-spacing:.12em;text-transform:uppercase;
+    background:#712f1e;color:#FDFCFA;padding:3px 10px;margin-bottom:6px;
+  }
+
+  /* FOOTER */
+  .footer{border-top:1px solid #EDE5D8;padding:10px 32px;display:flex;align-items:center;justify-content:space-between}
+  .footer-brand{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:#712f1e}
+  .footer-right{font-family:'DM Mono',monospace;font-size:.8rem;color:#AAA;text-align:right}
+
+  @media print{body{background:#fff}.page{margin:0;box-shadow:none}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     PAGE 1 — INSTRUCTIONS
+══════════════════════════════════ -->
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="brand">Kasandy Consulting</div>
+      <div class="brand-tag">Where Ambition Meets Access</div>
+    </div>
+    <div>
+      <div class="doc-badge">Paid Tool · $12</div>
+      <div class="doc-title">Business Model Canvas</div>
+    </div>
+  </div>
+
+  <div class="instr-content">
+    <div class="instr-eyebrow">Instructions — Page 1 of 2</div>
+    <div class="version-badge">Business Version</div>
+    <h1 class="instr-h1">Your entire business<br>on one page.</h1>
+    <p class="instr-sub">The Business Model Canvas is a strategic planning tool that maps how your business creates, delivers, and captures value — all on a single page. It was developed by Alexander Osterwalder and is now used by startups, established businesses, and government agencies worldwide to align teams, clarify strategy, and communicate with partners and funders.</p>
+
+    <div class="why-box">
+      <div class="why-title">Why this matters for your business</div>
+      <ul class="why-list">
+        <li>Makes your business model visible — you can't fix what you can't see</li>
+        <li>Reveals the gaps: what resources do you have? What are you missing? What does your model actually cost?</li>
+        <li>Helps you communicate to investors, partners, funders, and buyers — in minutes, not hours</li>
+        <li>Creates a shared language for your team around how the business actually works</li>
+        <li>Is the foundation of a strong procurement capability statement, grant application, and investor pitch</li>
+      </ul>
+    </div>
+
+    <div class="section-grid">
+      <div class="section-card">
+        <div class="sc-header">Key Partners <span class="sc-sub">Left side</span></div>
+        <div class="sc-desc">Who are your key suppliers and partners? Who do you need to work with to deliver your value proposition?</div>
+        <div class="sc-prompt">Ask: What can we not do alone?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Key Activities <span class="sc-sub">Left side</span></div>
+        <div class="sc-desc">What activities do you perform every day to keep the business running and delivering value?</div>
+        <div class="sc-prompt">Ask: What must we do to stay in business?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Key Resources <span class="sc-sub">Left side</span></div>
+        <div class="sc-desc">What assets — human, physical, intellectual, financial — does your business need to function?</div>
+        <div class="sc-prompt">Ask: What are we built on?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Value Proposition <span class="sc-sub">Centre</span></div>
+        <div class="sc-desc">What problem do you solve? What value do you create for your customers? What makes you the right choice?</div>
+        <div class="sc-prompt">Ask: Why do customers choose us?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Customer Relationships <span class="sc-sub">Right side</span></div>
+        <div class="sc-desc">How do you acquire, retain, and grow your customer base? What kind of relationship do customers expect?</div>
+        <div class="sc-prompt">Ask: How do we treat our customers?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Channels <span class="sc-sub">Right side</span></div>
+        <div class="sc-desc">How does your value proposition reach your customers? What communication, distribution, and sales channels do you use?</div>
+        <div class="sc-prompt">Ask: How do we reach and deliver?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Customer Segments <span class="sc-sub">Right side</span></div>
+        <div class="sc-desc">Who are your most important customers? What groups of people or organizations does your business serve?</div>
+        <div class="sc-prompt">Ask: Who are we really for?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Cost Structure <span class="sc-sub">Bottom left</span></div>
+        <div class="sc-desc">What are the most significant costs in your business? Which key resources and activities are most expensive?</div>
+        <div class="sc-prompt">Ask: What does this business cost to run?</div>
+      </div>
+    </div>
+
+    <div class="tips-box">
+      <div class="tips-title">Tips for completing your canvas</div>
+      <div class="tips-grid">
+        <div class="tip">Start with Value Proposition and Customer Segments. Everything else flows from knowing what you do and who you serve.</div>
+        <div class="tip">Be specific. "Good service" is not a value proposition. "48-hour delivery to hospitality buyers in Western Canada" is.</div>
+        <div class="tip">Use bullet points, not paragraphs. The canvas is meant to be scannable in under two minutes.</div>
+        <div class="tip">Revisit the canvas quarterly. Your model should evolve as your business does.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-right">consulting [at] kasandy.com · kasandyconsulting.com<br>Page 1 of 2 — Instructions</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     PAGE 2 — FILLABLE CANVAS
+══════════════════════════════════ -->
+<div class="page">
+  <div class="header">
+    <div>
+      <div class="brand">Kasandy Consulting</div>
+      <div class="brand-tag">Where Ambition Meets Access</div>
+    </div>
+    <div>
+      <div class="doc-badge">Business Version</div>
+      <div class="doc-title">Business Model Canvas</div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap">
+    <div class="canvas-title">Business Model Canvas</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:8px">
+      <div class="version-badge">Business · For-Profit</div>
+      <div style="font-family:'DM Mono',monospace;font-size:.8rem;color:#AAA">Company: <input type="text" placeholder="Your business name" style="border:none;border-bottom:1px solid #EDE5D8;font-family:'DM Mono',monospace;font-size:.8rem;color:#333;outline:none;width:140px;padding:2px 4px"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:.8rem;color:#AAA">Date: <input type="text" placeholder="MM/YYYY" style="border:none;border-bottom:1px solid #EDE5D8;font-family:'DM Mono',monospace;font-size:.8rem;color:#333;outline:none;width:80px;padding:2px 4px"></div>
+    </div>
+
+    <!-- Level Labels -->
+    <div class="level-labels">
+      <div class="level-label">← Operations Level</div>
+      <div class="level-label">Engagement Level →</div>
+    </div>
+
+    <!-- Main 5-column grid -->
+    <div class="main-grid">
+      <!-- Row 1 -->
+      <div class="canvas-cell">
+        <div class="cell-title">Key Partners</div>
+        <div class="cell-hint">Who you work with</div>
+        <textarea class="cell-input" placeholder="• Suppliers&#10;• Manufacturers&#10;• Strategic partners&#10;• Technology vendors"></textarea>
+      </div>
+      <div class="canvas-cell">
+        <div class="cell-title">Key Activities</div>
+        <div class="cell-hint">What you do daily</div>
+        <textarea class="cell-input" placeholder="• Production&#10;• Sales &amp; marketing&#10;• Platform maintenance&#10;• Customer service"></textarea>
+      </div>
+      <!-- Value Prop — spans rows 1 and 2 -->
+      <div class="canvas-cell cell-vp">
+        <div class="cell-title">Value Proposition</div>
+        <div class="cell-hint">Why customers choose you</div>
+        <textarea class="cell-input" placeholder="For [customer segment], we provide [product/service] that [benefit], unlike [alternative] because [differentiator].&#10;&#10;For B2B:&#10;&#10;For B2C:"></textarea>
+      </div>
+      <div class="canvas-cell">
+        <div class="cell-title">Customer Relationships</div>
+        <div class="cell-hint">How you retain customers</div>
+        <textarea class="cell-input" placeholder="• Personal advisory&#10;• Self-service portal&#10;• Community programs&#10;• Automated support"></textarea>
+      </div>
+      <div class="canvas-cell">
+        <div class="cell-title">Customer Segments</div>
+        <div class="cell-hint">Who you serve</div>
+        <textarea class="cell-input" placeholder="Primary: &#10;&#10;Secondary: &#10;&#10;Key traits:"></textarea>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="canvas-cell cell-kr">
+        <div class="cell-title">Key Resources</div>
+        <div class="cell-hint">What you're built on</div>
+        <textarea class="cell-input" placeholder="Human:&#10;Physical:&#10;Intellectual (IP):&#10;Financial:"></textarea>
+      </div>
+      <div class="canvas-cell cell-ka">
+        <div class="cell-title">Key Activities</div>
+        <div class="cell-hint">Operations detail</div>
+        <textarea class="cell-input" placeholder="Operations:&#10;Sales:&#10;Marketing:&#10;Compliance:"></textarea>
+      </div>
+      <!-- VP spans both rows, no cell needed -->
+      <div class="canvas-cell cell-ch">
+        <div class="cell-title">Channels</div>
+        <div class="cell-hint">How you reach customers</div>
+        <textarea class="cell-input" placeholder="B2B:&#10;• Direct outreach&#10;• Trade shows&#10;&#10;B2C:&#10;• Website / online&#10;• Social media"></textarea>
+      </div>
+      <div class="canvas-cell cell-cs">
+        <div class="cell-title">Stakeholders</div>
+        <div class="cell-hint">Who has a stake in your success</div>
+        <textarea class="cell-input" placeholder="• Investors/lenders&#10;• Staff&#10;• Suppliers&#10;• Regulatory bodies&#10;• Community"></textarea>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div class="bottom-row">
+      <div class="cell-cost">
+        <div class="cell-title" style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:#712f1e;margin-bottom:2px">Cost Structure</div>
+        <div class="cell-hint" style="font-family:'DM Mono',monospace;font-size:.7rem;color:#C0B0A0;margin-bottom:5px">What does it cost to run this business?</div>
+        <textarea class="cell-input" placeholder="Fixed costs: rent, salaries, subscriptions&#10;Variable costs: materials, shipping, commissions&#10;Key investments: technology, certifications, marketing" style="min-height:50px"></textarea>
+      </div>
+      <div class="cell-rev" style="border:1.5px solid #EDE5D8;padding:8px;background:#F8F4EF;min-height:70px">
+        <div class="cell-title" style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:#712f1e;margin-bottom:2px">Revenue Streams</div>
+        <div class="cell-hint" style="font-family:'DM Mono',monospace;font-size:.7rem;color:#C0B0A0;margin-bottom:5px">How do you make money?</div>
+        <textarea class="cell-input" placeholder="1. B2B contracts&#10;2. Direct sales&#10;3. Subscriptions / recurring&#10;4. Licensing / royalties&#10;5. Grants / government funding" style="min-height:50px;background:transparent"></textarea>
+      </div>
+    </div>
+
+    <!-- Impact / KPIs -->
+    <div class="impact-row">
+      <div style="border:1.5px solid #EDE5D8;padding:8px;background:#fff">
+        <div class="cell-title" style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:#1e1e1e;margin-bottom:4px">Key Performance Indicators</div>
+        <textarea class="cell-input" placeholder="1. Revenue growth rate&#10;2. # B2B contracts won&#10;3. Customer acquisition cost&#10;4. Retention rate" style="min-height:40px"></textarea>
+      </div>
+      <div style="border:1.5px solid #EDE5D8;padding:8px;background:#1e1e1e">
+        <div class="cell-title" style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:#FDFCFA;margin-bottom:4px">Social / Mission Impact</div>
+        <textarea class="cell-input" placeholder="• Jobs created&#10;• Community impact&#10;• Environmental footprint&#10;• Equity outcomes" style="min-height:40px;color:#CCC;background:transparent"></textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-right">consulting [at] kasandy.com · kasandyconsulting.com<br>Page 2 of 2 — Business Model Canvas · Business Version</div>
+  </div>
+</div>
+
+</body>
+</html>

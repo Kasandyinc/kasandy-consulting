@@ -3,53 +3,33 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { articles } from '@/data/articles'
 import LeadMagnetCard from './LeadMagnetCard'
+import PaidProductCard from './PaidProductCard'
 import NewsletterSignup from './NewsletterSignup'
+import { kvGet, KEYS } from '@/lib/kv'
+import type { Download } from '@/types/downloads'
 
 export const metadata: Metadata = {
-  title: 'Free Resources & Insights',
-  description: 'Free procurement checklists, capability statement guides, non-profit scorecards, and market entry roadmaps. Plus insights from Jackee Kasandy on procurement, leadership, and growth.',
+  title: 'Free Resources, Guides & Digital Products',
+  description: 'Free procurement checklists, business model canvases, province registration guides, and more. Built from real work with 3,000+ entrepreneurs and non-profits.',
   openGraph: { images: [{ url: '/images/hero-resources.jpg', width: 1200, height: 630 }] },
 }
-
-const leadMagnets = [
-  {
-    id: 'procurement-checklist',
-    title: 'The Canadian Procurement Readiness Checklist',
-    description: 'Are you actually ready to submit a bid? This checklist covers every element Canadian buyers check before reading a proposal — from company registration to capability statements to insurance.',
-    format: 'PDF, 2 pages',
-    category: 'Procurement',
-  },
-  {
-    id: 'capability-statement',
-    title: 'How to Write a Capability Statement — Step-by-Step Guide',
-    description: "A capability statement is often the first thing a buyer reads. This guide walks through every section, what buyers are looking for, and the most common mistakes that get suppliers disqualified before a conversation starts. Includes a template.",
-    format: 'PDF, 6 pages + template',
-    category: 'Procurement',
-  },
-  {
-    id: 'nonprofit-scorecard',
-    title: 'The Non-Profit Sustainability Scorecard',
-    description: 'Rate your organisation across six dimensions of sustainability — revenue diversification, governance, leadership, programming, community, and communications. Know where you stand before a funding crisis forces the question.',
-    format: 'PDF, 4 pages',
-    category: 'Non-Profit',
-  },
-  {
-    id: 'kenya-canada-roadmap',
-    title: 'Kenya to Canada — Your Market Entry Roadmap',
-    description: "The honest guide. What's required, what disqualifies applicants early, what timelines actually look like, and the 8 steps to building a credible Canadian supplier profile from outside the country.",
-    format: 'PDF, 8 pages',
-    category: 'International',
-  },
-]
 
 const categoryColors: Record<string, string> = {
   Procurement: 'bg-kc-brown/10 text-kc-brown',
   'Non-Profit Leadership': 'bg-kc-black/10 text-kc-black',
+  'Non-Profit': 'bg-kc-black/10 text-kc-black',
   International: 'bg-kc-gray-border text-kc-gray-mid',
   Advocacy: 'bg-kc-red/10 text-kc-red',
+  Entrepreneurs: 'bg-kc-brown/10 text-kc-brown',
 }
 
-export default function Resources() {
+export default async function Resources() {
+  // Fetch downloads from KV (merged with defaults)
+  const downloads = await kvGet<Download[]>(KEYS.downloads, [])
+
+  const freeDownloads = downloads.filter(d => d.isFree)
+  const paidProducts = downloads.filter(d => !d.isFree)
+
   const publishedArticles = articles.filter(a => a.published)
   const draftArticles = articles.filter(a => !a.published)
   const displayArticles = publishedArticles.length > 0 ? publishedArticles : draftArticles
@@ -75,45 +55,89 @@ export default function Resources() {
               Knowledge that<br />moves you forward.
             </h1>
             <p className="font-sans text-[16px] leading-[1.74] text-kc-text-mid max-w-[440px] mb-9">
-              Practical guides, tools, and insights for entrepreneurs, non-profits, government teams, and international businesses. Free to download. Built from the work.
+              Practical guides, tools, and workbooks for entrepreneurs, non-profits, and international businesses. Built from the work.
             </p>
-            <Link href="#downloads" className="btn-brown">Browse All Resources</Link>
+            <div className="flex gap-3 flex-wrap">
+              <Link href="#free-downloads" className="btn-brown">Free Downloads</Link>
+              <Link href="#digital-products" className="btn-outline">Digital Products</Link>
+            </div>
           </div>
 
-          {/* Right: resource cards */}
+          {/* Right: product preview grid */}
           <div className="grid grid-cols-2 gap-0.5">
             {[
-              { tag: 'Free PDF', title: 'Canadian Procurement Readiness Checklist', id: 'procurement-checklist' },
-              { tag: 'Free PDF', title: 'How to Write a Capability Statement', id: 'capability-statement' },
-              { tag: 'Free PDF', title: 'Non-Profit Sustainability Scorecard', id: 'nonprofit-scorecard' },
-              { tag: 'Free PDF', title: 'Kenya to Canada: Market Entry Roadmap', id: 'kenya-canada-roadmap' },
+              { tag: 'Free', title: 'Canadian Procurement Readiness Checklist', href: '#free-downloads' },
+              { tag: '$12', title: 'Business Model Canvas — Business Edition', href: '#digital-products' },
+              { tag: '$12', title: 'Business Model Canvas — Non-Profit Edition', href: '#digital-products' },
+              { tag: '$17', title: 'Canadian Business Registration Guide by Province', href: '#digital-products' },
             ].map((c, i) => (
-              <Link key={i} href={`#downloads`} className="group bg-kc-charcoal px-6 py-7 hover:bg-kc-brown transition-colors block">
+              <Link key={i} href={c.href} className="group bg-kc-charcoal px-6 py-7 hover:bg-kc-brown transition-colors block">
                 <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-[#555] mb-2.5">{c.tag}</div>
                 <div className="font-sans text-[13px] font-semibold text-white leading-[1.45]">{c.title}</div>
-                <div className="font-mono text-[10px] text-kc-brown/60 mt-3.5 tracking-[0.1em] group-hover:text-white/60 transition-colors">Download →</div>
+                <div className="font-mono text-[10px] text-kc-brown/60 mt-3.5 tracking-[0.1em] group-hover:text-white/60 transition-colors">
+                  {c.tag === 'Free' ? 'Download →' : 'Buy →'}
+                </div>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Lead Magnets */}
-      <section id="downloads" className="py-20 px-6">
+      {/* ── Free Downloads ── */}
+      <section id="free-downloads" className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Free Downloads</span>
-          <h2 className="section-heading mb-4">Practical Guides & Toolkits</h2>
-          <p className="font-sans text-sm text-kc-gray-mid mb-14 max-w-xl">Enter your email to download. You'll receive the guide directly to your inbox along with occasional insights from Kasandy Consulting.</p>
+          <h2 className="section-heading mb-4">Free Guides & Toolkits</h2>
+          <p className="font-sans text-sm text-kc-gray-mid mb-14 max-w-xl">Enter your email to download instantly. You&apos;ll receive the guide directly to your inbox.</p>
           <div className="grid sm:grid-cols-2 gap-6">
-            {leadMagnets.map(lm => (
-              <LeadMagnetCard key={lm.id} {...lm} />
+            {freeDownloads.map(dl => (
+              <LeadMagnetCard
+                key={dl.id}
+                id={dl.slug}
+                title={dl.title}
+                description={dl.description}
+                format={dl.format}
+                category={dl.category}
+                downloadUrl={dl.enabled && dl.filename ? `/downloads/${dl.filename}` : null}
+                comingSoon={!dl.enabled || !dl.filename}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      {/* Blog / Insights */}
-      <section className="py-20 px-6 bg-kc-gray-light">
+      {/* ── Digital Products (Paid) ── */}
+      <section id="digital-products" className="py-20 px-6 bg-kc-gray-light">
+        <div className="max-w-7xl mx-auto">
+          <span className="section-label">Digital Products</span>
+          <h2 className="section-heading mb-4">Workbooks, Templates & Toolkits</h2>
+          <p className="font-sans text-sm text-kc-gray-mid mb-14 max-w-xl">
+            Paid tools designed to save you hours — fillable canvases, step-by-step workbooks, and plug-and-play templates. Print or use digitally.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {paidProducts.map(dl => (
+              <PaidProductCard
+                key={dl.id}
+                id={dl.slug}
+                title={dl.title}
+                description={dl.description}
+                format={dl.format}
+                category={dl.category}
+                price={dl.price}
+                squareUrl={dl.enabled ? dl.squareUrl : ''}
+                enabled={dl.enabled}
+                comingSoon={!dl.enabled || (!dl.filename && !dl.squareUrl)}
+              />
+            ))}
+          </div>
+          <p className="font-sans text-xs text-kc-gray-mid mt-10 max-w-lg">
+            All paid products are delivered as HTML files — open in your browser and use <strong>File → Print → Save as PDF</strong> to save a copy, or print directly.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Blog / Insights ── */}
+      <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Insights</span>
           <h2 className="section-heading mb-4">The Kasandy Brief</h2>
@@ -139,7 +163,7 @@ export default function Resources() {
                 <div className="flex items-center justify-between">
                   <span className="font-sans text-[10px] text-kc-gray-mid">{new Date(a.date).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                   {a.published ? (
-                    <span className="font-sans text-xs tracking-wide text-kc-brown group-hover:underline cursor-pointer">Read More →</span>
+                    <Link href={`/resources/articles/${a.slug}`} className="font-sans text-xs tracking-wide text-kc-brown group-hover:underline">Read More →</Link>
                   ) : (
                     <span className="font-sans text-xs text-kc-gray-mid">Coming Soon</span>
                   )}
@@ -150,14 +174,14 @@ export default function Resources() {
         </div>
       </section>
 
-      {/* Newsletter */}
+      {/* ── Newsletter ── */}
       <section className="py-20 px-6 bg-kc-black text-white">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <div>
             <span className="section-label text-kc-brown">Newsletter</span>
             <h2 className="font-display text-4xl md:text-5xl font-light text-white mb-6">The Kasandy Brief</h2>
             <p className="font-sans text-sm text-white/60 leading-relaxed">
-              Procurement strategy, supplier diversity insights, and honest counsel on entrepreneurship and leadership. Sent when there's something worth saying.
+              Procurement strategy, supplier diversity insights, and honest counsel on entrepreneurship and leadership. Sent when there&apos;s something worth saying.
             </p>
           </div>
           <div>

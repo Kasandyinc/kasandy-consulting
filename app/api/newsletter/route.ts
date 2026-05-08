@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
-import { kv, KEYS } from '@/lib/kv'
+import { kvGet, kv, KEYS } from '@/lib/kv'
+import type { Download } from '@/types/downloads'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   const NOTIFY = process.env.CONTACT_TO_EMAIL || 'consulting@kasandy.com'
   try {
-    const { email, resource } = await req.json()
+    const { email, resource } = await req.json()  // resource = slug of the download
 
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
@@ -27,63 +28,73 @@ export async function POST(req: NextRequest) {
       await kv.lpush(KEYS.newsletterSubscribers, JSON.stringify(entry))
     }
 
-    // Find the PDF download URL if it exists
-    type DownloadItem = { id: string; slug: string; title: string; filename: string; enabled: boolean }
+    // Find the download URL if it exists (match by slug)
     let downloadUrl: string | null = null
+    let productTitle = resource || ''
     if (isLeadMagnet) {
       try {
-        const downloads = await kv.get<DownloadItem[]>(KEYS.downloads)
-        if (Array.isArray(downloads)) {
-          const match = downloads.find(d => d.title === resource && d.enabled)
-          if (match?.filename) downloadUrl = `/downloads/${match.filename}`
+            const downloads = await kvGet<Download[]>(KEYS.downloads, [])
+        const match = downloads.find(d => d.slug === resource && d.enabled && d.isFree)
+        if (match?.filename) {
+          downloadUrl = `https://kasandyconsulting.com/downloads/${match.filename}`
+          productTitle = match.title
         }
       } catch { /* fall through */ }
     }
 
     await Promise.all([
+      // Confirmation email to subscriber
       resend.emails.send({
         from: 'Jackee Kasandy <consulting@kasandy.com>',
         to: email,
-        subject: isLeadMagnet ? `Your download: ${resource}` : 'Welcome to The Kasandy Brief',
+        subject: isLeadMagnet ? `Your free download — ${productTitle}` : 'Welcome to The Kasandy Brief',
         text: isLeadMagnet
           ? [
-              `Thank you for downloading "${resource}".`,
+              `Thank you for downloading "${productTitle}".`,
               '',
               downloadUrl
-                ? `Download your guide here: https://kasandyconsulting.com${downloadUrl}`
-                : "Your guide will be sent to you shortly.",
+                ? `Your download is ready here: ${downloadUrl}`
+                : 'Your guide will be sent to you shortly.',
               '',
-              "You'll also receive The Kasandy Brief — our newsletter on procurement, supplier diversity, and entrepreneurship.",
+              downloadUrl
+                ? 'Open the link in your browser and use File → Save As, or File → Print → Save as PDF to save a copy.'
+                : '',
               '',
+              "You'll also receive The Kasandy Brief — occasional straight-talk on procurement, supplier diversity, and entrepreneurship.",
+              '',
+              '—',
               'Jackee Kasandy',
               'Kasandy Consulting',
               'kasandyconsulting.com',
-            ].join('\n')
+            ].filter(Boolean).join('\n')
           : [
-              "Welcome to The Kasandy Brief.",
+              'Welcome to The Kasandy Brief.',
               '',
               "You're now subscribed to straight-talk on procurement strategy, supplier diversity, non-profit leadership, and entrepreneurship.",
               '',
               "We don't send filler. Expect something in your inbox when there's something worth saying.",
               '',
+              '—',
               'Jackee Kasandy',
               'Kasandy Consulting',
               'kasandyconsulting.com',
             ].join('\n'),
       }),
+
+      // Internal notification
       resend.emails.send({
         from: 'Kasandy Consulting <consulting@kasandy.com>',
         to: NOTIFY,
         subject: isLeadMagnet
-          ? `Lead Magnet Download — ${resource} — ${email}`
+          ? `Lead Download — ${productTitle} — ${email}`
           : `New Newsletter Subscriber — ${email}`,
         text: isLeadMagnet
-          ? `Email: ${email}\nResource: ${resource}`
+          ? `Email: ${email}\nResource: ${productTitle} (${resource})\nDownload URL sent: ${downloadUrl ?? 'none (file not enabled)'}`
           : `Email: ${email}\nType: Newsletter signup`,
       }),
     ])
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, downloadUrl })
   } catch {
     return NextResponse.json({ error: 'Failed to process subscription' }, { status: 500 })
   }

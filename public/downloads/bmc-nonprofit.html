@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Model Canvas — Non-Profit Version · Kasandy Consulting</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:10px}
+  body{font-family:'DM Sans',sans-serif;background:#EDE5D8;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .page{width:210mm;min-height:297mm;background:#FDFCFA;margin:0 auto 20px;display:flex;flex-direction:column;page-break-after:always}
+  .header{background:#1e1e1e;padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:700;color:#FDFCFA;letter-spacing:.03em}
+  .brand-tag{font-family:'DM Mono',monospace;font-size:.8rem;color:rgba(255,255,255,.4);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
+  .doc-badge{font-family:'DM Mono',monospace;font-size:.8rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,210,160,.7);text-align:right}
+  .doc-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-style:italic;color:rgba(255,255,255,.5);margin-top:3px;text-align:right}
+
+  /* ── PAGE 1 INSTRUCTIONS ─────────────────────────────── */
+  .instr-content{padding:28px 36px;flex:1}
+  .instr-eyebrow{font-family:'DM Mono',monospace;font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:#712f1e;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .instr-eyebrow::before{content:'';width:18px;height:1px;background:#712f1e}
+  .version-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;background:#1e1e1e;color:#FDFCFA;padding:3px 10px;margin-bottom:10px}
+  .instr-h1{font-family:'Cormorant Garamond',serif;font-size:2.9rem;font-weight:700;line-height:1.04;color:#1e1e1e;margin-bottom:10px}
+  .instr-sub{font-size:1.2rem;line-height:1.65;color:#555;margin-bottom:20px}
+  .np-note{background:#F5F0E8;border-left:3px solid #1e1e1e;padding:12px 16px;margin-bottom:18px;font-size:1.1rem;color:#444;line-height:1.55}
+  .np-note strong{color:#1e1e1e}
+
+  .section-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+  .section-card{border:1.5px solid #EDE5D8;padding:12px 14px}
+  .sc-header{background:#1e1e1e;color:#FDFCFA;padding:5px 10px;margin:-12px -14px 10px;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600}
+  .sc-sub{font-family:'DM Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:.1em;display:inline-block;margin-left:8px}
+  .sc-desc{font-size:1.05rem;color:#444;line-height:1.5;margin-bottom:5px}
+  .sc-np{font-size:.95rem;color:#712f1e;font-style:italic}
+
+  .tips-box{background:#712f1e;padding:14px 16px}
+  .tips-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:#FDFCFA;margin-bottom:10px}
+  .tips-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tip{font-size:1.05rem;color:rgba(255,255,255,.7);padding-left:12px;border-left:2px solid rgba(255,255,255,.3);line-height:1.45}
+
+  /* ── PAGE 2: NP CANVAS ───────────────────────────────── */
+  .canvas-wrap{padding:14px;flex:1;display:flex;flex-direction:column;gap:6px}
+  .canvas-title{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:700;color:#1e1e1e;text-align:center;margin-bottom:4px}
+  .level-labels{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+  .level-label{font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:#1e1e1e;padding:4px 0;border-bottom:2px solid #1e1e1e;text-align:center}
+
+  .main-grid{display:grid;grid-template-columns:1fr 1.2fr 1.5fr 1.2fr 1fr;grid-template-rows:auto auto;gap:4px;flex:1}
+  .canvas-cell{border:1.5px solid #EDE5D8;padding:8px;background:#fff;display:flex;flex-direction:column;min-height:78px}
+  .cell-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:700;color:#1e1e1e;margin-bottom:2px;line-height:1.2}
+  .cell-hint{font-family:'DM Mono',monospace;font-size:.7rem;color:#C0B0A0;letter-spacing:.06em;margin-bottom:5px}
+  .cell-input{flex:1;width:100%;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:1rem;color:#333;resize:none;background:transparent;line-height:1.5;min-height:55px}
+  .cell-input::placeholder{color:#DDD;font-style:italic;font-size:.88rem}
+
+  .cell-vp{grid-column:3;grid-row:1/3;background:#F8F4EF;border-color:#C8B8A8}
+  .cell-vp .cell-title{font-size:1.25rem;color:#1e1e1e}
+  .cell-vp .cell-input{min-height:130px}
+
+  .cell-outcome-row{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .cell-outcome{border:1.5px solid #EDE5D8;padding:8px;background:#F8F4EF;min-height:65px}
+  .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+  .cell-cost{border:1.5px solid #EDE5D8;padding:8px;background:#fff;min-height:65px}
+  .cell-out{border:1.5px solid #EDE5D8;padding:8px;background:#1e1e1e;min-height:65px}
+
+  .footer{border-top:1px solid #EDE5D8;padding:10px 32px;display:flex;align-items:center;justify-content:space-between}
+  .footer-brand{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:#712f1e}
+  .footer-right{font-family:'DM Mono',monospace;font-size:.8rem;color:#AAA;text-align:right}
+  @media print{body{background:#fff}.page{margin:0}}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 — INSTRUCTIONS (NP) -->
+<div class="page">
+  <div class="header">
+    <div><div class="brand">Kasandy Consulting</div><div class="brand-tag">Where Ambition Meets Access</div></div>
+    <div><div class="doc-badge">Paid Tool · $12</div><div class="doc-title">Non-Profit Business Model Canvas</div></div>
+  </div>
+  <div class="instr-content">
+    <div class="instr-eyebrow">Instructions — Page 1 of 2</div>
+    <div class="version-badge">Non-Profit Version</div>
+    <h1 class="instr-h1">Your mission model<br>on one page.</h1>
+    <p class="instr-sub">The Business Model Canvas for non-profits maps how your organization creates social value, delivers programs, and sustains itself financially — all on a single page. Use it for board alignment, strategic planning, funder conversations, and staff onboarding.</p>
+    <div class="np-note"><strong>How the non-profit version differs:</strong> Instead of "Revenue Streams," you have <strong>Outcome Streams</strong> (financial and non-financial). Instead of "Customer Segments," you have <strong>Beneficiaries and Partners</strong>. The Value Proposition focuses on <strong>mission impact</strong>, not profit. Everything else maps to the same framework.</div>
+
+    <div class="section-grid">
+      <div class="section-card">
+        <div class="sc-header">Key Partners <span class="sc-sub">Left side</span></div>
+        <div class="sc-desc">Government funders, foundations, healthcare systems, community organizations, shipping partners, pro bono service providers.</div>
+        <div class="sc-np">Who helps you deliver the mission you couldn't deliver alone?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Key Activities <span class="sc-sub">Left side</span></div>
+        <div class="sc-desc">Program delivery, fundraising, partnerships, training, government liaison, communications, charity events, impact evaluation.</div>
+        <div class="sc-np">What does your team do every week to keep the mission alive?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Key Resources <span class="sc-sub">Left side</span></div>
+        <div class="sc-desc">Board, staff, volunteers, physical space, databases, intellectual property, website, financial reserves, donor relationships.</div>
+        <div class="sc-np">What do you have that you depend on to operate?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Value Proposition <span class="sc-sub">Centre</span></div>
+        <div class="sc-desc">What is the specific problem you solve, for whom, and how? What does the community look like because your organization exists?</div>
+        <div class="sc-np">If you disappeared tomorrow, what would be lost?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Relationships <span class="sc-sub">Right side</span></div>
+        <div class="sc-desc">Community trust, accountability, partnerships, donor stewardship, beneficiary engagement, board governance.</div>
+        <div class="sc-np">How do you build and sustain trust with everyone you serve?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Channels <span class="sc-sub">Right side</span></div>
+        <div class="sc-desc">Website, social media, direct outreach, community events, media relations, board networks, partner referrals, email.</div>
+        <div class="sc-np">How do people find you, and how do you reach them?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Beneficiaries &amp; Partners <span class="sc-sub">Right side</span></div>
+        <div class="sc-desc">Who does your work directly benefit? Who are your funders and institutional partners? Who are your advocates and volunteers?</div>
+        <div class="sc-np">Who are you accountable to, and who do you serve?</div>
+      </div>
+      <div class="section-card">
+        <div class="sc-header">Outcome Streams <span class="sc-sub">Bottom right</span></div>
+        <div class="sc-desc">Financial (grants, donations, earned revenue, memberships) and non-financial (lives impacted, programs delivered, systems changed).</div>
+        <div class="sc-np">What does success look like — in numbers and in the world?</div>
+      </div>
+    </div>
+
+    <div class="tips-box">
+      <div class="tips-title">Tips for non-profit leaders</div>
+      <div class="tips-grid">
+        <div class="tip">Use this canvas in your board strategic planning retreat. Fill it together — you'll surface misalignment faster than any agenda item.</div>
+        <div class="tip">Funders love seeing a completed canvas. It signals strategic clarity — and organizations with that clarity get funded more reliably.</div>
+        <div class="tip">The Cost Structure section is where most non-profits under-represent themselves. Be honest about what it actually costs to deliver the mission.</div>
+        <div class="tip">Revisit annually. A three-year-old canvas that hasn't changed is a sign that strategic thinking has stalled.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-right">consulting [at] kasandy.com · kasandyconsulting.com<br>Page 1 of 2 — Instructions · Non-Profit Version</div>
+  </div>
+</div>
+
+<!-- PAGE 2 — FILLABLE NP CANVAS -->
+<div class="page">
+  <div class="header">
+    <div><div class="brand">Kasandy Consulting</div><div class="brand-tag">Where Ambition Meets Access</div></div>
+    <div><div class="doc-badge">Non-Profit Version</div><div class="doc-title">Business Model Canvas</div></div>
+  </div>
+  <div class="canvas-wrap">
+    <div class="canvas-title">Non-Profit Business Model Canvas</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:8px">
+      <div class="version-badge">Non-Profit / Mission-Driven</div>
+      <div style="font-family:'DM Mono',monospace;font-size:.8rem;color:#AAA">Organization: <input type="text" placeholder="Your org name" style="border:none;border-bottom:1px solid #EDE5D8;font-family:'DM Mono',monospace;font-size:.8rem;color:#333;outline:none;width:140px;padding:2px 4px"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:.8rem;color:#AAA">Date: <input type="text" placeholder="MM/YYYY" style="border:none;border-bottom:1px solid #EDE5D8;font-family:'DM Mono',monospace;font-size:.8rem;color:#333;outline:none;width:80px;padding:2px 4px"></div>
+    </div>
+    <div class="level-labels">
+      <div class="level-label">← Operations Level</div>
+      <div class="level-label">Engagement Level →</div>
+    </div>
+
+    <div class="main-grid">
+      <div class="canvas-cell">
+        <div class="cell-title">Key Partners</div>
+        <div class="cell-hint">Who you work with</div>
+        <textarea class="cell-input" placeholder="• Government funders&#10;• Foundations&#10;• Healthcare partners&#10;• Community orgs&#10;• Pro bono services"></textarea>
+      </div>
+      <div class="canvas-cell">
+        <div class="cell-title">Key Activities</div>
+        <div class="cell-hint">Core program activities</div>
+        <textarea class="cell-input" placeholder="Programmatic:&#10;• Program delivery&#10;• Training&#10;• Research&#10;&#10;Admin:&#10;• Fundraising&#10;• Partnerships"></textarea>
+      </div>
+      <div class="canvas-cell cell-vp">
+        <div class="cell-title">Mission &amp; Value Proposition</div>
+        <div class="cell-hint">Why your organization exists</div>
+        <textarea class="cell-input" placeholder="Mission statement:&#10;&#10;We exist to [mission] by [how] for [who].&#10;&#10;For beneficiaries:&#10;• [specific outcome]&#10;&#10;For funders/partners:&#10;• [value of supporting you]&#10;&#10;Impact goal:"></textarea>
+      </div>
+      <div class="canvas-cell">
+        <div class="cell-title">Relationships</div>
+        <div class="cell-hint">How you build trust</div>
+        <textarea class="cell-input" placeholder="• Community trust&#10;• Accountability&#10;• Donor stewardship&#10;• Board governance&#10;• Partner accountability"></textarea>
+      </div>
+      <div class="canvas-cell">
+        <div class="cell-title">Stakeholders</div>
+        <div class="cell-hint">Who you serve &amp; report to</div>
+        <textarea class="cell-input" placeholder="Tier 1 (Beneficiaries):&#10;&#10;Tier 2 (Funders):&#10;&#10;Tier 3 (Partners):&#10;&#10;Tier 4 (Community):"></textarea>
+      </div>
+
+      <div class="canvas-cell cell-kr">
+        <div class="cell-title">Key Resources</div>
+        <div class="cell-hint">What you operate with</div>
+        <textarea class="cell-input" placeholder="Human: Board, staff, volunteers&#10;Physical: Office, warehouse&#10;Intellectual: IP, curriculum&#10;Financial: Reserves, grants"></textarea>
+      </div>
+      <div class="canvas-cell cell-ka">
+        <div class="cell-title">Key Activities</div>
+        <div class="cell-hint">Operations &amp; admin</div>
+        <textarea class="cell-input" placeholder="• Fundraising &amp; comms&#10;• Government liaison&#10;• Impact reporting&#10;• Charity events&#10;• Media relations"></textarea>
+      </div>
+      <div class="canvas-cell">
+        <div class="cell-title">Channels</div>
+        <div class="cell-hint">How you reach people</div>
+        <textarea class="cell-input" placeholder="• Website &amp; social&#10;• Direct outreach&#10;• Partner networks&#10;• Events&#10;• Media coverage&#10;• E-newsletters"></textarea>
+      </div>
+      <div class="canvas-cell">
+        <div class="cell-title">Impact Measures</div>
+        <div class="cell-hint">How you prove impact</div>
+        <textarea class="cell-input" placeholder="1. # people served&#10;2. Program outcomes&#10;3. $ raised annually&#10;4. # partnerships&#10;5. Community reach"></textarea>
+      </div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="cell-cost">
+        <div class="cell-title" style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;color:#1e1e1e;margin-bottom:3px">Cost Structure</div>
+        <div class="cell-hint" style="font-family:'DM Mono',monospace;font-size:.7rem;color:#C0B0A0;margin-bottom:5px">What it actually costs to deliver the mission</div>
+        <textarea class="cell-input" placeholder="Operations: staff, rent, admin&#10;Programs: delivery, travel, materials&#10;Comms: fundraising, media, events&#10;Infrastructure: tech, IP, training" style="min-height:45px"></textarea>
+      </div>
+      <div class="cell-out">
+        <div class="cell-title" style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;color:#FDFCFA;margin-bottom:3px">Outcome Streams</div>
+        <div class="cell-hint" style="font-family:'DM Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.35);margin-bottom:5px">Financial + non-financial outcomes</div>
+        <textarea class="cell-input" style="color:#CCC;background:transparent;min-height:45px" placeholder="Financial: grants, donations, memberships, earned revenue&#10;Non-financial: lives changed, programs delivered, systems shifted, communities strengthened"></textarea>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-right">consulting [at] kasandy.com · kasandyconsulting.com<br>Page 2 of 2 — Canvas · Non-Profit Version</div>
+  </div>
+</div>
+
+</body>
+</html>
