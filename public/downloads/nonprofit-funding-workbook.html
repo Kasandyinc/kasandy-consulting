@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Non-Profit Funding Strategy Workbook — Kasandy Consulting</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --brick:#712f1e;--brickdk:#531808;--bricklt:#f5ebe6;
+  --char:#1e1e1e;--char2:#2c2c2c;
+  --cream:#F5F0E8;--linen:#EDE5D8;--sand:#D9CFC0;
+  --warm:#FDFCFA;--white:#fff;
+  --mid:#4a4a4a;--lt:#777;--xlt:#aaa;
+  --green:#155724;--greenbg:#d4edda;--greendk:#0d3a1a;
+  --amber:#7B5800;--amberbg:#FFF3CD;
+  --blue:#0C3A6B;--bluebg:#E8F2FD;
+  --r:0px;
+}
+html{font-size:10px;scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--linen);min-height:100vh;color:var(--char)}
+
+/* ── LAYOUT ──────────────────────────────────────────── */
+.shell{display:grid;grid-template-columns:360px 1fr;min-height:100vh}
+@media(max-width:820px){.shell{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar{background:var(--char);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+@media(max-width:820px){.sidebar{position:relative;height:auto}}
+.sb-hdr{background:var(--brick);padding:20px 24px;flex-shrink:0}
+.sb-logo{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-weight:700;color:#fff;letter-spacing:.02em}
+.sb-tag{font-family:'DM Mono',monospace;font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:.14em;text-transform:uppercase;margin-top:3px}
+.sb-body{padding:20px 24px;flex:1;overflow-y:auto}
+.sb-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:#fff;line-height:1.12;margin-bottom:8px}
+.sb-title em{font-style:italic;color:rgba(255,210,160,.88)}
+.sb-desc{font-size:1.1rem;color:rgba(255,255,255,.48);line-height:1.62;margin-bottom:20px}
+.sb-steps{display:flex;flex-direction:column;gap:0;margin-bottom:20px}
+.sb-step{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;transition:opacity .2s}
+.sb-step:last-child{border:none}
+.sb-step-dot{width:22px;height:22px;border-radius:50%;border:2px solid rgba(113,47,30,.5);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.3);flex-shrink:0;margin-top:1px;transition:all .25s}
+.sb-step.active .sb-step-dot{background:var(--brick);border-color:var(--brick);color:#fff}
+.sb-step.done .sb-step-dot{background:#1A5C3A;border-color:#1A5C3A;color:#fff;font-size:.9rem}
+.sb-step.done .sb-step-dot::after{content:'✓'}
+.sb-step-text{font-size:1.05rem;color:rgba(255,255,255,.38);line-height:1.35;transition:color .2s}
+.sb-step.active .sb-step-text{color:rgba(255,255,255,.92);font-weight:500}
+.sb-step.done .sb-step-text{color:rgba(255,255,255,.5)}
+.sb-what{background:rgba(113,47,30,.22);border:1px solid rgba(113,47,30,.35);padding:14px;margin-bottom:20px}
+.sb-what-lbl{font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,210,160,.6);margin-bottom:6px}
+.sb-what p{font-size:1.05rem;color:rgba(255,255,255,.5);line-height:1.58}
+.sb-save-indicator{font-family:'DM Mono',monospace;font-size:.75rem;color:rgba(255,255,255,.25);padding:8px 0;display:flex;align-items:center;gap:6px;transition:opacity .4s}
+.sb-save-indicator.visible{color:rgba(100,200,120,.7)}
+.save-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* ── MAIN PANEL ──────────────────────────────────────── */
+.main{background:var(--cream);min-height:100vh;display:flex;flex-direction:column}
+
+/* PROGRESS BAR */
+.progress-bar{background:#fff;border-bottom:1px solid var(--linen);padding:14px 32px;display:flex;align-items:center;gap:0;flex-shrink:0;position:sticky;top:0;z-index:10}
+@media(max-width:820px){.progress-bar{padding:12px 16px}}
+.pb-step{display:flex;align-items:center;flex:1}
+.pb-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--sand);background:#fff;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:.72rem;color:var(--xlt);flex-shrink:0;transition:all .25s;cursor:pointer;z-index:1}
+.pb-dot.active{border-color:var(--brick);background:var(--brick);color:#fff;transform:scale(1.1)}
+.pb-dot.done{border-color:#1A5C3A;background:#1A5C3A;color:#fff;font-size:.85rem}
+.pb-line{flex:1;height:2px;background:var(--sand);transition:background .25s;margin:0 2px}
+.pb-line.done{background:#1A5C3A}
+.pb-label{display:none}
+@media(min-width:600px){.pb-label{display:block;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--xlt);text-transform:uppercase;letter-spacing:.1em;margin-top:3px;text-align:center;white-space:nowrap}}
+
+/* ── WIZARD CONTENT ──────────────────────────────────── */
+.wizard-body{flex:1;padding:32px}
+@media(max-width:820px){.wizard-body{padding:20px 16px}}
+.step-panel{display:none}
+.step-panel.active{display:block}
+.step-header{margin-bottom:24px}
+.step-header h2{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:700;color:var(--char);line-height:1.05;margin-bottom:6px}
+.step-header p{font-size:1.15rem;color:var(--lt);line-height:1.62}
+.step-nav{display:flex;justify-content:space-between;align-items:center;padding:24px 32px;border-top:1px solid var(--linen);background:#fff;flex-shrink:0;position:sticky;bottom:0}
+@media(max-width:820px){.step-nav{padding:16px}}
+.btn-back{background:transparent;color:var(--mid);border:1.5px solid var(--linen);padding:13px 24px;font-family:'DM Sans',sans-serif;font-size:1.15rem;cursor:pointer;transition:border-color .2s,color .2s;display:flex;align-items:center;gap:8px}
+.btn-back:hover{border-color:var(--char);color:var(--char)}
+.btn-back:disabled{opacity:.3;cursor:default}
+.btn-next{background:var(--brick);color:#fff;border:none;padding:14px 32px;font-family:'DM Sans',sans-serif;font-size:1.15rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;letter-spacing:.04em;transition:background .2s}
+.btn-next:hover{background:var(--brickdk)}
+.btn-generate{background:var(--char);color:#fff;border:none;padding:14px 32px;font-family:'DM Sans',sans-serif;font-size:1.15rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;letter-spacing:.04em;transition:background .2s}
+.btn-generate:hover{background:#111}
+.step-count{font-family:'DM Mono',monospace;font-size:.85rem;color:var(--xlt)}
+
+/* ── FIELD COMPONENTS ────────────────────────────────── */
+.field-group{margin-bottom:20px}
+.field-row{display:grid;gap:16px;margin-bottom:20px}
+.field-row.cols-2{grid-template-columns:1fr 1fr}
+.field-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:600px){.field-row.cols-2,.field-row.cols-3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:'DM Mono',monospace;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brick);display:flex;align-items:center;gap:6px}
+.req-star{color:var(--brick);font-size:.85rem}
+.field-hint{font-size:.95rem;color:var(--xlt);font-style:italic;line-height:1.45;margin-top:2px}
+.field input[type=text],.field select,.field textarea{background:#fff;border:1.5px solid var(--linen);color:var(--char);font-family:'DM Sans',sans-serif;font-size:1.2rem;padding:10px 13px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%}
+.field input[type=text]:focus,.field select:focus,.field textarea:focus{border-color:var(--brick);box-shadow:0 0 0 3px rgba(113,47,30,.08)}
+.field input[type=text].error,.field textarea.error{border-color:#C0392B;box-shadow:0 0 0 3px rgba(192,57,43,.08)}
+.field textarea{resize:vertical;line-height:1.55;min-height:80px}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+/* SCALE COMPONENT */
+.scale-field{margin-bottom:20px}
+.scale-field label{font-family:'DM Mono',monospace;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brick);display:block;margin-bottom:8px}
+.scale-question{font-size:1.1rem;color:var(--char);line-height:1.5;margin-bottom:10px}
+.scale-btns{display:flex;gap:6px;margin-bottom:6px}
+.s-btn{width:42px;height:42px;border:1.5px solid var(--linen);background:#fff;font-family:'DM Mono',monospace;font-size:1rem;color:var(--xlt);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.s-btn:hover{border-color:var(--brick);color:var(--brick)}
+.s-btn.selected{background:var(--brick);border-color:var(--brick);color:#fff;transform:scale(1.05)}
+.scale-labels{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:.7rem;color:var(--xlt);letter-spacing:.06em;margin-bottom:6px}
+.scale-note-area{display:none;margin-top:6px}
+.scale-note-area.show{display:block}
+.scale-note-area input{width:100%;background:#fff;border:1.5px solid var(--linen);color:var(--mid);font-family:'DM Sans',sans-serif;font-size:1.05rem;padding:8px 12px;outline:none;transition:border-color .2s}
+.scale-note-area input:focus{border-color:var(--brick)}
+
+/* INFO BOX */
+.info-box{background:var(--bricklt);border-left:3px solid var(--brick);padding:12px 16px;margin-bottom:20px;font-size:1.05rem;color:var(--mid);line-height:1.6}
+.info-box strong{color:var(--char)}
+.info-box.green{background:var(--greenbg);border-color:var(--green);color:var(--greendk)}
+.info-box.blue{background:var(--bluebg);border-color:var(--blue);color:var(--blue)}
+
+/* SECTION DIVIDER */
+.field-divider{border:none;border-top:2px solid var(--linen);margin:24px 0}
+
+/* ── VALIDATION ERROR ────────────────────────────────── */
+.val-error{background:#FFF0F0;border:1.5px solid #C0392B;padding:12px 16px;margin-bottom:16px;color:#721C24;font-size:1.05rem;display:none}
+.val-error.show{display:block}
+
+/* ── LOADING ─────────────────────────────────────────── */
+.loading-panel{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:20px;padding:40px}
+.loading-panel.show{display:flex}
+.spinner{width:48px;height:48px;border:3px solid var(--linen);border-top-color:var(--brick);border-radius:50%;animation:spin 0.9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-title{font-family:'Cormorant Garamond',serif;font-size:2.2rem;color:var(--char);text-align:center}
+.loading-sub{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--xlt);letter-spacing:.1em;text-align:center}
+.loading-items{display:flex;flex-direction:column;gap:10px;min-width:260px;margin-top:8px}
+.li-item{display:flex;align-items:center;gap:10px;font-size:1.05rem;color:var(--xlt);transition:color .3s}
+.li-item.active{color:var(--char)}
+.li-item.done{color:var(--green)}
+.li-dot{width:7px;height:7px;border-radius:50%;background:var(--linen);flex-shrink:0;transition:background .3s}
+.li-item.active .li-dot{background:var(--brick);animation:pulse .9s ease-in-out infinite}
+.li-item.done .li-dot{background:var(--green)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ── OUTPUT PANEL ────────────────────────────────────── */
+.output-panel{display:none}
+.output-panel.show{display:block;padding:24px 32px}
+@media(max-width:820px){.output-panel.show{padding:16px}}
+.output-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.output-toolbar-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn-download{background:var(--brick);color:#fff;border:none;padding:11px 22px;font-family:'DM Sans',sans-serif;font-size:1.05rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s}
+.btn-download:hover{background:var(--brickdk)}
+.btn-startover{background:transparent;color:var(--mid);border:1.5px solid var(--linen);padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:1.05rem;cursor:pointer;transition:border-color .2s}
+.btn-startover:hover{border-color:var(--char)}
+.btn-copy-all{background:#fff;color:var(--char);border:1.5px solid var(--linen);padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:1rem;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-copy-all:hover{border-color:var(--char)}
+
+/* ── RENDERED DOCUMENT ────────────────────────────────── */
+.rendered-doc{background:#fff;box-shadow:0 2px 24px rgba(0,0,0,.07)}
+.doc-hdr{background:var(--brick);padding:24px 34px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px}
+.doc-brand{font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:700;color:#fff}
+.doc-brand-sub{font-family:'DM Mono',monospace;font-size:.7rem;color:rgba(255,255,255,.4);letter-spacing:.13em;text-transform:uppercase;margin-top:2px}
+.doc-meta{text-align:right;font-family:'DM Mono',monospace;font-size:.7rem;color:rgba(255,210,160,.7);letter-spacing:.1em;text-transform:uppercase;line-height:1.7}
+.doc-sections{padding:28px 34px}
+.doc-ftr{background:var(--cream);border-top:1px solid var(--linen);padding:12px 34px;display:flex;justify-content:space-between;align-items:center}
+.doc-ftr-brand{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--brick)}
+.doc-ftr-info{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--xlt)}
+
+/* Section types */
+.ds-hero{margin-bottom:28px}
+.ds-hero h1{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:700;color:var(--char);line-height:1.04;letter-spacing:-.01em}
+.ds-hero .tagline{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-style:italic;color:var(--lt);margin:6px 0 16px}
+.ds-hero .meta-row{display:flex;gap:24px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--linen)}
+.ds-hero .meta-item{display:flex;flex-direction:column;gap:2px}
+.ds-hero .meta-label{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--xlt)}
+.ds-hero .meta-value{font-size:1.05rem;color:var(--char);font-weight:500}
+.ds-stats{display:flex;gap:4px;margin:16px 0;flex-wrap:wrap}
+.ds-stat{flex:1;min-width:100px;background:var(--cream);border:1px solid var(--linen);padding:14px 16px;text-align:center}
+.ds-stat .sv{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:var(--brick);line-height:1;display:block}
+.ds-stat .sl{font-family:'DM Mono',monospace;font-size:.7rem;color:var(--xlt);letter-spacing:.1em;text-transform:uppercase;margin-top:4px;display:block}
+
+.ds-section{margin-bottom:24px;position:relative}
+.ds-section:hover .regen-btn{opacity:1}
+.ds-heading{font-family:'Cormorant Garamond',serif;font-size:1.65rem;font-weight:700;color:var(--brick);border-bottom:1.5px solid var(--linen);padding-bottom:5px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.ds-h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--char);margin:14px 0 6px}
+.ds-h4{font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;color:var(--brick);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 5px}
+.ds-prose{font-size:1.1rem;color:var(--mid);line-height:1.7;margin-bottom:10px}
+.ds-prose strong{color:var(--char)}
+.ds-prose em{color:var(--lt)}
+.ds-list{list-style:none;padding:0;margin:0 0 12px}
+.ds-list li{padding:5px 0 5px 16px;position:relative;font-size:1.05rem;color:var(--mid);border-bottom:1px solid #F5F0E8;line-height:1.5}
+.ds-list li:last-child{border:none}
+.ds-list li::before{content:'—';position:absolute;left:0;color:var(--brick);font-weight:600}
+.ds-list li strong{color:var(--char)}
+.ds-numlist{padding-left:20px;margin:0 0 12px;counter-reset:li}
+.ds-numlist li{list-style:none;counter-increment:li;padding:5px 0 5px 10px;font-size:1.05rem;color:var(--mid);border-bottom:1px solid #F5F0E8;line-height:1.5;position:relative}
+.ds-numlist li::before{content:counter(li)'.';position:absolute;left:-18px;color:var(--brick);font-weight:600;font-family:'DM Mono',monospace;font-size:.9rem}
+.ds-checklist{list-style:none;padding:0;margin:0 0 12px}
+.ds-checklist li{display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid #F5F0E8;font-size:1.05rem;color:var(--mid);line-height:1.45}
+.ds-checklist li::before{content:'□';color:var(--brick);font-size:1.2rem;flex-shrink:0;margin-top:-1px}
+.ds-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:1rem}
+.ds-table th{background:var(--char);color:#fff;padding:8px 12px;text-align:left;font-weight:600;font-size:.95rem}
+.ds-table td{padding:7px 12px;border-bottom:1px solid var(--linen);color:var(--mid);vertical-align:top;line-height:1.45}
+.ds-table tr:nth-child(even) td{background:#F8F4EF}
+.ds-table td strong{color:var(--char)}
+.ds-callout{padding:14px 16px;margin:14px 0;border-left:3px solid var(--brick);background:var(--bricklt)}
+.ds-callout.green{background:var(--greenbg);border-color:var(--green)}
+.ds-callout.blue{background:var(--bluebg);border-color:var(--blue)}
+.ds-callout.amber{background:var(--amberbg);border-color:var(--amber)}
+.ds-callout-icon{font-size:1.4rem;margin-bottom:4px;display:block}
+.ds-callout strong{font-size:1.1rem;color:var(--char);display:block;margin-bottom:4px}
+.ds-callout p{font-size:1.05rem;color:var(--mid);line-height:1.6;margin:0}
+.ds-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:16px}
+.ds-card{border:1.5px solid var(--linen);padding:14px;background:#fff}
+.ds-card-badge{font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brick);margin-bottom:4px}
+.ds-card-badge.green{color:var(--green)}
+.ds-card-badge.amber{color:var(--amber)}
+.ds-card h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--char);margin-bottom:6px}
+.ds-card p{font-size:1rem;color:var(--lt);line-height:1.55}
+.ds-matrix{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:14px}
+.ds-matrix-q{font-family:'DM Mono',monospace;font-size:.68rem;color:var(--xlt);text-transform:uppercase;letter-spacing:.1em;padding:6px 8px;background:var(--linen);grid-column:1/-1;display:flex;justify-content:space-between}
+.ds-matrix-cell{border:1.5px solid var(--linen);padding:12px;background:#fff}
+.ds-matrix-cell h4{font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.ds-matrix-cell.do-first h4{color:var(--green)}
+.ds-matrix-cell.plan-for h4{color:var(--brick)}
+.ds-matrix-cell.fill-in h4{color:var(--amber)}
+.ds-matrix-cell.reconsider h4{color:var(--xlt)}
+.ds-matrix-cell ul{list-style:none;padding:0}
+.ds-matrix-cell ul li{font-size:.95rem;color:var(--mid);padding:3px 0;border-bottom:1px solid #F5F0E8;line-height:1.4}
+.ds-action-plan{}
+.ds-phase{margin-bottom:12px;border:1.5px solid var(--linen)}
+.ds-phase-hdr{background:var(--brick);padding:8px 14px;display:flex;align-items:center;justify-content:space-between}
+.ds-phase-hdr.alt{background:var(--char)}
+.ds-phase-name{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:600;color:#fff}
+.ds-phase-theme{font-family:'DM Mono',monospace;font-size:.72rem;color:rgba(255,210,160,.7);letter-spacing:.1em;text-transform:uppercase}
+.ds-phase-body{padding:10px 14px}
+.ds-phase-body li{font-size:1rem;color:var(--mid);padding:4px 0 4px 14px;position:relative;border-bottom:1px solid #F5F0E8}
+.ds-phase-body li:last-child{border:none}
+.ds-phase-body li::before{content:'›';position:absolute;left:0;color:var(--brick);font-weight:700}
+.ds-divider{border:none;border-top:2px solid var(--linen);margin:24px 0}
+
+/* Regen button */
+.regen-btn{opacity:0;background:#fff;border:1px solid var(--linen);padding:4px 10px;font-family:'DM Mono',monospace;font-size:.68rem;color:var(--xlt);cursor:pointer;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;margin-left:auto;flex-shrink:0}
+.regen-btn:hover{border-color:var(--brick);color:var(--brick)}
+.regen-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.regen-overlay.show{display:flex}
+.regen-modal{background:#fff;padding:24px;max-width:440px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.regen-modal h3{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--char);margin-bottom:12px}
+.regen-modal select,.regen-modal input{width:100%;border:1.5px solid var(--linen);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:1.1rem;color:var(--char);outline:none;margin-bottom:10px}
+.regen-modal select:focus,.regen-modal input:focus{border-color:var(--brick)}
+.regen-actions{display:flex;gap:8px;margin-top:4px}
+.btn-regen-apply{flex:1;background:var(--brick);color:#fff;border:none;padding:11px;font-family:'DM Sans',sans-serif;font-size:1.05rem;font-weight:600;cursor:pointer}
+.btn-regen-cancel{background:transparent;color:var(--mid);border:1.5px solid var(--linen);padding:11px 20px;font-family:'DM Sans',sans-serif;font-size:1.05rem;cursor:pointer}
+
+/* ── UPSELL PANEL ────────────────────────────────────── */
+.upsell-panel{background:var(--char);margin-top:24px;padding:24px 34px}
+.upsell-eyebrow{font-family:'DM Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,210,160,.65);margin-bottom:12px}
+.upsell-heading{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;color:#fff;margin-bottom:6px}
+.upsell-sub{font-size:1.05rem;color:rgba(255,255,255,.48);margin-bottom:20px;line-height:1.55}
+.upsell-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:700px){.upsell-grid{grid-template-columns:1fr}}
+.upsell-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:16px;display:flex;flex-direction:column;gap:10px;transition:background .2s;cursor:pointer}
+.upsell-card:hover{background:rgba(113,47,30,.2)}
+.upsell-card.coaching{background:rgba(113,47,30,.18);border-color:rgba(113,47,30,.35)}
+.upsell-card-price{font-family:'DM Mono',monospace;font-size:.75rem;color:rgba(255,210,160,.7);letter-spacing:.1em}
+.upsell-card-name{font-family:'Cormorant Garamond',serif;font-size:1.25rem;font-weight:600;color:#fff;line-height:1.2}
+.upsell-card-desc{font-size:1rem;color:rgba(255,255,255,.5);line-height:1.5}
+.upsell-card-cta{font-family:'DM Mono',monospace;font-size:.72rem;color:rgba(255,210,160,.75);letter-spacing:.1em;text-transform:uppercase;margin-top:auto;display:flex;align-items:center;gap:6px}
+
+/* ── SHARE PANEL ─────────────────────────────────────── */
+.share-panel{background:var(--bricklt);border-top:3px solid var(--brick);padding:20px 34px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-top:4px}
+.share-text{font-size:1.1rem;color:var(--char);line-height:1.5}
+.share-text strong{font-size:1.2rem;display:block;margin-bottom:3px}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn-share{background:var(--brick);color:#fff;border:none;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:1rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-share:hover{background:var(--brickdk)}
+.btn-share.linkedin{background:#0A66C2}
+.btn-share.linkedin:hover{background:#084e96}
+.btn-share.copy{background:#fff;color:var(--brick);border:1.5px solid var(--brick)}
+
+/* ── PRINT STYLES ────────────────────────────────────── */
+@media print{
+  .sidebar,.progress-bar,.step-nav,.output-toolbar,.upsell-panel,.share-panel,.regen-btn,.regen-overlay{display:none!important}
+  .shell{display:block}
+  .main{background:#fff}
+  .output-panel{padding:0;display:block!important}
+  .rendered-doc{box-shadow:none}
+  .ds-section:hover .regen-btn{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- REGEN OVERLAY -->
+<div class="regen-overlay" id="regenOverlay">
+  <div class="regen-modal">
+    <h3>Refine This Section</h3>
+    <select id="regenPreset">
+      <option value="Make this more concise">Make more concise</option>
+      <option value="Make this more formal and professional">Make more formal</option>
+      <option value="Expand with more specific detail">Add more detail</option>
+      <option value="Make this more direct and actionable">More direct & actionable</option>
+      <option value="Rewrite with a warmer, more encouraging tone">Warmer tone</option>
+      <option value="custom">Custom instruction</option>
+    </select>
+    <input type="text" id="regenInstruction" placeholder="Additional instructions (optional)…">
+    <div class="regen-actions">
+      <button class="btn-regen-apply" onclick="applyRegen()">Apply Changes</button>
+      <button class="btn-regen-cancel" onclick="closeRegen()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-hdr">
+      <div class="sb-logo">Kasandy Consulting</div>
+      <div class="sb-tag">Digital Tool · $22</div>
+    </div>
+    <div class="sb-body">
+      <div class="sb-title">Funding Strategy <em>Workbook</em></div>
+      <div class="sb-desc">Map your current funding honestly. Receive a personalised funding analysis, 3 recommended revenue stream strategies, a 12-month action plan, and a board fundraising brief — all built around your specific situation.</div>
+      <div class="sb-steps">
+    <div class="sb-step active" id="sbstep0">
+      <div class="sb-step-dot">1</div>
+      <div class="sb-step-text">Funding Map</div>
+    </div>
+    <div class="sb-step " id="sbstep1">
+      <div class="sb-step-dot">2</div>
+      <div class="sb-step-text">Your Org</div>
+    </div></div>
+      <div class="sb-what">
+        <div class="sb-what-lbl">What you receive</div>
+        <p>Funding concentration audit · 3 personalised revenue diversification strategies · 12-month action plan with quarterly milestones · Funder match list · Board fundraising brief.</p>
+      </div>
+      <div class="sb-save-indicator" id="saveIndicator">
+        <div class="save-dot"></div>Progress saved
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- RESUME BANNER -->
+    <div id="resumeBanner" style="display:none;background:#F5F0E8;border-bottom:1px solid #EDE5D8;padding:12px 32px;align-items:center;justify-content:space-between;gap:12px;font-size:1.05rem;color:#444;">
+      <span>You have saved progress on this tool.</span>
+      <div style="display:flex;gap:8px">
+        <button onclick="resumeProgress()" style="background:#712f1e;color:#fff;border:none;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:1rem;cursor:pointer">Continue where I left off</button>
+        <button onclick="clearProgress()" style="background:transparent;color:#888;border:1px solid #DDD;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:1rem;cursor:pointer">Start fresh</button>
+      </div>
+    </div>
+
+    <!-- WIZARD -->
+    <div class="wizard-body">
+      <div class="val-error" id="valError"></div>
+      
+    <div class="step-panel active" id="step0">
+      <div class="step-header">
+        <h2>Current Funding</h2>
+        <p>Be as honest and specific as possible. The analysis is only as useful as the picture is accurate.</p>
+      </div>
+      <div class="field"><label>Organisation Name<span class="req-star">*</span></label><input type="text" data-field="orgName" data-required placeholder=""><div class="field-hint"></div></div><div class="field"><label>Mission<span class="req-star">*</span></label><input type="text" data-field="orgMission" data-required placeholder=""><div class="field-hint"></div></div><div class="field"><label>Total annual revenue</label><input type="text" data-field="orgRevenue"  placeholder="e.g. $420,000"><div class="field-hint"></div></div><div class="field"><label>Funder 1 — name, type, annual amount, % of total revenue</label><input type="text" data-field="funder1"  placeholder="e.g. Black Opportunity Fund — government-backed fund — $180K/year — 43% of revenue"><div class="field-hint"></div></div><div class="field"><label>Funder 2</label><input type="text" data-field="funder2"  placeholder="e.g. TD Ready Commitment — corporate — $75K — 18%"><div class="field-hint"></div></div><div class="field"><label>Funder 3</label><input type="text" data-field="funder3"  placeholder="e.g. City of Vancouver — municipal grant — $45K — 11%"><div class="field-hint"></div></div><div class="field"><label>Funder 4 (if applicable)</label><input type="text" data-field="funder4"  placeholder=""><div class="field-hint"></div></div><div class="field"><label>All other revenue (grants, donations, earned, events)</label><input type="text" data-field="otherRevenue"  placeholder="e.g. Individual donations $25K (6%), earned revenue $15K (3.6%), events $10K (2.4%)"><div class="field-hint"></div></div><div class="field"><label>Which funders are at risk of ending or reducing?</label><input type="text" data-field="fundingRisks"  placeholder="e.g. BOF grant ends December 2026 with no renewal confirmed; City grant is year-to-year with no multi-year commitment"><div class="field-hint"></div></div>
+    </div>
+    <div class="step-panel " id="step1">
+      <div class="step-header">
+        <h2>Organisation Profile</h2>
+        
+      </div>
+      <div class="field-row cols-2"><div class="field"><label>Primary Sector</label><input type="text" data-field="orgSector"  placeholder="e.g. Newcomer services, Black entrepreneurship"><div class="field-hint"></div></div><div class="field"><label>Province</label><input type="text" data-field="orgProv"  placeholder="e.g. British Columbia"><div class="field-hint"></div></div></div><div class="field"><label>Your 3 biggest organisational strengths</label><input type="text" data-field="orgStrengths"  placeholder="e.g. Strong community trust built over 8 years, unique curriculum that can't easily be replicated, well-connected board with corporate sector ties"><div class="field-hint"></div></div><div class="field"><label>Current fundraising capacity (beyond the ED)</label><input type="text" data-field="fundraisingCapacity"  placeholder="e.g. ED does 80% of all fundraising, no dedicated development staff, Board chair is active in introductions"><div class="field-hint"></div></div><div class="field"><label>Board composition and fundraising involvement</label><input type="text" data-field="boardEngagement"  placeholder="e.g. 8 directors, 3 actively support fundraising through introductions and asks, 5 are not engaged in development work"><div class="field-hint"></div></div><div class="field"><label>Earned revenue potential you haven't pursued</label><input type="text" data-field="earnedRevPotential"  placeholder="e.g. Could offer fee-for-service version of our financial literacy program to corporate HR departments; could license our curriculum to peer organisations"><div class="field-hint"></div></div><div class="field"><label>Your primary financial goal for the next 12 months<span class="req-star">*</span></label><input type="text" data-field="goal" data-required placeholder="e.g. Reduce top-funder dependency from 43% to under 30%, build individual donor program from $0, increase earned revenue to $50K"><div class="field-hint"></div></div>
+    </div>
+    </div>
+
+    <!-- STEP NAV -->
+    <div class="step-nav">
+      <button class="btn-back" id="backBtn" onclick="prevStep()" disabled>← Back</button>
+      <span class="step-count" id="stepCount">Step 1 of 2</span>
+      <button class="btn-next" id="nextBtn" onclick="nextStep()">Continue →</button>
+      <button class="btn-generate" id="genBtn" style="display:none" onclick="generate()">Generate My Funding Strategy Report →</button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-panel" id="loadingPanel">
+      <div class="spinner"></div>
+      <div class="loading-title">Building your funding strategy report…</div>
+      <div class="loading-sub">Personalised to your specific situation</div>
+      <div class="loading-items">
+    <div class="li-item active" id="li0"><div class="li-dot"></div>Analysing your funding concentration</div>
+    <div class="li-item " id="li1"><div class="li-dot"></div>Identifying your diversification opportunities</div>
+    <div class="li-item " id="li2"><div class="li-dot"></div>Building your 12-month strategy</div>
+    <div class="li-item " id="li3"><div class="li-dot"></div>Writing your board brief</div></div>
+    </div>
+
+    <!-- OUTPUT -->
+    <div class="output-panel" id="outputPanel">
+      <div class="output-toolbar">
+        <div class="output-toolbar-left">
+          <button class="btn-download" onclick="downloadPDF()">⬇ Download PDF</button>
+          <button class="btn-copy-all" onclick="copyAllText()">⎘ Copy Text</button>
+          <button class="btn-startover" onclick="startOver()">← Start Over</button>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:.75rem;color:#AAA">Tip: Click any section heading to refine it</div>
+      </div>
+      <div class="rendered-doc" id="renderedDoc"></div>
+      <div class="upsell-panel" id="upsellPanel"></div>
+      <div class="share-panel">
+        <div class="share-text">
+          <strong>Was this useful?</strong>
+          Share with a colleague who could use it — and help grow Canada's most practical procurement resource library.
+        </div>
+        <div class="share-btns">
+          <button class="btn-share linkedin" onclick="shareLinkedIn()">Share on LinkedIn</button>
+          <button class="btn-share copy" onclick="copyShareLink()">Copy link</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+
+// ── STATE ─────────────────────────────────────────────
+const SLUG='nonprofit-funding-workbook';
+const STEPS=[{"title":"Current Funding","short":"Funding Map"},{"title":"Organisation Profile","short":"Your Org"}];
+let currentStep=0;
+let formData={};
+let generatedSections=[];
+let regenTarget=null;
+let saveTimer=null;
+
+// ── INIT ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  loadSavedData();
+  buildProgressBar();
+  showStep(0);
+  document.querySelectorAll('[data-field]').forEach(el=>{
+    el.addEventListener('input',()=>{ formData[el.dataset.field]=el.value; scheduleSave(); });
+    el.addEventListener('change',()=>{ formData[el.dataset.field]=el.value; scheduleSave(); });
+  });
+});
+
+// ── PROGRESS BAR ─────────────────────────────────────
+function buildProgressBar(){
+  const pb=document.getElementById('progressBar');
+  if(!pb)return;
+  let html='';
+  STEPS.forEach((s,i)=>{
+    if(i>0)html+=`<div class="pb-line" id="pbl${i}"></div>`;
+    html+=`<div style="display:flex;flex-direction:column;align-items:center">
+      <div class="pb-dot" id="pbd${i}" onclick="jumpToStep(${i})">${i+1}</div>
+      <div class="pb-label">${s.short||s.title}</div>
+    </div>`;
+  });
+  pb.innerHTML=html;
+  updateProgressBar();
+}
+function updateProgressBar(){
+  STEPS.forEach((_,i)=>{
+    const dot=document.getElementById('pbd'+i);
+    const line=document.getElementById('pbl'+i);
+    if(!dot)return;
+    dot.className='pb-dot'+(i===currentStep?' active':i<currentStep?' done':'');
+    if(i>0&&line)line.className='pb-line'+(i<=currentStep?' done':'');
+    if(i<currentStep&&dot){dot.textContent='';dot.style.fontSize='.9rem';}
+    else if(i!==currentStep){dot.textContent=i+1;dot.style.fontSize='';}
+  });
+}
+
+// ── WIZARD NAVIGATION ─────────────────────────────────
+function showStep(n){
+  document.querySelectorAll('.step-panel').forEach((p,i)=>p.classList.toggle('active',i===n));
+  document.querySelectorAll('.sb-step').forEach((s,i)=>{
+    s.classList.toggle('active',i===n);
+    s.classList.toggle('done',i<n);
+  });
+  currentStep=n;
+  updateProgressBar();
+  const backBtn=document.getElementById('backBtn');
+  const nextBtn=document.getElementById('nextBtn');
+  const genBtn=document.getElementById('genBtn');
+  const stepCount=document.getElementById('stepCount');
+  if(backBtn)backBtn.disabled=n===0;
+  const isLast=n===STEPS.length-1;
+  if(nextBtn)nextBtn.style.display=isLast?'none':'flex';
+  if(genBtn)genBtn.style.display=isLast?'flex':'none';
+  if(stepCount)stepCount.textContent=`Step ${n+1} of ${STEPS.length}`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function jumpToStep(n){if(n<=currentStep)showStep(n);}
+function nextStep(){
+  if(validate(currentStep)){
+    if(currentStep<STEPS.length-1)showStep(currentStep+1);
+  }
+}
+function prevStep(){if(currentStep>0)showStep(currentStep-1);}
+
+// ── VALIDATION ────────────────────────────────────────
+function validate(stepIdx){
+  const panel=document.querySelectorAll('.step-panel')[stepIdx];
+  if(!panel)return true;
+  let ok=true;
+  const errBox=document.getElementById('valError');
+  if(errBox)errBox.classList.remove('show');
+  panel.querySelectorAll('[data-required]').forEach(el=>{
+    const val=(el.value||formData[el.dataset.field]||'').trim();
+    if(!val){
+      el.classList.add('error');
+      ok=false;
+      el.addEventListener('input',()=>el.classList.remove('error'),{once:true});
+    }
+  });
+  if(!ok&&errBox){errBox.textContent='Please fill in the required fields before continuing.';errBox.classList.add('show');}
+  return ok;
+}
+
+// ── SCALE COMPONENT ───────────────────────────────────
+function selectScale(id,val){
+  formData[id]=val;
+  document.querySelectorAll(`[data-scale-id="${id}"] .s-btn`).forEach(b=>{
+    b.classList.toggle('selected',parseInt(b.dataset.val)===val);
+  });
+  const noteArea=document.getElementById('snote_'+id);
+  if(noteArea){noteArea.classList.toggle('show',val<=3);}
+  scheduleSave();
+}
+
+// ── AUTO-SAVE ─────────────────────────────────────────
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{
+      localStorage.setItem('kc_'+SLUG,JSON.stringify(formData));
+      const ind=document.getElementById('saveIndicator');
+      if(ind){ind.classList.add('visible');setTimeout(()=>ind.classList.remove('visible'),2000);}
+    }catch(e){}
+  },600);
+}
+function loadSavedData(){
+  try{
+    const saved=localStorage.getItem('kc_'+SLUG);
+    if(!saved)return;
+    const data=JSON.parse(saved);
+    if(Object.keys(data).length===0)return;
+    const banner=document.getElementById('resumeBanner');
+    if(banner)banner.style.display='flex';
+  }catch(e){}
+}
+function resumeProgress(){
+  try{
+    const data=JSON.parse(localStorage.getItem('kc_'+SLUG)||'{}');
+    formData={...data};
+    Object.entries(data).forEach(([k,v])=>{
+      const el=document.querySelector(`[data-field="${k}"]`);
+      if(el)el.value=v;
+      if(k.startsWith('scale_'))selectScale(k.replace('scale_',''),parseInt(v));
+    });
+    const banner=document.getElementById('resumeBanner');
+    if(banner)banner.style.display='none';
+  }catch(e){}
+}
+function clearProgress(){
+  try{localStorage.removeItem('kc_'+SLUG);}catch(e){}
+  const banner=document.getElementById('resumeBanner');
+  if(banner)banner.style.display='none';
+}
+
+// ── GENERATE ──────────────────────────────────────────
+async function generate(){
+  if(!validate(currentStep))return;
+  document.querySelector('.wizard-body').style.display='none';
+  document.querySelector('.step-nav').style.display='none';
+  const lp=document.getElementById('loadingPanel');
+  lp.classList.add('show');
+  const items=document.querySelectorAll('.li-item');
+  let li=0;
+  const liTimer=setInterval(()=>{
+    if(li>0&&items[li-1])items[li-1].className='li-item done';
+    if(items[li]){items[li].className='li-item active';li++;}
+    else clearInterval(liTimer);
+  },2200);
+  try{
+    const promptText=buildPrompt(formData);
+    const res=await fetch('/api/generate',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,messages:[{role:'user',content:promptText}]})
+    });
+    const data=await res.json();
+    clearInterval(liTimer);
+    const raw=data.content?.[0]?.text||'';
+    if(!raw)throw new Error('Empty response');
+    const json=parseJSON(raw);
+    generatedSections=json.sections||[];
+    lp.classList.remove('show');
+    renderDocument(json);
+    document.getElementById('outputPanel').classList.add('show');
+    renderUpsell();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){
+    clearInterval(liTimer);
+    lp.classList.remove('show');
+    document.querySelector('.wizard-body').style.display='block';
+    document.querySelector('.step-nav').style.display='flex';
+    const eb=document.getElementById('valError');
+    if(eb){eb.textContent='Error generating: '+e.message+'. Please try again.';eb.classList.add('show');}
+  }
+}
+
+// ── JSON PARSER (robust) ──────────────────────────────
+function parseJSON(raw){
+  try{
+    let s=raw.trim();
+    if(s.startsWith('```'))s=s.replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'');
+    const start=s.indexOf('{');
+    const end=s.lastIndexOf('}');
+    if(start>-1&&end>start)s=s.slice(start,end+1);
+    return JSON.parse(s);
+  }catch(e){
+    return {documentTitle:'Your Document',sections:[{type:'prose',heading:'Generated Content',content:raw}]};
+  }
+}
+
+// ── RENDERER ─────────────────────────────────────────
+function renderDocument(json){
+  const doc=document.getElementById('renderedDoc');
+  const generated=new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
+  let sectionsHtml='';
+  (json.sections||[]).forEach((sec,i)=>{
+    sectionsHtml+=renderSection(sec,i);
+  });
+  doc.innerHTML=`
+    <div class="doc-hdr">
+      <div><div class="doc-brand">Kasandy Consulting</div><div class="doc-brand-sub">Where Ambition Meets Access</div></div>
+      <div class="doc-meta">${json.documentTitle||''}<br>Generated ${generated}</div>
+    </div>
+    <div class="doc-sections">${sectionsHtml}</div>
+    <div class="doc-ftr">
+      <div class="doc-ftr-brand">Kasandy Consulting</div>
+      <div class="doc-ftr-info">consulting [at] kasandy.com · kasandyconsulting.com</div>
+    </div>`;
+}
+function renderSection(sec,idx){
+  const regenBtn=`<button class="regen-btn" onclick="openRegen(${idx})">↻ Refine</button>`;
+  switch(sec.type){
+    case 'hero': return renderHero(sec);
+    case 'stats': return renderStats(sec);
+    case 'prose': return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div>${(sec.paragraphs||[sec.content]).map(p=>`<p class="ds-prose">${p||''}</p>`).join('')}</div>`;
+    case 'list': return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div><ul class="ds-list">${(sec.items||[]).map(i=>`<li>${typeof i==='string'?i:(i.title?`<strong>${i.title}</strong>${i.detail?' — '+i.detail:''}`:i)}</li>`).join('')}</ul></div>`;
+    case 'numbered': return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div><ol class="ds-numlist">${(sec.items||[]).map(i=>`<li>${typeof i==='string'?i:(i.title?`<strong>${i.title}</strong>${i.detail?' — '+i.detail:''}`:i)}</li>`).join('')}</ol></div>`;
+    case 'checklist': return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div><ul class="ds-checklist">${(sec.items||[]).map(i=>`<li>${typeof i==='string'?i:(i.text||(i.title||''))}${i.note?`<span style="font-size:.9rem;color:#999;display:block;margin-top:2px">${i.note}</span>`:''} </li>`).join('')}</ul></div>`;
+    case 'table': return renderTable(sec,regenBtn);
+    case 'cards': return renderCards(sec,regenBtn);
+    case 'callout': return `<div class="ds-callout ${sec.variant||''}"><span class="ds-callout-icon">${sec.icon||'💡'}</span><strong>${sec.heading||''}</strong><p>${sec.body||''}</p></div>`;
+    case 'action-plan': return renderActionPlan(sec,regenBtn);
+    case 'priority-matrix': return renderMatrix(sec,regenBtn);
+    case 'two-column': return renderTwoCol(sec,regenBtn);
+    case 'divider': return '<hr class="ds-divider">';
+    case 'subsection': return `<div class="ds-section">${sec.heading?`<div class="ds-h3">${sec.heading}</div>`:''}
+      ${(sec.paragraphs||[sec.content||'']).map(p=>`<p class="ds-prose">${p}</p>`).join('')}
+      ${sec.items?`<ul class="ds-list">${sec.items.map(i=>`<li>${typeof i==='string'?i:(i.title?`<strong>${i.title}</strong>${i.detail?' — '+i.detail:''}`:i)}</li>`).join('')}</ul>`:''}
+    </div>`;
+    default: return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}</div><p class="ds-prose">${sec.content||JSON.stringify(sec)}</p></div>`;
+  }
+}
+function renderHero(sec){
+  const meta=(sec.metaItems||[]).map(m=>`<div class="meta-item"><span class="meta-label">${m.label}</span><span class="meta-value">${m.value}</span></div>`).join('');
+  const stats=(sec.stats||[]).map(s=>`<div class="ds-stat"><span class="sv">${s.value}</span><span class="sl">${s.label}</span></div>`).join('');
+  return `<div class="ds-hero"><h1>${sec.companyName||sec.title||''}</h1>${sec.tagline?`<div class="tagline">${sec.tagline}</div>`:''}${stats?`<div class="ds-stats">${stats}</div>`:''} ${meta?`<div class="meta-row">${meta}</div>`:''}</div>`;
+}
+function renderStats(sec){
+  return `<div class="ds-stats">${(sec.items||[]).map(s=>`<div class="ds-stat"><span class="sv">${s.value}</span><span class="sl">${s.label}</span></div>`).join('')}</div>`;
+}
+function renderTable(sec,regenBtn){
+  const headers=(sec.headers||sec.columns||[]).map(h=>`<th>${h}</th>`).join('');
+  const rows=(sec.rows||[]).map(r=>`<tr>${(Array.isArray(r)?r:[r]).map(c=>`<td>${c||''}</td>`).join('')}</tr>`).join('');
+  return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div><table class="ds-table"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function renderCards(sec,regenBtn){
+  const cards=(sec.cards||sec.items||[]).map(c=>`<div class="ds-card"><div class="ds-card-badge ${c.status||''}">${c.badge||c.status||''}</div><h3>${c.title||c.heading||''}</h3><p>${c.body||c.content||c.description||''}</p></div>`).join('');
+  return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div><div class="ds-cards">${cards}</div></div>`;
+}
+function renderActionPlan(sec,regenBtn){
+  const phases=(sec.phases||sec.items||[]).map((p,i)=>`<div class="ds-phase"><div class="ds-phase-hdr ${i%2?'alt':''}"><span class="ds-phase-name">${p.period||p.name||p.phase||''}</span><span class="ds-phase-theme">${p.theme||p.focus||''}</span></div><ul class="ds-phase-body">${(p.actions||p.items||[]).map(a=>`<li>${a}</li>`).join('')}</ul></div>`).join('');
+  return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div><div class="ds-action-plan">${phases}</div></div>`;
+}
+function renderMatrix(sec,regenBtn){
+  const q=sec.quadrants||{};
+  const renderQ=(key,cls,label)=>`<div class="ds-matrix-cell ${cls}"><h4>${label}</h4><ul>${(q[key]||[]).map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div>
+    <div class="ds-matrix">
+      <div class="ds-matrix-q"><span>← Lower Effort</span><span>Higher Effort →</span></div>
+      ${renderQ('do-first','do-first','⚡ Do First')}
+      ${renderQ('plan-for','plan-for','📋 Plan For')}
+      ${renderQ('fill-in','fill-in','✏ Fill In')}
+      ${renderQ('reconsider','reconsider','⏸ Reconsider')}
+    </div>
+  </div>`;
+}
+function renderTwoCol(sec,regenBtn){
+  const col=c=>`<div>${c.heading?`<div class="ds-h3">${c.heading}</div>`:''}
+    ${c.content?`<p class="ds-prose">${c.content}</p>`:''}
+    ${c.items?`<ul class="ds-list">${c.items.map(i=>`<li>${typeof i==='string'?i:(i.title?`<strong>${i.title}</strong>${i.detail?' — '+i.detail:''}`:i)}</li>`).join('')}</ul>`:''}
+  </div>`;
+  return `<div class="ds-section"><div class="ds-heading">${sec.heading||''}${regenBtn}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">${col(sec.left||{})}${col(sec.right||{})}</div>
+  </div>`;
+}
+
+// ── SECTION REGEN ─────────────────────────────────────
+function openRegen(idx){
+  regenTarget=idx;
+  document.getElementById('regenOverlay').classList.add('show');
+}
+function closeRegen(){document.getElementById('regenOverlay').classList.remove('show');regenTarget=null;}
+async function applyRegen(){
+  if(regenTarget===null)return;
+  const instruction=document.getElementById('regenInstruction').value||'Refine and improve this section.';
+  const preset=document.getElementById('regenPreset').value;
+  const fullInstruction=preset!=='custom'?preset+'. '+instruction:instruction;
+  const sec=generatedSections[regenTarget];
+  closeRegen();
+  const prompt=`The following is one section from a professional document:\n${JSON.stringify(sec)}\n\nInstruction: ${fullInstruction}\n\nReturn ONLY the updated section as valid JSON matching the same structure. No explanation, no markdown, just the JSON object.`;
+  try{
+    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'';
+    const updated=parseJSON(raw);
+    generatedSections[regenTarget]=updated;
+    document.getElementById('renderedDoc').querySelectorAll('.ds-section, .ds-hero, .ds-callout, .ds-stats, .ds-divider')[regenTarget].outerHTML=renderSection(updated,regenTarget);
+  }catch(e){alert('Could not regenerate section. Please try again.');}
+}
+
+// ── PDF DOWNLOAD ──────────────────────────────────────
+function downloadPDF(){
+  const doc=document.getElementById('renderedDoc');
+  if(window.html2pdf){
+    const opt={margin:0,filename:'kasandy-'+SLUG+'-'+Date.now()+'.pdf',image:{type:'jpeg',quality:.92},html2canvas:{scale:1.8,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+    html2pdf().set(opt).from(doc).save();
+  }else{window.print();}
+}
+
+// ── COPY ALL TEXT ─────────────────────────────────────
+function copyAllText(){
+  const doc=document.getElementById('renderedDoc');
+  const text=doc.innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn=document.querySelector('.btn-copy-all');
+    if(btn){btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='Copy Text',2000);}
+  });
+}
+
+// ── UPSELL ────────────────────────────────────────────
+function renderUpsell(){
+  const upsells=[{"slug":"grant-readiness-assessment","price":"$7","name":"Grant Readiness Self-Assessment","why":"Your funding strategy likely includes new grant applications. This $7 assessment tells you your readiness score and matches you with 10–12 funders specific to your sector."},{"slug":"impact-report-kit","price":"$19","name":"Impact Report Kit","why":"Diversifying your funding requires stronger donor and funder communications. The Impact Report Kit generates a complete annual impact report draft using your actual data."}];
+  const coaching={"price":"$400","title":"Discovery Session with Jackee","why":"A 90-minute session reviewing your funding map, identifying your highest-leverage diversification move, and building an accountability plan with Jackee."};
+  const panel=document.getElementById('upsellPanel');
+  if(!panel)return;
+  const cards=upsells.map(u=>`<div class="upsell-card" onclick="window.open('https://kasandyconsulting.com/resources?product=${u.slug}','_blank')">
+    <div class="upsell-card-price">${u.price}</div>
+    <div class="upsell-card-name">${u.name}</div>
+    <div class="upsell-card-desc">${u.why}</div>
+    <div class="upsell-card-cta">Get this tool →</div>
+  </div>`).join('');
+  const coachCard=`<div class="upsell-card coaching" onclick="window.open('https://kasandyconsulting.com/contact','_blank')">
+    <div class="upsell-card-price">From ${coaching.price}</div>
+    <div class="upsell-card-name">${coaching.title}</div>
+    <div class="upsell-card-desc">${coaching.why}</div>
+    <div class="upsell-card-cta">Book now →</div>
+  </div>`;
+  panel.innerHTML=`<div class="upsell-eyebrow">Recommended Next Steps</div>
+    <div class="upsell-heading">Build on your results.</div>
+    <div class="upsell-sub">Each tool in the Kasandy Consulting toolkit builds on the last. Here's what to do next.</div>
+    <div class="upsell-grid">${cards}${coachCard}</div>`;
+}
+
+// ── START OVER ────────────────────────────────────────
+function startOver(){
+  formData={};
+  try{localStorage.removeItem('kc_'+SLUG);}catch(e){}
+  document.querySelectorAll('[data-field]').forEach(el=>{el.value='';el.classList.remove('error');});
+  document.querySelectorAll('.s-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.scale-note-area').forEach(n=>n.classList.remove('show'));
+  document.getElementById('outputPanel').classList.remove('show');
+  document.querySelector('.wizard-body').style.display='block';
+  document.querySelector('.step-nav').style.display='flex';
+  showStep(0);
+}
+
+// ── SHARE ─────────────────────────────────────────────
+function shareLinkedIn(){
+  const url=`https://kasandyconsulting.com/resources?product=${SLUG}`;
+  const text=encodeURIComponent(`Just used the ${document.title} from Kasandy Consulting — highly recommend for anyone working on procurement readiness or business strategy. ${url}`);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${text}`,'_blank');
+}
+function copyShareLink(){
+  const url=`https://kasandyconsulting.com/resources?product=${SLUG}`;
+  navigator.clipboard.writeText(url).then(()=>{
+    const btn=event.currentTarget;
+    btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='Copy link',2000);
+  });
+}
+
+
+function buildPrompt(vals) {
+  return (function(vals) {
+    return `You are a non-profit financial strategy consultant with expertise in Canadian charitable funding. Generate a comprehensive, honest Funding Strategy Report.
+
+ORG: ${vals.orgName} | Mission: ${vals.orgMission} | Revenue: ${vals.orgRevenue}
+Funders: ${[vals.funder1,vals.funder2,vals.funder3,vals.funder4,vals.otherRevenue].filter(Boolean).join(' | ')}
+Risks: ${vals.fundingRisks}
+
+PROFILE: Sector: ${vals.orgSector} | Province: ${vals.orgProv} | Strengths: ${vals.orgStrengths} | Fundraising capacity: ${vals.fundraisingCapacity} | Board: ${vals.boardEngagement} | Earned revenue potential: ${vals.earnedRevPotential} | Goal: ${vals.goal}
+
+Return JSON:
+{
+  "documentTitle": "Funding Strategy Report — ${vals.orgName}",
+  "sections": [
+    {"type":"table","heading":"Your Funding Concentration Audit","columns":["Funder","Type","Annual Amount","% of Revenue","Risk Level","Notes"],"rows":[[Parse their funder information into rows. Calculate concentrations. Risk levels: High (>30% single funder, ending soon), Medium (15–30%, annual only), Low (<15%, multi-year). Add a totals row.]]},
+    {"type":"callout","variant":"","icon":"📊","heading":"Your Funding Reality","body":"[3–4 direct, honest paragraphs. What does this funding map tell us? How vulnerable is this organisation — name the number (what % from top 2 funders). What happens specifically if ${vals.fundingRisks?.split(';')[0]?.trim()||'the top funder ends'}? What is the most important single action to take in the next 90 days? Be direct — this is strategic advice, not a report card.]"},
+    {"type":"cards","heading":"3 Recommended Revenue Diversification Strategies","cards":[
+      {"title":"[Strategy 1 — most appropriate for their specific strengths, capacity, and timeline]","badge":"[timeline: 0–6 months / 6–18 months / 12–24 months]","body":"[Why this makes sense for THIS organisation specifically — reference their strengths and capacity. What it looks like in practice. Realistic year 1 revenue potential. The key requirement to make it work. 4–5 sentences.]"},
+      {"title":"[Strategy 2]","badge":"[timeline]","body":"[Same format — different revenue stream type from Strategy 1]"},
+      {"title":"[Strategy 3]","badge":"[timeline]","body":"[Same format]"}
+    ]},
+    {"type":"table","heading":"New Funder Targets — 12 Months","columns":["Funder","Type","Award Range","Application Window","Why They're a Fit"],"rows":[[Generate 8–10 rows of SPECIFIC, REAL Canadian funders matched to their sector, province, and mission. Include federal programs, provincial funders for their province, community foundations, private foundations active in their space. Name real programs.]]},
+    {"type":"action-plan","heading":"Your 12-Month Action Plan","phases":[
+      {"period":"Q1 — Months 1–3","theme":"[Name the Q1 priority based on their most urgent risk]","actions":["[3–4 specific actions with owner (ED/Board/Staff) and measurable outcome. Address the most urgent risk first.]"]},
+      {"period":"Q2 — Months 4–6","theme":"[Q2 priority — building on Q1]","actions":["[3–4 actions]"]},
+      {"period":"Q3 — Months 7–9","theme":"[Q3 priority — second strategy getting traction]","actions":["[3–4 actions]"]},
+      {"period":"Q4 — Months 10–12","theme":"[Q4 priority — assessment and foundation for next year]","actions":["[3–4 actions including a 12-month review milestone]"]}
+    ]},
+    {"type":"prose","heading":"Board Fundraising Brief — For Your Next Board Meeting","paragraphs":["[Write a clear, 1-page brief for the board in plain language — not strategy consultant language. Cover: (1) The funding picture honestly in 3 sentences, (2) The specific risk if no action is taken, (3) The strategy being proposed, (4) Exactly what you need from the board: specific asks, introductions, conversations. Board members should be able to read this in 3 minutes and understand exactly what is at stake and what they are being asked to do. Write it for a board that may not be deeply familiar with fundraising strategy.]"}
+  ]
+}
+Return ONLY the JSON.`;
+  })(vals);
+}
+</script>
+</body>
+</html>
