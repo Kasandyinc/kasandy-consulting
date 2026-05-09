@@ -67,7 +67,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$12',
-    squareUrl: 'https://checkout.square.site/buy/Q3RWWUJLF7BN3UDQZYTDRXDY',
+    squareUrl: 'https://square.link/u/28hXVVyV',
     createdAt: '2026-05-01T00:00:00Z',
   },
   {
@@ -81,7 +81,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$17',
-    squareUrl: 'https://checkout.square.site/buy/A6GJ5SIKJ2NKTJQGIN4JG7HP',
+    squareUrl: 'https://square.link/u/eeXLDgVT',
     createdAt: '2026-05-01T00:00:00Z',
   },
   {
@@ -95,7 +95,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$17',
-    squareUrl: 'https://checkout.square.site/buy/F2PUFA4SL4TL56HSG5MPDI7H',
+    squareUrl: 'https://square.link/u/SCD15XLF',
     createdAt: '2026-05-09T00:00:00Z',
   },
   {
@@ -109,7 +109,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$22',
-    squareUrl: 'https://checkout.square.site/buy/S55776PDYZQGIYL4O3JRDQDL',
+    squareUrl: 'https://square.link/u/OCK9VsTh',
     createdAt: '2026-05-09T00:00:00Z',
   },
 
@@ -126,7 +126,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$15',
-    squareUrl: 'https://checkout.square.site/buy/K2OKVVBRETPNFIHWMSXMKVQA',
+    squareUrl: 'https://square.link/u/wCD41Pu2',
     createdAt: '2026-05-09T00:00:00Z',
   },
   {
@@ -140,7 +140,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$12',
-    squareUrl: 'https://checkout.square.site/buy/OLVUGPBIHZYUVPMYBWU646TJ',
+    squareUrl: 'https://square.link/u/kgzWmKyI',
     createdAt: '2026-05-09T00:00:00Z',
   },
   {
@@ -154,7 +154,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$22',
-    squareUrl: 'https://checkout.square.site/buy/YAJUS2XDZHUS7XYHIM2X5O2B',
+    squareUrl: 'https://square.link/u/KmwM34zA',
     createdAt: '2026-05-09T00:00:00Z',
   },
   {
@@ -168,7 +168,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$9',
-    squareUrl: 'https://checkout.square.site/buy/RSXWKL5OH4BDNI4NKIF7N3K6',
+    squareUrl: 'https://square.link/u/x9LDyBme',
     createdAt: '2026-05-09T00:00:00Z',
   },
   {
@@ -182,7 +182,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$19',
-    squareUrl: 'https://checkout.square.site/buy/QYJGFIGRCET5OKTERPBQ7YCX',
+    squareUrl: 'https://square.link/u/t6Dsp0F4',
     createdAt: '2026-05-09T00:00:00Z',
   },
 
@@ -199,7 +199,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$12',
-    squareUrl: 'https://checkout.square.site/buy/7YVPLAXZSZANDU5LQJPP7LKL',
+    squareUrl: 'https://square.link/u/bEjuyxNb',
     createdAt: '2026-05-01T00:00:00Z',
   },
   {
@@ -213,7 +213,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$7',
-    squareUrl: 'https://checkout.square.site/buy/3PKND7JGFPPY5H6RZ4OH6JHL',
+    squareUrl: 'https://square.link/u/Xj9aGafe',
     createdAt: '2026-05-09T00:00:00Z',
   },
   {
@@ -227,7 +227,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$19',
-    squareUrl: 'https://checkout.square.site/buy/KSGICUFELAQCQDOYPKHBG655',
+    squareUrl: 'https://square.link/u/bvtOMDdf',
     createdAt: '2026-05-09T00:00:00Z',
   },
   {
@@ -241,7 +241,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$27',
-    squareUrl: 'https://checkout.square.site/buy/Q3JWUT47RHV2MTK5VSJ7FT2D',
+    squareUrl: 'https://square.link/u/Gh4lG9mk',
     createdAt: '2026-05-09T00:00:00Z',
   },
   {
@@ -255,7 +255,7 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     enabled: true,
     isFree: false,
     price: '$22',
-    squareUrl: 'https://checkout.square.site/buy/UWPKVMLND4AKGK3D4D6MTUW2',
+    squareUrl: 'https://square.link/u/hTgqQiKy',
     createdAt: '2026-05-09T00:00:00Z',
   },
 ]
