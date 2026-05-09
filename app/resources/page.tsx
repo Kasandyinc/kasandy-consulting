@@ -68,12 +68,14 @@ export default async function Resources() {
           </div>
 
           {/* Right: product preview grid */}
-          <div className="grid grid-cols-2 gap-0.5">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-0.5">
             {[
               { tag: 'Free', title: 'Canadian Procurement Readiness Checklist', href: '#free-downloads' },
               { tag: '$12', title: 'Business Model Canvas — Business Edition', href: '#digital-products' },
-              { tag: '$12', title: 'Business Model Canvas — Non-Profit Edition', href: '#digital-products' },
+              { tag: '$15', title: 'Capability Statement Template Kit', href: '#digital-products' },
+              { tag: '$19', title: 'RFP Response Starter Kit', href: '#digital-products' },
               { tag: '$17', title: 'Canadian Business Registration Guide by Province', href: '#digital-products' },
+              { tag: '$27', title: 'Grant Writing Starter Pack', href: '#digital-products' },
             ].map((c, i) => (
               <Link key={i} href={c.href} className="group bg-kc-charcoal px-6 py-7 hover:bg-kc-brown transition-colors block">
                 <div className="font-mono text-[9px] tracking-[0.15em] uppercase text-[#555] mb-2.5">{c.tag}</div>
