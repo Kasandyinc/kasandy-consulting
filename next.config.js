@@ -12,7 +12,8 @@ const nextConfig = {
   },
   experimental: {
     outputFileTracingIncludes: {
-      '/api/serve': ['./protected-downloads/**/*'],
+      // Include protected HTML files in the /api/serve/[slug] serverless bundle
+      '/api/serve/[slug]': ['./protected-downloads/**/*'],
     },
   },
 }

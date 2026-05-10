@@ -30,7 +30,11 @@ function verifySquareSignature(body: string, signature: string | null, webhookUr
   const hmac = crypto.createHmac('sha256', sigKey)
   hmac.update(webhookUrl + body)
   const expected = hmac.digest('base64')
-  return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+  // timingSafeEqual throws if buffers differ in length — guard before comparing
+  const sigBuf = Buffer.from(signature)
+  const expBuf = Buffer.from(expected)
+  if (sigBuf.length !== expBuf.length) return false
+  return crypto.timingSafeEqual(sigBuf, expBuf)
 }
 
 export async function POST(req: NextRequest) {

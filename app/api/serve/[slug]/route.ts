@@ -31,9 +31,15 @@ export async function GET(
       return NextResponse.redirect(dest)
     }
 
-    // Consume one use
+    // Only consume a use on NEW sessions — not every page refresh.
+    // We store kc_opened:[token]:[slug] as a session cookie so returning
+    // to the same tool doesn't keep burning uses.
+    const openedCookieName = `kc_opened_${token.slice(0, 8)}_${slug.slice(0, 8)}`
+    const alreadyOpened = req.cookies.get(openedCookieName)?.value === '1'
     const sessionId = 'KC-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase()
-    await consumeToken(token, sessionId)
+    if (!alreadyOpened) {
+      await consumeToken(token, sessionId)
+    }
   }
 
   // Find filename
@@ -59,13 +65,21 @@ export async function GET(
     },
   })
 
-  // Set purchase cookie if token is valid (for subsequent /downloads/ middleware checks)
+  // Set purchase cookie (used by middleware to allow /downloads/ paths)
   if (token && !isFree) {
     res.cookies.set('kc_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: 7 * 24 * 3600,
+      path: '/',
+    })
+    // Mark this tool as opened in this browser session so refreshes don't burn uses
+    res.cookies.set(`kc_opened_${token.slice(0, 8)}_${slug.slice(0, 8)}`, '1', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 24 * 3600, // 24h session window
       path: '/',
     })
   }
