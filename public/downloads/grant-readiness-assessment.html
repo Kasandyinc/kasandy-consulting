@@ -292,7 +292,139 @@ body{font-family:'DM Sans',sans-serif;background:var(--linen);min-height:100vh;c
   .rendered-doc{box-shadow:none}
   .ds-section:hover .regen-btn{display:none}
 }
+
+/* ── KASANDY CONSULTING PROTECTION LAYER ─────────────────────────── */
+
+/* Visible licence header on every generated document */
+.doc-licence{
+  background:#1e1e1e;
+  padding:8px 34px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.doc-licence-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.doc-licence-logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:.03em;
+  white-space:nowrap;
+}
+.doc-licence-sep{
+  width:1px;height:14px;
+  background:rgba(255,255,255,.15);
+  flex-shrink:0;
+}
+.doc-licence-text{
+  font-family:'DM Mono',monospace;
+  font-size:.68rem;
+  color:rgba(255,255,255,.4);
+  letter-spacing:.08em;
+  line-height:1.5;
+}
+.doc-licence-ref{
+  font-family:'DM Mono',monospace;
+  font-size:.65rem;
+  color:rgba(255,210,160,.45);
+  letter-spacing:.06em;
+  white-space:nowrap;
+  flex-shrink:0;
+}
+
+/* Subtle diagonal watermark on every page — screen */
+.rendered-doc{position:relative}
+.rendered-doc::before{
+  content:'KASANDY CONSULTING';
+  position:absolute;
+  top:48%;left:50%;
+  transform:translate(-50%,-50%) rotate(-35deg);
+  font-family:'DM Sans',sans-serif;
+  font-size:52px;
+  font-weight:700;
+  letter-spacing:.25em;
+  color:rgba(113,47,30,.028);
+  white-space:nowrap;
+  pointer-events:none;
+  z-index:0;
+  user-select:none;
+}
+
+/* Print: stronger watermark + force headers/footers on every page */
+@media print{
+  .rendered-doc::before{
+    position:fixed;
+    top:50%;left:50%;
+    font-size:80px;
+    color:rgba(113,47,30,.06);
+    transform:translate(-50%,-50%) rotate(-35deg);
+  }
+  /* Repeat KC footer on every printed page */
+  .doc-licence{
+    position:running(licence);
+    display:block;
+  }
+  /* Copyright ribbon at bottom of every printed page */
+  .kc-print-footer{
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:#1e1e1e;
+    color:rgba(255,255,255,.5);
+    font-family:'DM Mono',monospace;
+    font-size:.55rem;
+    letter-spacing:.1em;
+    padding:4px 20px;
+    text-align:center;
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+}
+
+/* Forensic watermark — invisible in normal view, visible under certain conditions */
+.kc-forensic{
+  position:absolute;
+  width:1px;height:1px;
+  overflow:hidden;
+  opacity:.001;
+  font-size:1px;
+  color:rgba(255,255,255,.001);
+  pointer-events:none;
+  user-select:none;
+}
+
+/* Generated-by attribution in output */
+.kc-generated-by{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:10px 34px;
+  background:#F0EAE0;
+  border-top:1px solid #EDE5D8;
+  font-family:'DM Mono',monospace;
+  font-size:.7rem;
+  color:#B0A090;
+  letter-spacing:.1em;
+}
+.kc-generated-by a{
+  color:#712f1e;
+  text-decoration:none;
+  font-weight:500;
+}
+/* ── END PROTECTION LAYER ─────────────────────────────────────────── */
 </style>
+
+  <meta name="copyright" content="© 2026 Kasandy Consulting Inc. All rights reserved.">
+  <meta name="generator" content="Kasandy Consulting Digital Products · kasandyconsulting.com">
+  <meta name="rights" content="Personal use licence only. Resale or redistribution prohibited.">
+  <!-- KC-PRODUCT-PROTECTED: Unauthorised reproduction prohibited under Canadian copyright law -->
 </head>
 <body>
 
@@ -763,6 +895,12 @@ function parseJSON(raw){
 
 // ── RENDERER ─────────────────────────────────────────
 function renderDocument(json){
+  // KC PROTECTION: Generate forensic session ID
+  const _kcSessionId='KC-'+Date.now().toString(36).toUpperCase()+'-'+Math.random().toString(36).substr(2,6).toUpperCase();
+  const _kcDate=new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
+  const _kcTime=new Date().toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit'});
+  // Embed forensic ID invisibly in document for traceability
+  try{document.head.insertAdjacentHTML('beforeend',`<meta name="kc-session" content="${_kcSessionId}"><meta name="kc-generated" content="${_kcDate} ${_kcTime}">`);}catch(e){}
   const doc=document.getElementById('renderedDoc');
   const generated=new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
   let sectionsHtml='';

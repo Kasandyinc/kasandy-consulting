@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>30-Day Procurement Action Plan — Kasandy Consulting</title>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Canadian Procurement Readiness Checklist — Kasandy Consulting</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
@@ -293,6 +291,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--linen);min-height:100vh;c
   .ds-section:hover .regen-btn{display:none}
 }
 
+.free-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(26,92,58,.2);border:1px solid rgba(26,92,58,.35);padding:4px 12px;font-family:'DM Mono',monospace;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(100,220,140,.8);margin-bottom:12px}
+.email-gate{background:#fff;border:1.5px solid var(--linen);padding:20px;margin-bottom:20px}
+.email-gate h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--char);margin-bottom:8px}
+.email-gate p{font-size:1.05rem;color:var(--lt);line-height:1.6;margin-bottom:14px}
+
 /* ── KASANDY CONSULTING PROTECTION LAYER ─────────────────────────── */
 
 /* Visible licence header on every generated document */
@@ -425,40 +428,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--linen);min-height:100vh;c
   <meta name="generator" content="Kasandy Consulting Digital Products · kasandyconsulting.com">
   <meta name="rights" content="Personal use licence only. Resale or redistribution prohibited.">
   <!-- KC-PRODUCT-PROTECTED: Unauthorised reproduction prohibited under Canadian copyright law -->
-</head>
-<body>
-
-<!-- REGEN OVERLAY -->
+</head><body>
 <div class="regen-overlay" id="regenOverlay">
-  <div class="regen-modal">
-    <h3>Refine This Section</h3>
-    <select id="regenPreset">
-      <option value="Make this more concise">Make more concise</option>
-      <option value="Make this more formal and professional">Make more formal</option>
-      <option value="Expand with more specific detail">Add more detail</option>
-      <option value="Make this more direct and actionable">More direct & actionable</option>
-      <option value="Rewrite with a warmer, more encouraging tone">Warmer tone</option>
-      <option value="custom">Custom instruction</option>
-    </select>
-    <input type="text" id="regenInstruction" placeholder="Additional instructions (optional)…">
-    <div class="regen-actions">
-      <button class="btn-regen-apply" onclick="applyRegen()">Apply Changes</button>
-      <button class="btn-regen-cancel" onclick="closeRegen()">Cancel</button>
-    </div>
+  <div class="regen-modal"><h3>Refine This Section</h3>
+    <select id="regenPreset"><option value="Make more concise and actionable">More concise & actionable</option><option value="Add more specific detail">More detail</option><option value="More direct and urgent tone">More direct</option><option value="custom">Custom</option></select>
+    <input type="text" id="regenInstruction" placeholder="Additional instructions…">
+    <div class="regen-actions"><button class="btn-regen-apply" onclick="applyRegen()">Apply</button><button class="btn-regen-cancel" onclick="closeRegen()">Cancel</button></div>
   </div>
 </div>
-
 <div class="shell">
-
-  <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sb-hdr">
-      <div class="sb-logo">Kasandy Consulting</div>
-      <div class="sb-tag">Digital Tool · $9</div>
-    </div>
+    <div class="sb-hdr"><div class="sb-logo">Kasandy Consulting</div><div class="sb-tag">Free Resource</div></div>
     <div class="sb-body">
-      <div class="sb-title">30-Day Procurement <em>Action Plan</em></div>
-      <div class="sb-desc">Rate yourself across 8 readiness dimensions. Receive a personalised, week-by-week 30-day plan built around your specific gaps — not a generic checklist.</div>
+      <div class="free-badge">✓ Free Download</div>
+      <div class="sb-title">Procurement Readiness <em>Checklist</em></div>
+      <div class="sb-desc">Tell us about your business. Receive a personalised procurement readiness checklist showing exactly where you stand before your next bid — with your specific gaps highlighted and a priority action list.</div>
       <div class="sb-steps">
     <div class="sb-step active" id="sbstep0">
       <div class="sb-step-dot">1</div>
@@ -466,181 +450,81 @@ body{font-family:'DM Sans',sans-serif;background:var(--linen);min-height:100vh;c
     </div>
     <div class="sb-step " id="sbstep1">
       <div class="sb-step-dot">2</div>
-      <div class="sb-step-text">Self-Assessment</div>
-    </div>
-    <div class="sb-step " id="sbstep2">
-      <div class="sb-step-dot">3</div>
-      <div class="sb-step-text">Context</div>
+      <div class="sb-step-text">Assessment</div>
     </div></div>
-      <div class="sb-what">
-        <div class="sb-what-lbl">What you receive</div>
-        <p>A personalised 30-day procurement plan with daily actions matched to your exact gaps, a buyer checklist, and your Day 30 milestone targets.</p>
-      </div>
-      <div class="sb-save-indicator" id="saveIndicator">
-        <div class="save-dot"></div>Progress saved
-      </div>
+      <div class="sb-what"><div class="sb-what-lbl">What you receive</div><p>Personalised 24-item checklist · Your readiness score by dimension · Priority gaps identified · Specific next actions · Score interpretation.</p></div>
+      <div class="sb-save-indicator" id="saveIndicator"><div class="save-dot"></div>Progress saved</div>
     </div>
   </aside>
-
-  <!-- MAIN -->
   <main class="main">
-
-    <!-- PROGRESS BAR -->
     <div class="progress-bar" id="progressBar"></div>
-
-    <!-- RESUME BANNER -->
     <div id="resumeBanner" style="display:none;background:#F5F0E8;border-bottom:1px solid #EDE5D8;padding:12px 32px;align-items:center;justify-content:space-between;gap:12px;font-size:1.05rem;color:#444;">
-      <span>You have saved progress on this tool.</span>
+      <span>You have saved progress.</span>
       <div style="display:flex;gap:8px">
-        <button onclick="resumeProgress()" style="background:#712f1e;color:#fff;border:none;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:1rem;cursor:pointer">Continue where I left off</button>
+        <button onclick="resumeProgress()" style="background:#712f1e;color:#fff;border:none;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:1rem;cursor:pointer">Continue</button>
         <button onclick="clearProgress()" style="background:transparent;color:#888;border:1px solid #DDD;padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:1rem;cursor:pointer">Start fresh</button>
       </div>
     </div>
-
-    <!-- WIZARD -->
     <div class="wizard-body">
       <div class="val-error" id="valError"></div>
       
     <div class="step-panel active" id="step0">
-      <div class="step-header">
-        <h2>Your Business</h2>
-        
-      </div>
-      <div class="field"><label>Business Name<span class="req-star">*</span></label><input type="text" data-field="bizName" data-required placeholder=""><div class="field-hint"></div></div><div class="field"><label>What you sell<span class="req-star">*</span></label><input type="text" data-field="bizType" data-required placeholder="e.g. HR consulting and leadership development programs for public sector organizations"><div class="field-hint"></div></div><div class="field-row cols-2"><div class="field"><label>Province</label><input type="text" data-field="bizProv"  placeholder="e.g. Alberta"><div class="field-hint"></div></div><div class="field"><label>Years operating</label><input type="text" data-field="bizAge"  placeholder="e.g. 4 years"><div class="field-hint"></div></div></div><div class="field"><label>The type of contract you are aiming for</label><input type="text" data-field="targetContract"  placeholder="e.g. Federal government HR consulting, provincial IT services, corporate supplier diversity program"><div class="field-hint"></div></div><div class="field"><label>When do you want to submit your first bid?</label><select data-field="targetDeadline"><option value="In the next 30 days">In the next 30 days</option><option value="In 30–60 days">In 30–60 days</option><option value="In 60–90 days">In 60–90 days</option><option value="No specific deadline — building for when I'm ready">No specific deadline — building for when I'm ready</option></select></div>
+      <div class="step-header"><h2>Your Business</h2><p>A few details so your checklist is personalised to your business type and target buyers.</p></div>
+      <div class="field"><label>Business Name<span class="req-star">*</span></label><input type="text" data-field="bizName" data-required placeholder=""><div class="field-hint"></div></div><div class="field"><label>What you sell<span class="req-star">*</span></label><input type="text" data-field="bizType" data-required placeholder="e.g. HR consulting services for public sector organisations"><div class="field-hint"></div></div><div class="field-row cols-2"><div class="field"><label>Province</label><input type="text" data-field="bizProv"  placeholder="e.g. Ontario"><div class="field-hint"></div></div><div class="field"><label>Years operating</label><input type="text" data-field="bizAge"  placeholder="e.g. 4 years"><div class="field-hint"></div></div></div><div class="field"><label>Type of contract you are aiming for</label><input type="text" data-field="targetContract"  placeholder="e.g. Federal government consulting, corporate supplier diversity, provincial IT services"><div class="field-hint"></div></div><div class="field"><label>Your email (optional — for a backup copy)</label><input type="text" data-field="email"  placeholder="e.g. yourname@business.ca"><div class="field-hint"></div></div>
     </div>
     <div class="step-panel " id="step1">
-      <div class="step-header">
-        <h2>Your Readiness Self-Assessment</h2>
-        <p>Rate yourself honestly on each dimension. 1 = not done at all. 5 = fully current and complete. Low scores tell us where to focus your 30 days.</p>
-      </div>
+      <div class="step-header"><h2>Quick Self-Assessment</h2><p>Rate yourself honestly on each dimension — 1 (not done) to 5 (fully complete). This takes 2 minutes and determines which items your checklist highlights in red.</p></div>
+      <div class="scale-field" data-scale-id="scale_c1">
+      <label>Business registration & compliance — registered, Business Number, GST/HST, WSIB, and insurance current.</label>
       
-    <div class="scale-field" data-scale-id="scale_g_reg">
-      <label>Business registration & compliance — business is registered, Business Number active, GST/HST registered if applicable, WSIB current.</label>
-      <div class="field-hint">Score 1 if you have not registered. Score 5 if all documents are current.</div>
-      <div class="scale-btns">
-        <button class="s-btn" data-val="1" onclick="selectScale('scale_g_reg',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_g_reg',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_g_reg',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_g_reg',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_g_reg',5)">5</button>
-        <input type="hidden" data-field="scale_g_reg" id="sv_g_reg">
-      </div>
+      <div class="scale-btns"><button class="s-btn" data-val="1" onclick="selectScale('scale_c1',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_c1',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_c1',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_c1',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_c1',5)">5</button><input type="hidden" data-field="scale_c1" id="sv_c1"></div>
       <div class="scale-labels"><span>1 — Not at all true</span><span>5 — Completely true</span></div>
-      <div class="scale-note-area" id="snote_scale_g_reg">
-        <input type="text" placeholder="Optional: add context about this gap (helps personalise your report)" data-field="note_g_reg">
-      </div>
-    </div>
-    <div class="scale-field" data-scale-id="scale_g_insurance">
-      <label>Insurance — commercial general liability at $2M+ minimum, certificate ready to send.</label>
+      <div class="scale-note-area" id="snote_scale_c1"><input type="text" placeholder="Optional context" data-field="note_c1"></div>
+    </div><div class="scale-field" data-scale-id="scale_c2">
+      <label>Procurement portal registration — registered on buyandsell.gc.ca and relevant provincial portals with accurate NAICS codes.</label>
       
-      <div class="scale-btns">
-        <button class="s-btn" data-val="1" onclick="selectScale('scale_g_insurance',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_g_insurance',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_g_insurance',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_g_insurance',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_g_insurance',5)">5</button>
-        <input type="hidden" data-field="scale_g_insurance" id="sv_g_insurance">
-      </div>
+      <div class="scale-btns"><button class="s-btn" data-val="1" onclick="selectScale('scale_c2',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_c2',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_c2',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_c2',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_c2',5)">5</button><input type="hidden" data-field="scale_c2" id="sv_c2"></div>
       <div class="scale-labels"><span>1 — Not at all true</span><span>5 — Completely true</span></div>
-      <div class="scale-note-area" id="snote_scale_g_insurance">
-        <input type="text" placeholder="Optional: add context about this gap (helps personalise your report)" data-field="note_g_insurance">
-      </div>
-    </div>
-    <div class="scale-field" data-scale-id="scale_g_portals">
-      <label>Procurement portal registration — registered on buyandsell.gc.ca and provincial portals with accurate NAICS codes.</label>
-      <div class="field-hint">If you have never heard of buyandsell.gc.ca, score this 1.</div>
-      <div class="scale-btns">
-        <button class="s-btn" data-val="1" onclick="selectScale('scale_g_portals',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_g_portals',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_g_portals',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_g_portals',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_g_portals',5)">5</button>
-        <input type="hidden" data-field="scale_g_portals" id="sv_g_portals">
-      </div>
-      <div class="scale-labels"><span>1 — Not at all true</span><span>5 — Completely true</span></div>
-      <div class="scale-note-area" id="snote_scale_g_portals">
-        <input type="text" placeholder="Optional: add context about this gap (helps personalise your report)" data-field="note_g_portals">
-      </div>
-    </div>
-    <div class="scale-field" data-scale-id="scale_g_cap">
-      <label>Capability statement — current, buyer-focused, includes past performance, uses procurement language.</label>
-      <div class="field-hint">A company brochure or website bio does NOT count as a capability statement.</div>
-      <div class="scale-btns">
-        <button class="s-btn" data-val="1" onclick="selectScale('scale_g_cap',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_g_cap',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_g_cap',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_g_cap',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_g_cap',5)">5</button>
-        <input type="hidden" data-field="scale_g_cap" id="sv_g_cap">
-      </div>
-      <div class="scale-labels"><span>1 — Not at all true</span><span>5 — Completely true</span></div>
-      <div class="scale-note-area" id="snote_scale_g_cap">
-        <input type="text" placeholder="Optional: add context about this gap (helps personalise your report)" data-field="note_g_cap">
-      </div>
-    </div>
-    <div class="scale-field" data-scale-id="scale_g_past">
-      <label>Past performance documentation — 3+ documented examples of relevant work with scope, client type, and outcome.</label>
+      <div class="scale-note-area" id="snote_scale_c2"><input type="text" placeholder="Optional context" data-field="note_c2"></div>
+    </div><div class="scale-field" data-scale-id="scale_c3">
+      <label>Capability statement — current, buyer-focused, includes past performance in procurement language.</label>
       
-      <div class="scale-btns">
-        <button class="s-btn" data-val="1" onclick="selectScale('scale_g_past',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_g_past',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_g_past',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_g_past',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_g_past',5)">5</button>
-        <input type="hidden" data-field="scale_g_past" id="sv_g_past">
-      </div>
+      <div class="scale-btns"><button class="s-btn" data-val="1" onclick="selectScale('scale_c3',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_c3',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_c3',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_c3',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_c3',5)">5</button><input type="hidden" data-field="scale_c3" id="sv_c3"></div>
       <div class="scale-labels"><span>1 — Not at all true</span><span>5 — Completely true</span></div>
-      <div class="scale-note-area" id="snote_scale_g_past">
-        <input type="text" placeholder="Optional: add context about this gap (helps personalise your report)" data-field="note_g_past">
-      </div>
-    </div>
-    <div class="scale-field" data-scale-id="scale_g_certs">
-      <label>Supplier diversity certifications — you know which certifications apply to your business and have either obtained them or have a plan.</label>
+      <div class="scale-note-area" id="snote_scale_c3"><input type="text" placeholder="Optional context" data-field="note_c3"></div>
+    </div><div class="scale-field" data-scale-id="scale_c4">
+      <label>Past performance documentation — 3+ documented examples ready to cite in submissions.</label>
       
-      <div class="scale-btns">
-        <button class="s-btn" data-val="1" onclick="selectScale('scale_g_certs',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_g_certs',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_g_certs',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_g_certs',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_g_certs',5)">5</button>
-        <input type="hidden" data-field="scale_g_certs" id="sv_g_certs">
-      </div>
+      <div class="scale-btns"><button class="s-btn" data-val="1" onclick="selectScale('scale_c4',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_c4',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_c4',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_c4',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_c4',5)">5</button><input type="hidden" data-field="scale_c4" id="sv_c4"></div>
       <div class="scale-labels"><span>1 — Not at all true</span><span>5 — Completely true</span></div>
-      <div class="scale-note-area" id="snote_scale_g_certs">
-        <input type="text" placeholder="Optional: add context about this gap (helps personalise your report)" data-field="note_g_certs">
-      </div>
-    </div>
-    <div class="scale-field" data-scale-id="scale_g_buyers">
-      <label>Buyer knowledge — you know the specific government departments or corporations that buy what you sell and how they procure it.</label>
+      <div class="scale-note-area" id="snote_scale_c4"><input type="text" placeholder="Optional context" data-field="note_c4"></div>
+    </div><div class="scale-field" data-scale-id="scale_c5">
+      <label>Supplier diversity certifications — you know which certifications apply and have them or have a plan.</label>
       
-      <div class="scale-btns">
-        <button class="s-btn" data-val="1" onclick="selectScale('scale_g_buyers',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_g_buyers',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_g_buyers',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_g_buyers',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_g_buyers',5)">5</button>
-        <input type="hidden" data-field="scale_g_buyers" id="sv_g_buyers">
-      </div>
+      <div class="scale-btns"><button class="s-btn" data-val="1" onclick="selectScale('scale_c5',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_c5',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_c5',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_c5',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_c5',5)">5</button><input type="hidden" data-field="scale_c5" id="sv_c5"></div>
       <div class="scale-labels"><span>1 — Not at all true</span><span>5 — Completely true</span></div>
-      <div class="scale-note-area" id="snote_scale_g_buyers">
-        <input type="text" placeholder="Optional: add context about this gap (helps personalise your report)" data-field="note_g_buyers">
-      </div>
-    </div>
-    <div class="scale-field" data-scale-id="scale_g_rfp">
-      <label>RFP experience — you have read a full RFP in your target procurement category in the last 6 months.</label>
+      <div class="scale-note-area" id="snote_scale_c5"><input type="text" placeholder="Optional context" data-field="note_c5"></div>
+    </div><div class="scale-field" data-scale-id="scale_c6">
+      <label>Buyer knowledge — you know which specific organisations buy what you sell.</label>
       
-      <div class="scale-btns">
-        <button class="s-btn" data-val="1" onclick="selectScale('scale_g_rfp',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_g_rfp',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_g_rfp',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_g_rfp',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_g_rfp',5)">5</button>
-        <input type="hidden" data-field="scale_g_rfp" id="sv_g_rfp">
-      </div>
+      <div class="scale-btns"><button class="s-btn" data-val="1" onclick="selectScale('scale_c6',1)">1</button><button class="s-btn" data-val="2" onclick="selectScale('scale_c6',2)">2</button><button class="s-btn" data-val="3" onclick="selectScale('scale_c6',3)">3</button><button class="s-btn" data-val="4" onclick="selectScale('scale_c6',4)">4</button><button class="s-btn" data-val="5" onclick="selectScale('scale_c6',5)">5</button><input type="hidden" data-field="scale_c6" id="sv_c6"></div>
       <div class="scale-labels"><span>1 — Not at all true</span><span>5 — Completely true</span></div>
-      <div class="scale-note-area" id="snote_scale_g_rfp">
-        <input type="text" placeholder="Optional: add context about this gap (helps personalise your report)" data-field="note_g_rfp">
-      </div>
+      <div class="scale-note-area" id="snote_scale_c6"><input type="text" placeholder="Optional context" data-field="note_c6"></div>
+    </div><div class="info-box blue">Ready to generate your personalised checklist. Your scores determine which items are flagged as critical gaps.</div>
     </div>
     </div>
-    <div class="step-panel " id="step2">
-      <div class="step-header">
-        <h2>Your Context</h2>
-        
-      </div>
-      <div class="field"><label>What do you know is your biggest gap right now?</label><input type="text" data-field="biggestGap"  placeholder="e.g. I don't have a capability statement, I've never registered on procurement portals, I don't know which buyers to approach"><div class="field-hint"></div></div><div class="field"><label>What is your strongest asset going into procurement?</label><input type="text" data-field="bestAsset"  placeholder="e.g. Strong past performance with private sector clients, CAMSC certification in progress, deep expertise in a specific niche"><div class="field-hint"></div></div><div class="info-box blue">Ready to generate your personalised 30-day plan. Your plan will be built around your specific gap scores — weeks with the most time allocated to your lowest-scoring dimensions.</div>
-    </div>
-    </div>
-
-    <!-- STEP NAV -->
     <div class="step-nav">
       <button class="btn-back" id="backBtn" onclick="prevStep()" disabled>← Back</button>
-      <span class="step-count" id="stepCount">Step 1 of 3</span>
+      <span class="step-count" id="stepCount">Step 1 of 2</span>
       <button class="btn-next" id="nextBtn" onclick="nextStep()">Continue →</button>
-      <button class="btn-generate" id="genBtn" style="display:none" onclick="generate()">Generate My 30-Day Action Plan →</button>
+      <button class="btn-generate" id="genBtn" style="display:none" onclick="generate()">Generate My Free Guide →</button>
     </div>
-
-    <!-- LOADING -->
     <div class="loading-panel" id="loadingPanel">
       <div class="spinner"></div>
-      <div class="loading-title">Building your 30-day action plan…</div>
-      <div class="loading-sub">Personalised to your specific situation</div>
-      <div class="loading-items">
-    <div class="li-item active" id="li0"><div class="li-dot"></div>Scoring your readiness profile</div>
-    <div class="li-item " id="li1"><div class="li-dot"></div>Identifying your critical path</div>
-    <div class="li-item " id="li2"><div class="li-dot"></div>Building your personalised week-by-week plan</div>
-    <div class="li-item " id="li3"><div class="li-dot"></div>Adding your specific resources and targets</div></div>
+      <div class="loading-title">Building your personalised guide…</div>
+      <div class="loading-sub">Tailored to your specific situation</div>
+      <div class="loading-items"><div class="li-item active" id="li0"><div class="li-dot"></div>Reviewing your procurement profile</div><div class="li-item " id="li1"><div class="li-dot"></div>Scoring your readiness dimensions</div><div class="li-item " id="li2"><div class="li-dot"></div>Identifying your priority gaps</div></div>
     </div>
-
-    <!-- OUTPUT -->
     <div class="output-panel" id="outputPanel">
       <div class="output-toolbar">
         <div class="output-toolbar-left">
@@ -648,30 +532,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--linen);min-height:100vh;c
           <button class="btn-copy-all" onclick="copyAllText()">⎘ Copy Text</button>
           <button class="btn-startover" onclick="startOver()">← Start Over</button>
         </div>
-        <div style="font-family:'DM Mono',monospace;font-size:.75rem;color:#AAA">Tip: Click any section heading to refine it</div>
       </div>
       <div class="rendered-doc" id="renderedDoc"></div>
       <div class="upsell-panel" id="upsellPanel"></div>
       <div class="share-panel">
-        <div class="share-text">
-          <strong>Was this useful?</strong>
-          Share with a colleague who could use it — and help grow Canada's most practical procurement resource library.
-        </div>
+        <div class="share-text"><strong>Was this useful?</strong> Share it with a colleague who needs it.</div>
         <div class="share-btns">
           <button class="btn-share linkedin" onclick="shareLinkedIn()">Share on LinkedIn</button>
           <button class="btn-share copy" onclick="copyShareLink()">Copy link</button>
         </div>
       </div>
     </div>
-
   </main>
 </div>
-
 <script>
 
 // ── STATE ─────────────────────────────────────────────
-const SLUG='procurement-action-plan';
-const STEPS=[{"title":"Your Business","short":"Business"},{"title":"Your Readiness Self-Assessment","short":"Self-Assessment"},{"title":"Your Context","short":"Context"}];
+const SLUG='free-procurement-checklist';
+const STEPS=[{"title":"Your Business","short":"Business"},{"title":"Quick Self-Assessment","short":"Assessment"}];
 let currentStep=0;
 let formData={};
 let generatedSections=[];
@@ -1007,8 +885,8 @@ function copyAllText(){
 
 // ── UPSELL ────────────────────────────────────────────
 function renderUpsell(){
-  const upsells=[{"slug":"pipeline-builder","price":"$22","name":"90-Day Pipeline Builder","why":"Your 30-day plan builds the foundation. The 90-Day Pipeline Builder continues the journey — from ready to actively submitting bids."},{"slug":"capability-statement-kit","price":"$15","name":"Capability Statement Generator","why":"Week 3 of your plan focuses on your capability statement. Generate a polished, buyer-ready version directly from your inputs."}];
-  const coaching={"price":"$400","title":"Discovery Session with Jackee","why":"A 90-minute session reviewing your readiness audit, confirming your buyer targets, and giving you a written plan for your first submission — with accountability."};
+  const upsells=[{"slug":"procurement-action-plan","price":"$9","name":"30-Day Action Plan","why":"Your checklist shows the gaps. The 30-Day Action Plan gives you a week-by-week plan to close them — built around your specific scores."},{"slug":"capability-statement-kit","price":"$15","name":"Capability Statement Generator","why":"Capability statement is one of the most common gaps on this checklist. Generate a polished, buyer-ready version in minutes."}];
+  const coaching={"price":"$400","title":"Discovery Session with Jackee","why":"Review your checklist results, confirm your buyer targets, and get a written procurement action plan in 90 minutes."};
   const panel=document.getElementById('upsellPanel');
   if(!panel)return;
   const cards=upsells.map(u=>`<div class="upsell-card" onclick="window.open('https://kasandyconsulting.com/resources?product=${u.slug}','_blank')">
@@ -1056,46 +934,58 @@ function copyShareLink(){
   });
 }
 
+function buildPrompt(vals) { return (function(vals) {
+    return `You are a procurement readiness specialist. Generate a personalised Canadian Procurement Readiness Checklist for this specific business.
 
-function buildPrompt(vals) {
-  return (function(vals) {
-    return `You are a procurement readiness coach. Generate a personalised, specific 30-Day Action Plan for this business based on their self-assessment scores.
+BUSINESS: ${vals.bizName} | ${vals.bizType} | Province: ${vals.bizProv} | Years: ${vals.bizAge} | Target: ${vals.targetContract}
 
-BUSINESS: ${vals.bizName} | ${vals.bizType} | ${vals.bizProv} | ${vals.bizAge} | Target: ${vals.targetContract} | Timeline: ${vals.targetDeadline}
+SELF-ASSESSMENT (1=not done, 5=complete):
+Compliance/registration: ${vals['scale_c1']} | Portal registration: ${vals['scale_c2']} | Capability statement: ${vals['scale_c3']} | Past performance: ${vals['scale_c4']} | Certifications: ${vals['scale_c5']} | Buyer knowledge: ${vals['scale_c6']}
 
-SELF-ASSESSMENT SCORES (1=not done, 5=complete):
-Registration & compliance: ${vals['scale_g_reg']} (notes: ${vals['note_g_reg']||'none'})
-Insurance: ${vals['scale_g_insurance']} (notes: ${vals['note_g_insurance']||'none'})
-Portal registration: ${vals['scale_g_portals']} (notes: ${vals['note_g_portals']||'none'})
-Capability statement: ${vals['scale_g_cap']} (notes: ${vals['note_g_cap']||'none'})
-Past performance docs: ${vals['scale_g_past']} (notes: ${vals['note_g_past']||'none'})
-Certifications: ${vals['scale_g_certs']} (notes: ${vals['note_g_certs']||'none'})
-Buyer knowledge: ${vals['scale_g_buyers']} (notes: ${vals['note_g_buyers']||'none'})
-RFP experience: ${vals['scale_g_rfp']} (notes: ${vals['note_g_rfp']||'none'})
-
-Biggest gap: ${vals.biggestGap}
-Strongest asset: ${vals.bestAsset}
-
-Generate a complete 30-Day Procurement Readiness Action Plan as JSON:
+Return JSON:
 {
-  "documentTitle": "30-Day Procurement Plan — ${vals.bizName}",
+  "documentTitle": "Procurement Readiness Checklist — ${vals.bizName}",
   "sections": [
-    {"type":"stats","items":[{"value":"[X/8]","label":"Readiness score"},{"value":"[their #1 gap name]","label":"Priority focus"},{"value":"${vals.targetDeadline}","label":"Target timeline"},{"value":"[number of gaps below 3]","label":"Critical gaps"}]},
-    {"type":"callout","variant":"","icon":"📊","heading":"Your Starting Position","body":"[2–3 direct sentences: honest assessment of where they are. What's their biggest risk if they don't act. What's their biggest asset. Reference their actual scores and context. Be direct — this is a coach speaking, not a cheerleader.]"},
-    {"type":"cards","heading":"Your 3 Priority Gaps — In Order","cards":[{"title":"[Gap name — their lowest score]","badge":"[score]/5","body":"[Why this specific gap matters for their target contract type. What happens if it isn't fixed. 2 sentences.]"},{"title":"[Gap 2]","badge":"[score]/5","body":"[Same format]"},{"title":"[Gap 3]","badge":"[score]/5","body":"[Same format]"}]},
-    {"type":"action-plan","heading":"Your 30-Day Week-by-Week Plan","phases":[
-      {"period":"Week 1 — Days 1–7","theme":"[Name based on their #1 gap]","actions":["[5–6 specific daily actions. Include real resources: buyandsell.gc.ca, their province's business registry, specific certification body relevant to their sector. Actions must be completable in 1–2 hours each. Reference their specific situation.]"]},
-      {"period":"Week 2 — Days 8–14","theme":"[Name based on their #2 gap]","actions":["[5–6 actions. Build on Week 1. If portal registration wasn't done in Week 1, include here. If capability statement is a gap, start the groundwork this week.]"]},
-      {"period":"Week 3 — Days 15–21","theme":"Capability Statement & Positioning","actions":["[5–6 actions focused on their capability statement, NAICS codes, and how their business is positioned for their target contract type. Include the question period strategy — reviewing active tenders in their category and submitting strategic questions.]"]},
-      {"period":"Week 4 — Days 22–30","theme":"Pipeline & First Buyer Contact","actions":["[5–6 actions: identify 3 specific target buyers based on their sector and province, review their procurement history, send capability statement proactively to 1 buyer, set up tender alert monitoring, review one live RFP in their category.]"]}
+    {"type":"stats","items":[{"value":"[calculate from scores]","label":"Overall readiness"},{"value":"[lowest score area]","label":"Priority gap"},{"value":"${vals.targetContract?.substring(0,30)||'Target contract'}","label":"Target"},{"value":"${vals.bizProv||'Canada'}","label":"Province"}]},
+    {"type":"callout","variant":"${parseInt(vals['scale_c1']||0)+parseInt(vals['scale_c2']||0)+parseInt(vals['scale_c3']||0)>10?'green':''}","icon":"📋","heading":"Your Readiness Assessment","body":"[2–3 direct sentences: where they stand based on their scores. What their biggest gap is for their specific target contract type. What to prioritise first. Be specific to their business and target — not generic advice.]"},
+    {"type":"table","heading":"Section 1 — Business Registration & Compliance","columns":["Item","Required For","Your Status","Action Required"],"rows":[
+      ["Business legally registered (federal or provincial)","All contract types","${parseInt(vals['scale_c1']||0)>=4?'✓ Likely complete':'⚠ Verify'}","${parseInt(vals['scale_c1']||0)<3?'Register at your provincial registry immediately — this is a pass/fail disqualifier':'Confirm certificate is current'}"],
+      ["Business Number (CRA) active","All government contracts","${parseInt(vals['scale_c1']||0)>=4?'✓ Likely current':'⚠ Verify'}","${parseInt(vals['scale_c1']||0)<3?'Apply at cra-arc.gc.ca — free, same day':'Confirm BN is active and correct on all submissions'}"],
+      ["GST/HST registration (if revenue exceeds $30K/year)","Government contracts","[status based on score]","[action based on score]"],
+      ["WSIB/WCB clearance certificate — current","Federal + Ontario/BC/AB government","[status]","[action]"],
+      ["Commercial general liability insurance — $2M minimum","All corporate + most government contracts","[status]","[action — reference their province's typical requirement]"],
+      ["CRA tax compliance — no outstanding debts","Government contracts","[status]","[critical — tax debt will disqualify a bid before scoring]"]
     ]},
-    {"type":"table","heading":"Your Day 30 Milestone Checklist","columns":["Item","Required For","Status"],"rows":[["Business registered & all compliance docs current","All contract types",""],["Insurance certificate current ($2M+ GL)","All government/corporate contracts",""],["Registered on buyandsell.gc.ca with correct NAICS codes","Federal contracts",""],["Registered on ${vals.bizProv ? vals.bizProv : 'provincial'} procurement portal","Provincial contracts",""],["Capability statement complete — procurement format","Every submission",""],["3+ past performance examples documented","Competitive submissions",""],["1 diversity/sector certification obtained or in progress","Corporate diversity programs",""],["3 specific target buyers identified and researched","Active pipeline",""],["1 capability statement sent to a real buyer","Pipeline building",""],["1 live RFP reviewed in target category","RFP readiness",""],["Tender monitoring alerts set up","Opportunity tracking",""],["Question period strategy understood and ready to use","First submission",""]]},
-    {"type":"callout","variant":"green","icon":"🎯","heading":"Your Competitive Advantage Going In","body":"[Based on their strongest asset and their target contract type — what specific advantage can they lead with? What makes them worth a buyer's 15 minutes? Be specific and build their confidence with facts, not encouragement.]"}
+    {"type":"table","heading":"Section 2 — Procurement Portal Registration","columns":["Portal","Required For","Your Status","Action Required"],"rows":[
+      ["buyandsell.gc.ca — Supplier Registration","All federal contracts","${parseInt(vals['scale_c2']||0)>=4?'✓ Registered':'❌ Not registered'}","${parseInt(vals['scale_c2']||0)<3?'Register immediately at buyandsell.gc.ca — free, 2 hours. Add NAICS codes for '+vals.targetContract?.split(' ')[0]:'Confirm NAICS codes are accurate for your category'}"],
+      ["NAICS codes accurately assigned","Federal discoverability","[status based on score]","[action — suggest researching NAICS codes at naics.com for their sector]"],
+      ["${vals.bizProv} provincial procurement portal","Provincial contracts in ${vals.bizProv}","[status]","[name the actual provincial portal: BC Bid, Biddingo for Ontario, APC for Alberta, etc.]"],
+      ["MERX (multi-province opportunities)","Broad Canadian procurement","[status]","Register at merx.com — searchable by keyword and region"]
+    ]},
+    {"type":"table","heading":"Section 3 — Capability Statement & Positioning","columns":["Item","Standard","Your Status","Action Required"],"rows":[
+      ["Capability statement exists and is current (updated in last 6 months)","Required for all serious procurement","${parseInt(vals['scale_c3']||0)>=4?'✓':'❌ Not ready'}","[specific to their score]"],
+      ["Capability statement written for BUYERS, not for the company","Core requirement","[status]","[if score < 3: rewrite from scratch using the Capability Statement Generator at kasandyconsulting.com]"],
+      ["NAICS/commodity codes visible in the statement","Procurement-specific requirement","[status]","[action]"],
+      ["Past performance section with 3+ references (scope, outcome, client type)","Competitive submissions","${parseInt(vals['scale_c4']||0)>=4?'✓':'❌ Missing'}","[if score < 3: document 3 past projects this week — use the format: client type, scope, outcome]"],
+      ["Differentiators stated as evidence, not opinion","Competitive edge","[status]","[replace all general claims with specific, verifiable facts]"]
+    ]},
+    {"type":"table","heading":"Section 4 — Certifications","columns":["Certification","Relevant For","Your Status","Priority"],"rows":[
+      ["[Most relevant diversity cert for their sector — CAMSC for corporate, BEBC Society for Black-owned, CCAB for Indigenous, WBE for women-owned]","Corporate diversity programs","${parseInt(vals['scale_c5']||0)>=4?'✓ Certified':'⚠ Identify and pursue'}","${parseInt(vals['scale_c5']||0)<3?'HIGH — start application this week':'Medium — maintain renewal'}"],
+      ["Industry-specific certifications for ${vals.bizType?.split(' ')[0]}","[buyer-specific requirement]","[status]","[action]"],
+      ["Security clearance (Reliability Status minimum)","Federal contracts","[assess based on target contract]","[if federal target: plan 3–6 months — start now]"]
+    ]},
+    {"type":"checklist","heading":"Section 5 — Submission Day Checklist","items":[
+      {"text":"Read the evaluation criteria section BEFORE the Statement of Work — write to the criteria, not the general scope","note":"The evaluation matrix is what buyers score. Everything else is context."},
+      {"text":"Verify every mandatory requirement is met — missing one is an automatic disqualification regardless of submission quality"},
+      {"text":"Submission format correct — file type, naming convention, page limit, font size all matching RFP instructions"},
+      {"text":"Pricing is competitive — research comparable contracts before pricing. 'We deserve this contract' is not a pricing strategy."},
+      {"text":"Request a debrief after any unsuccessful bid — it is your right and the fastest way to improve"},
+      {"text":"Use the question period — submit questions before the deadline. Buyers must answer publicly. This often reveals evaluation criteria details that strengthen your response."}
+    ]},
+    {"type":"callout","variant":"green","icon":"🎯","heading":"Your Priority Actions — This Week","body":"[Based on their specific scores: 3 concrete, specific actions they should take THIS WEEK. Ordered by impact. Reference actual Canadian resources (specific portal names, certification body names, etc.). Not generic advice.]"}
   ]
 }
 Return ONLY the JSON.`;
-  })(vals);
-}
+  })(vals); }
 </script>
-</body>
-</html>
+</body></html>
