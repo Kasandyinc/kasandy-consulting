@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canadian Business Registration Guide by Province — Kasandy Consulting</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{font-size:10px}
+  body{font-family:'DM Sans',sans-serif;background:#EDE5D8;color:#1e1e1e;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .page{width:210mm;min-height:297mm;background:#FDFCFA;margin:0 auto 12px;display:flex;flex-direction:column;page-break-after:always}
+  .header{background:#712f1e;padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+  .brand{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:700;color:#FDFCFA}
+  .brand-tag{font-family:'DM Mono',monospace;font-size:.8rem;color:rgba(255,255,255,.45);letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
+  .doc-badge{font-family:'DM Mono',monospace;font-size:.8rem;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,210,160,.7);text-align:right}
+  .doc-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-style:italic;color:rgba(255,255,255,.55);margin-top:3px;text-align:right}
+  .footer{border-top:1px solid #EDE5D8;padding:10px 32px;display:flex;align-items:center;justify-content:space-between}
+  .footer-brand{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:#712f1e}
+  .footer-right{font-family:'DM Mono',monospace;font-size:.75rem;color:#AAA;text-align:right}
+
+  /* PAGE 1 — COVER/INTRO */
+  .cover-content{padding:28px 36px;flex:1}
+  .version-badge{display:inline-block;font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;background:#712f1e;color:#FDFCFA;padding:3px 10px;margin-bottom:10px}
+  .eyebrow{font-family:'DM Mono',monospace;font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:#712f1e;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:'';width:18px;height:1px;background:#712f1e}
+  h1{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:700;line-height:1.04;color:#1e1e1e;margin-bottom:12px}
+  .intro{font-size:1.2rem;line-height:1.65;color:#555;margin-bottom:20px}
+  .how-to{padding:14px 16px;background:#F5F0E8;border-left:3px solid #712f1e;margin-bottom:20px;font-size:1.1rem;color:#444;line-height:1.55}
+
+  /* QUICK REFERENCE TABLE */
+  .qr-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:#1e1e1e;margin-bottom:8px}
+  .qr-table{width:100%;border-collapse:collapse;font-size:1rem}
+  .qr-table thead tr{background:#1e1e1e}
+  .qr-table thead th{color:#FDFCFA;font-weight:600;padding:7px 10px;text-align:left;font-size:.95rem}
+  .qr-table tbody tr:nth-child(even){background:#F8F4EF}
+  .qr-table tbody tr:hover{background:#F0EAE0}
+  .qr-table td{padding:6px 10px;font-size:.95rem;color:#333;border-bottom:1px solid #EDE5D8;vertical-align:top;line-height:1.4}
+  .qr-table td:first-child{font-weight:600;color:#1e1e1e;white-space:nowrap}
+  .qr-table td.cost{font-family:'DM Mono',monospace;color:#712f1e;white-space:nowrap}
+  .qr-table td.time{font-family:'DM Mono',monospace;color:#555;white-space:nowrap}
+  .reg-type{font-size:.85rem;color:#888;font-style:italic;display:block;margin-top:2px}
+
+  /* STRUCTURE TYPES BOX */
+  .struct-box{background:#1e1e1e;padding:16px 18px;margin-bottom:16px}
+  .struct-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:#FDFCFA;margin-bottom:12px}
+  .struct-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .struct-item{border-left:2px solid #712f1e;padding-left:10px}
+  .struct-name{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:#FDFCFA;margin-bottom:3px}
+  .struct-pros{font-size:1rem;color:rgba(255,255,255,.6);line-height:1.45}
+  .struct-best{font-size:.9rem;color:rgba(255,210,160,.7);margin-top:3px;font-style:italic}
+
+  /* PAGE 2+ — PROVINCE CARDS */
+  .prov-content{padding:20px 32px;flex:1}
+  .prov-page-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:#1e1e1e;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #712f1e}
+  .prov-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .prov-card{border:1.5px solid #EDE5D8;padding:12px 14px}
+  .prov-header{background:#712f1e;color:#FDFCFA;padding:7px 12px;margin:-12px -14px 10px;display:flex;align-items:center;justify-content:space-between}
+  .prov-header.dark{background:#1e1e1e}
+  .prov-name{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700}
+  .prov-abbr{font-family:'DM Mono',monospace;font-size:.85rem;opacity:.6}
+  .prov-section{margin-bottom:8px}
+  .prov-label{font-family:'DM Mono',monospace;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:#712f1e;margin-bottom:4px}
+  .prov-item{font-size:1rem;color:#333;line-height:1.45;padding-left:10px;border-left:1px solid #EDE5D8;margin-bottom:2px}
+  .prov-item strong{color:#1e1e1e}
+  .prov-link{font-family:'DM Mono',monospace;font-size:.8rem;color:#712f1e}
+  .prov-cost-row{display:flex;gap:16px;font-family:'DM Mono',monospace;font-size:.85rem}
+  .prov-cost{color:#712f1e;font-weight:500}
+  .prov-time{color:#888}
+
+  /* FEDERAL SECTION */
+  .fed-card{border:2px solid #1e1e1e;padding:14px;margin-bottom:14px;background:#F8F4EF}
+  .fed-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:#1e1e1e;margin-bottom:8px}
+  .fed-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  /* CHECKLIST PAGE */
+  .check-content{padding:22px 32px;flex:1}
+  .check-section{margin-bottom:16px}
+  .check-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:#712f1e;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #EDE5D8}
+  .check-item{display:flex;align-items:flex-start;gap:10px;padding:5px 0;border-bottom:1px solid #F5F0E8}
+  .checkbox{width:15px;height:15px;border:1.5px solid #C8B8A8;border-radius:2px;flex-shrink:0;margin-top:1px;background:#fff}
+  .check-text{font-size:1.1rem;color:#333;line-height:1.4}
+  .check-note{font-size:.9rem;color:#888;margin-top:1px;font-style:italic}
+
+  @media print{body{background:#fff}.page{margin:0}}
+
+/* KC PROTECTION */
+@media print{
+  body::after{
+    content:'KASANDY CONSULTING';
+    position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%) rotate(-35deg);
+    font-size:72px;font-weight:700;letter-spacing:.25em;
+    color:rgba(113,47,30,.06);
+    white-space:nowrap;pointer-events:none;z-index:9999;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+}
+.kc-licence-bar{
+  background:#1e1e1e;padding:8px 32px;
+  font-family:'DM Mono',monospace;font-size:.7rem;
+  color:rgba(255,255,255,.4);letter-spacing:.08em;
+  display:flex;align-items:center;justify-content:space-between;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+</style>
+
+  <meta name="copyright" content="© 2026 Kasandy Consulting Inc. All rights reserved.">
+  <meta name="generator" content="Kasandy Consulting Digital Products · kasandyconsulting.com">
+  <meta name="rights" content="Personal use licence only. Resale or redistribution prohibited.">
+  <!-- KC-PRODUCT-PROTECTED: Unauthorised reproduction prohibited under Canadian copyright law -->
+</head>
+<body>
+
+<!-- ══════════════ PAGE 1 — INTRO ══════════════ -->
+<div class="page">
+  <div class="header">
+    <div><div class="brand">Kasandy Consulting</div><div class="brand-tag">Where Ambition Meets Access</div></div>
+    <div><div class="doc-badge">Digital Guide · $17</div><div class="doc-title">Business Registration by Province</div></div>
+  </div>
+  <div class="cover-content">
+    <div class="eyebrow">Step-by-Step · All Provinces &amp; Territories</div>
+    <div class="version-badge">Canadian Edition · 2025–2026</div>
+    <h1>Start your business<br>the right way — in<br>any province.</h1>
+    <p class="intro">Every province and territory in Canada has its own registration process, fees, naming requirements, and compliance obligations. This guide gives you the exact steps, costs, and links for all 10 provinces and 3 territories — plus the federal registration options that apply everywhere.</p>
+    <div class="how-to"><strong>How to use this guide:</strong> Find your province on pages 2–3. Complete the quick-start checklist on page 4 after registering. If you're unsure which business structure to use (sole proprietor, corporation, etc.) — start with the comparison on this page. When in doubt, consult an accountant or lawyer before incorporating.</div>
+
+    <!-- STRUCTURE TYPES -->
+    <div class="struct-box">
+      <div class="struct-title">Which business structure is right for you?</div>
+      <div class="struct-grid">
+        <div class="struct-item">
+          <div class="struct-name">Sole Proprietorship</div>
+          <div class="struct-pros">Simplest and cheapest to register. You are the business — personal and business liability are the same. Income reported on your personal tax return.</div>
+          <div class="struct-best">Best for: freelancers, consultants, early-stage testing</div>
+        </div>
+        <div class="struct-item">
+          <div class="struct-name">Partnership</div>
+          <div class="struct-pros">Two or more people share ownership. Requires a partnership agreement. Each partner is personally liable for the business's debts — including what the other partner does.</div>
+          <div class="struct-best">Best for: co-founded services businesses with known, trusted partners</div>
+        </div>
+        <div class="struct-item">
+          <div class="struct-name">Corporation (Provincial or Federal)</div>
+          <div class="struct-pros">Separate legal entity. Liability is limited to the company's assets. More complex to set up and maintain (annual filings, director requirements). Lower tax rate on corporate income.</div>
+          <div class="struct-best">Best for: growth businesses, government contracts, investors</div>
+        </div>
+        <div class="struct-item">
+          <div class="struct-name">Non-Profit / Charitable Org</div>
+          <div class="struct-pros">Operates for a social purpose, not for profit. Can apply for charitable status with CRA. Different governance requirements (board of directors, bylaws).</div>
+          <div class="struct-best">Best for: community programs, advocacy, social enterprises</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK REFERENCE TABLE -->
+    <div class="qr-title">At a Glance — All Provinces &amp; Territories</div>
+    <table class="qr-table">
+      <thead><tr><th>Province / Territory</th><th>Sole Prop Cost</th><th>Corporation Cost</th><th>Processing</th><th>Online?</th></tr></thead>
+      <tbody>
+        <tr><td>British Columbia<div class="reg-type">BC Registry Services</div></td><td class="cost">$40</td><td class="cost">$350</td><td class="time">Same day</td><td>Yes</td></tr>
+        <tr><td>Alberta<div class="reg-type">Service Alberta</div></td><td class="cost">$60</td><td class="cost">$275</td><td class="time">1–3 days</td><td>Yes</td></tr>
+        <tr><td>Saskatchewan<div class="reg-type">ISC Saskatchewan</div></td><td class="cost">$65</td><td class="cost">$265</td><td class="time">3–5 days</td><td>Yes</td></tr>
+        <tr><td>Manitoba<div class="reg-type">Companies Office</div></td><td class="cost">$60</td><td class="cost">$350</td><td class="time">5–10 days</td><td>Yes</td></tr>
+        <tr><td>Ontario<div class="reg-type">ServiceOntario / Ontario Business Registry</div></td><td class="cost">$60</td><td class="cost">$360</td><td class="time">Same day</td><td>Yes</td></tr>
+        <tr><td>Québec<div class="reg-type">Registraire des entreprises</div></td><td class="cost">$38</td><td class="cost">$358</td><td class="time">1–3 days</td><td>Yes</td></tr>
+        <tr><td>New Brunswick<div class="reg-type">Service NB</div></td><td class="cost">$122</td><td class="cost">$277</td><td class="time">3–5 days</td><td>Yes</td></tr>
+        <tr><td>Nova Scotia<div class="reg-type">Registry of Joint Stock Companies</div></td><td class="cost">$57.55</td><td class="cost">$337.19</td><td class="time">5–10 days</td><td>Yes</td></tr>
+        <tr><td>PEI<div class="reg-type">Access PEI / Corporations Division</div></td><td class="cost">$100</td><td class="cost">$295</td><td class="time">5–10 days</td><td>Partial</td></tr>
+        <tr><td>Newfoundland &amp; Labrador<div class="reg-type">Registry of Deeds, Companies &amp; Securities</div></td><td class="cost">$120</td><td class="cost">$300</td><td class="time">5–10 days</td><td>Yes</td></tr>
+        <tr><td>Yukon<div class="reg-type">Corporate Affairs, Yukon</div></td><td class="cost">$35</td><td class="cost">$255</td><td class="time">5–10 days</td><td>Partial</td></tr>
+        <tr><td>NWT<div class="reg-type">Corporate Registries, GNWT</div></td><td class="cost">$45</td><td class="cost">$350</td><td class="time">5–10 days</td><td>Partial</td></tr>
+        <tr><td>Nunavut<div class="reg-type">Department of Justice, Corporate Registries</div></td><td class="cost">$50</td><td class="cost">$300</td><td class="time">7–14 days</td><td>No — mail/in person</td></tr>
+        <tr><td>Federal (Canada Business Corporations Act)<div class="reg-type">Corporations Canada — valid in all provinces</div></td><td class="cost">N/A</td><td class="cost">$200 online / $250 paper</td><td class="time">1–5 days</td><td>Yes</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:.9rem;color:#AAA;margin-top:8px;font-style:italic">* Fees and timelines reflect 2025–2026 schedules. Verify current fees at the provincial registry website before registering. Additional fees may apply for name search, expedited processing, or registered agent services.</p>
+  </div>
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-right">consulting [at] kasandy.com · kasandyconsulting.com · Page 1 of 4</div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE 2 — WESTERN CANADA ══════════════ -->
+<div class="page">
+  <div class="header">
+    <div><div class="brand">Kasandy Consulting</div><div class="brand-tag">Business Registration Guide</div></div>
+    <div><div class="doc-badge">2025–2026</div><div class="doc-title">Western Canada + Territories</div></div>
+  </div>
+  <div class="prov-content">
+    <div class="prov-page-title">Western Canada &amp; Territories — Step-by-Step</div>
+
+    <!-- FEDERAL FIRST -->
+    <div class="fed-card">
+      <div class="fed-title">Federal Incorporation — Corporations Canada (Valid Everywhere)</div>
+      <div class="fed-grid">
+        <div>
+          <div class="prov-label">When to choose federal</div>
+          <div class="prov-item">You plan to operate in multiple provinces</div>
+          <div class="prov-item">You want the word "Canada" in your name</div>
+          <div class="prov-item">You want maximum protection on your business name nationally</div>
+          <div class="prov-item">You're seeking investors or planning to go public</div>
+        </div>
+        <div>
+          <div class="prov-label">Steps to incorporate federally</div>
+          <div class="prov-item"><strong>Step 1:</strong> Name search — NUANS report ($13.80) at ised.canada.ca</div>
+          <div class="prov-item"><strong>Step 2:</strong> File Articles of Incorporation at corporationscanada.ic.gc.ca ($200 online)</div>
+          <div class="prov-item"><strong>Step 3:</strong> Register in each province where you operate (extra-provincial registration ~$50–$250 per province)</div>
+          <div class="prov-item"><strong>Step 4:</strong> Obtain Business Number from CRA (free, same day online)</div>
+          <div class="prov-item"><strong>Step 5:</strong> Register for GST/HST if annual revenue exceeds or will exceed $30,000</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prov-grid">
+      <!-- BC -->
+      <div class="prov-card">
+        <div class="prov-header"><span class="prov-name">British Columbia</span><span class="prov-abbr">BC</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>BC Registry Services</strong> — bcregistry.gov.bc.ca</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $40 · Corp: $350</span><span class="prov-time">Same day</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Sole Proprietorship / Partnership Steps</div>
+          <div class="prov-item"><strong>1.</strong> Choose your business name or use your legal name</div>
+          <div class="prov-item"><strong>2.</strong> Register at bcregistry.gov.bc.ca → Business Names</div>
+          <div class="prov-item"><strong>3.</strong> Obtain CRA Business Number (if needed)</div>
+          <div class="prov-item"><strong>4.</strong> Apply for any municipal business licence (city hall)</div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Corporation Steps (BC Business Corporations Act)</div>
+          <div class="prov-item"><strong>1.</strong> Name approval — Name Request online at bcregistry.gov.bc.ca ($30)</div>
+          <div class="prov-item"><strong>2.</strong> File Incorporation Application — BC Online system ($350)</div>
+          <div class="prov-item"><strong>3.</strong> Create Notice of Articles and Register Office address</div>
+          <div class="prov-item"><strong>4.</strong> Obtain Business Number from CRA</div>
+          <div class="prov-item"><strong>5.</strong> Register for PST with BC Ministry of Finance (if selling goods)</div>
+        </div>
+        <div class="prov-link">bcregistry.gov.bc.ca &nbsp;|&nbsp; 1-877-526-1526</div>
+      </div>
+
+      <!-- ALBERTA -->
+      <div class="prov-card">
+        <div class="prov-header dark"><span class="prov-name">Alberta</span><span class="prov-abbr">AB</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Service Alberta</strong> — alberta.ca/business.aspx</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $60 · Corp: $275</span><span class="prov-time">1–3 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Sole Proprietorship / Partnership Steps</div>
+          <div class="prov-item"><strong>1.</strong> Conduct NUANS name search (required if using a trade name)</div>
+          <div class="prov-item"><strong>2.</strong> Register trade name at a licensed Registry Agent or online</div>
+          <div class="prov-item"><strong>3.</strong> No provincial sales tax in Alberta — only federal GST</div>
+          <div class="prov-item"><strong>4.</strong> Obtain municipal business licence (varies by city)</div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Corporation Steps (Alberta Business Corporations Act)</div>
+          <div class="prov-item"><strong>1.</strong> Name search via NUANS or same-day name reservation ($30)</div>
+          <div class="prov-item"><strong>2.</strong> File Articles of Incorporation — Alberta Corporate Registry ($275)</div>
+          <div class="prov-item"><strong>3.</strong> Set up registered address in Alberta</div>
+          <div class="prov-item"><strong>4.</strong> File annual return (required) — $50/year</div>
+          <div class="prov-item"><strong>5.</strong> No provincial corporate tax filing (GST/HST only)</div>
+        </div>
+        <div class="prov-link">alberta.ca &nbsp;|&nbsp; 1-877-427-4088</div>
+      </div>
+
+      <!-- SASKATCHEWAN -->
+      <div class="prov-card">
+        <div class="prov-header"><span class="prov-name">Saskatchewan</span><span class="prov-abbr">SK</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>ISC (Information Services Corporation)</strong> — isc.ca</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $65 · Corp: $265</span><span class="prov-time">3–5 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Key Steps</div>
+          <div class="prov-item"><strong>1.</strong> Name search and reservation (required for corporations)</div>
+          <div class="prov-item"><strong>2.</strong> Register at isc.ca — online registration available</div>
+          <div class="prov-item"><strong>3.</strong> PST registration required if selling goods in SK</div>
+          <div class="prov-item"><strong>4.</strong> Annual return required for corporations</div>
+        </div>
+        <div class="prov-link">isc.ca &nbsp;|&nbsp; 1-866-275-4721</div>
+      </div>
+
+      <!-- MANITOBA -->
+      <div class="prov-card">
+        <div class="prov-header dark"><span class="prov-name">Manitoba</span><span class="prov-abbr">MB</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Companies Office of Manitoba</strong> — companiesoffice.gov.mb.ca</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $60 · Corp: $350</span><span class="prov-time">5–10 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Key Steps</div>
+          <div class="prov-item"><strong>1.</strong> Name search — NUANS report recommended</div>
+          <div class="prov-item"><strong>2.</strong> Register via Companies Office portal or mail</div>
+          <div class="prov-item"><strong>3.</strong> RST (Retail Sales Tax) registration if selling goods</div>
+          <div class="prov-item"><strong>4.</strong> Annual return required — $55/year for corporations</div>
+        </div>
+        <div class="prov-link">companiesoffice.gov.mb.ca &nbsp;|&nbsp; 1-888-246-8353</div>
+      </div>
+
+      <!-- YUKON -->
+      <div class="prov-card">
+        <div class="prov-header"><span class="prov-name">Yukon</span><span class="prov-abbr">YT</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Corporate Affairs, Government of Yukon</strong> — yukon.ca/corporate-affairs</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $35 · Corp: $255</span><span class="prov-time">5–10 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Key Steps</div>
+          <div class="prov-item"><strong>1.</strong> Name search — Yukon Corporate Online (YCOS)</div>
+          <div class="prov-item"><strong>2.</strong> File Articles of Incorporation in person or by mail</div>
+          <div class="prov-item"><strong>3.</strong> No provincial sales tax (GST only)</div>
+          <div class="prov-item"><strong>4.</strong> Annual return required</div>
+        </div>
+        <div class="prov-link">yukon.ca/corporate-affairs</div>
+      </div>
+
+      <!-- NWT & NUNAVUT -->
+      <div class="prov-card">
+        <div class="prov-header dark"><span class="prov-name">Northwest Territories &amp; Nunavut</span><span class="prov-abbr">NT/NU</span></div>
+        <div class="prov-section">
+          <div class="prov-label">NWT Registry</div>
+          <div class="prov-item"><strong>Corporate Registries, GNWT</strong> — justice.gov.nt.ca</div>
+          <div class="prov-cost-row"><span class="prov-cost">Corp: $350</span><span class="prov-time">5–10 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Nunavut Registry</div>
+          <div class="prov-item"><strong>Dept. of Justice, Nunavut</strong> — justice.gov.nu.ca</div>
+          <div class="prov-cost-row"><span class="prov-cost">Corp: $300</span><span class="prov-time">7–14 days (mail/in person)</span></div>
+        </div>
+        <div class="prov-item"><strong>Note:</strong> For both territories, consider federal incorporation (Corporations Canada) first — it's often simpler and recognized nationally, then register extra-provincially in the territory.</div>
+        <div class="prov-link">justice.gov.nt.ca &nbsp;|&nbsp; justice.gov.nu.ca</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-right">consulting [at] kasandy.com · kasandyconsulting.com · Page 2 of 4</div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE 3 — EASTERN CANADA ══════════════ -->
+<div class="page">
+  <div class="header">
+    <div><div class="brand">Kasandy Consulting</div><div class="brand-tag">Business Registration Guide</div></div>
+    <div><div class="doc-badge">2025–2026</div><div class="doc-title">Central &amp; Eastern Canada</div></div>
+  </div>
+  <div class="prov-content">
+    <div class="prov-page-title">Ontario, Québec &amp; Atlantic Canada — Step-by-Step</div>
+    <div class="prov-grid">
+      <!-- ONTARIO -->
+      <div class="prov-card">
+        <div class="prov-header"><span class="prov-name">Ontario</span><span class="prov-abbr">ON</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Ontario Business Registry (ServiceOntario)</strong> — ontario.ca/business</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $60 · Corp: $360</span><span class="prov-time">Same day (online)</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Sole Proprietorship / Partnership Steps</div>
+          <div class="prov-item"><strong>1.</strong> Register business name — Ontario Business Registry online ($60)</div>
+          <div class="prov-item"><strong>2.</strong> Registration valid for 5 years — must renew</div>
+          <div class="prov-item"><strong>3.</strong> HST registration with CRA (if applicable)</div>
+          <div class="prov-item"><strong>4.</strong> Municipal business licence (check your city)</div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Corporation Steps (Ontario Business Corporations Act)</div>
+          <div class="prov-item"><strong>1.</strong> Name search — NUANS report ($14) or numbered company (no name search needed)</div>
+          <div class="prov-item"><strong>2.</strong> File Articles of Incorporation — Ontario Business Registry ($360)</div>
+          <div class="prov-item"><strong>3.</strong> Register for HST with CRA</div>
+          <div class="prov-item"><strong>4.</strong> File initial notice of directors and registered office</div>
+          <div class="prov-item"><strong>5.</strong> Annual return — $25/year (due on anniversary of incorporation)</div>
+          <div class="prov-item"><strong>Note:</strong> Ontario corporations must file Ontario corporate tax (T2 + CT23) separately from federal</div>
+        </div>
+        <div class="prov-link">ontario.ca/business-registry</div>
+      </div>
+
+      <!-- QUÉBEC -->
+      <div class="prov-card">
+        <div class="prov-header dark"><span class="prov-name">Québec</span><span class="prov-abbr">QC</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Registraire des entreprises Québec (REQ)</strong> — registreentreprises.gouv.qc.ca</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $38 · Corp: $358</span><span class="prov-time">1–3 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Important: Québec-Specific Requirements</div>
+          <div class="prov-item"><strong>All businesses</strong> must register with the REQ — even sole proprietors</div>
+          <div class="prov-item"><strong>French language:</strong> Business name must be in French, or bilingual with French equivalent. Application may need to be in French.</div>
+          <div class="prov-item"><strong>QST (Québec Sales Tax):</strong> Register separately with Revenu Québec (different from federal GST)</div>
+          <div class="prov-item"><strong>Québec corporate tax:</strong> File separately with Revenu Québec (not just CRA)</div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Key Steps</div>
+          <div class="prov-item"><strong>1.</strong> Name approval — verify French language compliance</div>
+          <div class="prov-item"><strong>2.</strong> Register at REQ (registreentreprises.gouv.qc.ca)</div>
+          <div class="prov-item"><strong>3.</strong> Register for QST with Revenu Québec</div>
+          <div class="prov-item"><strong>4.</strong> Annual declaration with REQ — required</div>
+        </div>
+        <div class="prov-link">registreentreprises.gouv.qc.ca &nbsp;|&nbsp; 1-888-291-6272</div>
+      </div>
+
+      <!-- NEW BRUNSWICK -->
+      <div class="prov-card">
+        <div class="prov-header"><span class="prov-name">New Brunswick</span><span class="prov-abbr">NB</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Service NB</strong> — snb.ca (Corporate Affairs)</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $122 · Corp: $277</span><span class="prov-time">3–5 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Key Steps</div>
+          <div class="prov-item"><strong>1.</strong> Name search and approval (required)</div>
+          <div class="prov-item"><strong>2.</strong> File through snb.ca or in person at a ServiceNB Centre</div>
+          <div class="prov-item"><strong>3.</strong> HST (NB harmonized) — register with CRA</div>
+          <div class="prov-item"><strong>4.</strong> Annual return — required for corporations</div>
+          <div class="prov-item"><strong>Note:</strong> NB is bilingual — services available in English and French</div>
+        </div>
+        <div class="prov-link">snb.ca &nbsp;|&nbsp; 1-888-762-8600</div>
+      </div>
+
+      <!-- NOVA SCOTIA -->
+      <div class="prov-card">
+        <div class="prov-header dark"><span class="prov-name">Nova Scotia</span><span class="prov-abbr">NS</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Registry of Joint Stock Companies (RJSC)</strong> — novascotia.ca/sns/access/business</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $57.55 · Corp: $337.19</span><span class="prov-time">5–10 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Key Steps</div>
+          <div class="prov-item"><strong>1.</strong> Name search — Access Nova Scotia online name search</div>
+          <div class="prov-item"><strong>2.</strong> File Articles of Incorporation or trade name registration online</div>
+          <div class="prov-item"><strong>3.</strong> HST registration with CRA (Nova Scotia rate: 15%)</div>
+          <div class="prov-item"><strong>4.</strong> Annual return — required ($20 + filing fee)</div>
+        </div>
+        <div class="prov-link">novascotia.ca/rjsc &nbsp;|&nbsp; 902-424-7770</div>
+      </div>
+
+      <!-- PEI -->
+      <div class="prov-card">
+        <div class="prov-header"><span class="prov-name">Prince Edward Island</span><span class="prov-abbr">PEI</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Corporations Division, PEI</strong> — princeedwardisland.ca/corporations</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $100 · Corp: $295</span><span class="prov-time">5–10 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Key Steps</div>
+          <div class="prov-item"><strong>1.</strong> Trade name registration or name reservation</div>
+          <div class="prov-item"><strong>2.</strong> File in person or by mail — online partially available</div>
+          <div class="prov-item"><strong>3.</strong> HST registration with CRA (PEI rate: 15%)</div>
+          <div class="prov-item"><strong>4.</strong> Annual return required</div>
+        </div>
+        <div class="prov-link">princeedwardisland.ca/corporations &nbsp;|&nbsp; 902-368-4550</div>
+      </div>
+
+      <!-- NL -->
+      <div class="prov-card">
+        <div class="prov-header dark"><span class="prov-name">Newfoundland &amp; Labrador</span><span class="prov-abbr">NL</span></div>
+        <div class="prov-section">
+          <div class="prov-label">Registry</div>
+          <div class="prov-item"><strong>Registry of Deeds, Companies &amp; Securities</strong> — gov.nl.ca/servicenl</div>
+          <div class="prov-cost-row"><span class="prov-cost">Sole Prop: $120 · Corp: $300</span><span class="prov-time">5–10 days</span></div>
+        </div>
+        <div class="prov-section">
+          <div class="prov-label">Key Steps</div>
+          <div class="prov-item"><strong>1.</strong> Name search via NL company search system</div>
+          <div class="prov-item"><strong>2.</strong> File Articles of Incorporation — online via ServiceNL</div>
+          <div class="prov-item"><strong>3.</strong> HST registration with CRA (NL rate: 15%)</div>
+          <div class="prov-item"><strong>4.</strong> Annual return required</div>
+          <div class="prov-item"><strong>5.</strong> Municipal licence (varies by location)</div>
+        </div>
+        <div class="prov-link">gov.nl.ca/servicenl &nbsp;|&nbsp; 709-729-3317</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-right">consulting [at] kasandy.com · kasandyconsulting.com · Page 3 of 4</div>
+  </div>
+</div>
+
+<!-- ══════════════ PAGE 4 — POST-REGISTRATION CHECKLIST ══════════════ -->
+<div class="page">
+  <div class="header">
+    <div><div class="brand">Kasandy Consulting</div><div class="brand-tag">Business Registration Guide</div></div>
+    <div><div class="doc-badge">Step 4</div><div class="doc-title">After Registration Checklist</div></div>
+  </div>
+  <div class="check-content">
+    <div class="eyebrow" style="font-family:'DM Mono',monospace;font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:#712f1e;margin-bottom:10px;display:flex;align-items:center;gap:10px"><span style="width:18px;height:1px;background:#712f1e;display:block"></span>After you register — don't stop here</div>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:700;color:#1e1e1e;margin-bottom:8px">What to do right after<br>registration.</h1>
+    <p style="font-size:1.15rem;color:#555;margin-bottom:20px">Registration is step one. These are the next steps that keep your business compliant, credible, and procurement-ready.</p>
+
+    <div class="check-section">
+      <div class="check-title">Federal Tax Requirements</div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Business Number (BN) registered</strong> with CRA — cra-arc.gc.ca or 1-800-959-5525<div class="check-note">Free and instant. Your BN is needed for almost every government form, contract, and funder application.</div></div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>GST/HST account registered</strong> (if revenue exceeds or will exceed $30,000/year)<div class="check-note">Even if below threshold, registering early is beneficial for claiming input tax credits.</div></div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Payroll account registered</strong> (if you have employees)</div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Provincial tax registration</strong> — PST (BC, SK, MB) or QST (QC) if applicable<div class="check-note">Atlantic provinces use harmonized HST — no separate provincial registration needed.</div></div></div>
+    </div>
+
+    <div class="check-section">
+      <div class="check-title">Banking &amp; Financial Setup</div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Separate business bank account opened</strong> — never mix business and personal funds<div class="check-note">Required for government contracts. Most banks require your BN and registration documents.</div></div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Accounting software set up</strong> — Wave (free), QuickBooks, or FreshBooks</div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Business credit card applied for</strong> — start building business credit history</div></div>
+    </div>
+
+    <div class="check-section">
+      <div class="check-title">Procurement &amp; Contracts</div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Registered on buyandsell.gc.ca</strong> — federal supplier database<div class="check-note">Free. Required for all federal contracts. Enter your NAICS codes accurately.</div></div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Registered on provincial procurement portals</strong> relevant to your location<div class="check-note">BC Bid, Biddingo (ON), Alberta Purchasing Connection, MERX, etc.</div></div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Commercial general liability insurance obtained</strong> — minimum $2M<div class="check-note">Required before most government or corporate contracts. Shop around — rates vary significantly.</div></div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Capability statement drafted</strong> — see Kasandy Consulting's free Capability Statement Guide</div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Supplier diversity certification started</strong> — CAMSC, CCAB, WBE, BEBC Society<div class="check-note">Process takes 4–12 weeks. Start early — many programs require a minimum of 6 months in operation.</div></div></div>
+    </div>
+
+    <div class="check-section">
+      <div class="check-title">Operations &amp; Compliance</div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Municipal business licence obtained</strong> (required in most cities)</div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>WSIB / WCB registration</strong> if applicable to your industry</div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Privacy policy drafted</strong> — required if collecting personal data (PIPEDA federally; provincial equivalents in AB, BC, QC)</div></div>
+      <div class="check-item"><div class="checkbox"></div><div class="check-text"><strong>Annual filing date noted in calendar</strong> — corporations must file annual returns</div></div>
+    </div>
+
+    <!-- COACHING CTA -->
+    <div style="background:#1e1e1e;padding:16px 20px;margin-top:20px;display:flex;align-items:flex-start;gap:16px">
+      <div style="font-size:2.2rem;flex-shrink:0">🎯</div>
+      <div>
+        <div style="font-family:'DM Mono',monospace;font-size:.8rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,210,160,.7);margin-bottom:4px">Next Step</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:#FDFCFA;margin-bottom:4px">Ready to pursue government contracts?</div>
+        <div style="font-size:1.05rem;color:rgba(255,255,255,.55);line-height:1.5">Registration is the foundation. Winning contracts requires procurement readiness — a capability statement, certification strategy, and buyer relationships. Kasandy Consulting's Discovery Session (90 minutes, $400) gives you a complete procurement entry plan and written action steps.</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.85rem;color:rgba(255,210,160,.8);margin-top:6px">→ kasandyconsulting.com/entrepreneurs</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="footer-brand">Kasandy Consulting</div>
+    <div class="footer-right">consulting [at] kasandy.com · kasandyconsulting.com · Page 4 of 4<br>Information current as of 2025–2026. Verify with provincial registries before filing.</div>
+  </div>
+</div>
+
+
+<div style="position:fixed;bottom:0;left:0;right:0;background:#1e1e1e;color:rgba(255,255,255,.4);
+font-family:'DM Mono',monospace;font-size:9px;padding:4px 20px;text-align:center;
+letter-spacing:.1em;-webkit-print-color-adjust:exact;print-color-adjust:exact;display:none"
+class="kc-print-footer">
+© 2026 KASANDY CONSULTING INC. · KASANDYCONSULTING.COM · PERSONAL USE LICENCE ONLY
+</div>
+<style>@media print{.kc-print-footer{display:block!important}}</style>
+</body>
+</html>
