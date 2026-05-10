@@ -22,7 +22,6 @@ export const DEFAULT_DOWNLOADS: Download[] = [
     createdAt: '2026-05-01T00:00:00Z',
   },
   {
-  {
     id: '6',
     slug: 'nonprofit-scorecard',
     title: 'The Non-Profit Sustainability Scorecard',

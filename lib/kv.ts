@@ -18,6 +18,10 @@ export const KEYS = {
   resourceDownloads: 'subscribers:downloads',
   // Downloads (JSON array in a single key)
   downloads: 'downloads:list',
+  // Download tokens (Square purchases)
+  tokenPrefix: 'token',      // token:[uuid] → DownloadToken JSON
+  orderPrefix: 'order',      // order:[orderId] → token uuid
+  purchaseLog: 'purchases',  // purchase:[timestamp] → purchase record JSON
 } as const
 
 // Typed getters / setters

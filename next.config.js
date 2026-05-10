@@ -10,6 +10,11 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/serve': ['./protected-downloads/**/*'],
+    },
+  },
 }
 
 module.exports = nextConfig
