@@ -116,9 +116,9 @@ export default async function Resources() {
       <section id="digital-products" className="py-20 px-6 bg-kc-gray-light">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Digital Products</span>
-          <h2 className="section-heading mb-4">Workbooks, Templates & Toolkits</h2>
+          <h2 className="section-heading mb-4">AI-Powered Workbooks & Toolkits</h2>
           <p className="font-sans text-sm text-kc-gray-mid mb-14 max-w-xl">
-            Paid tools designed to save you hours — fillable canvases, step-by-step workbooks, and plug-and-play templates. Print or use digitally.
+            Answer a set of questions about your business or organisation — get a personalised, professional output in minutes. Download as PDF directly from the tool.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {paidProducts.map(dl => (
@@ -137,7 +137,7 @@ export default async function Resources() {
             ))}
           </div>
           <p className="font-sans text-xs text-kc-gray-mid mt-10 max-w-lg">
-            All paid products are delivered as HTML files — open in your browser and use <strong>File → Print → Save as PDF</strong> to save a copy, or print directly.
+            All products open in your browser. AI workbooks include a built-in PDF download button. Static guides use <strong>File → Print → Save as PDF</strong>.
           </p>
         </div>
       </section>

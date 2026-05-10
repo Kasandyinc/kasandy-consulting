@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { kvGet, kv, KEYS } from '@/lib/kv'
 import type { Download } from '@/types/downloads'
+import { DEFAULT_DOWNLOADS } from '@/data/downloads'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
@@ -33,7 +34,9 @@ export async function POST(req: NextRequest) {
     let productTitle = resource || ''
     if (isLeadMagnet) {
       try {
-            const downloads = await kvGet<Download[]>(KEYS.downloads, [])
+        const kvData = await kvGet<Download[]>(KEYS.downloads, DEFAULT_DOWNLOADS)
+        const kvMap = new Map(kvData.map(d => [d.id, d]))
+        const downloads: Download[] = DEFAULT_DOWNLOADS.map(def => kvMap.get(def.id) ?? def)
         const match = downloads.find(d => d.slug === resource && d.enabled && d.isFree)
         if (match?.filename) {
           downloadUrl = `https://kasandyconsulting.com/downloads/${match.filename}`

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { CheckCircle, ArrowDownToLine, ArrowRight } from 'lucide-react'
 import { kvGet, KEYS } from '@/lib/kv'
 import type { Download } from '@/types/downloads'
+import { DEFAULT_DOWNLOADS } from '@/data/downloads'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,14 +13,6 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-// Map of product slug → download filename (fallback if KV not configured)
-const PRODUCT_FILENAMES: Record<string, string> = {
-  'bmc-business': 'bmc-business.html',
-  'bmc-nonprofit': 'bmc-nonprofit.html',
-  'province-registration-guide': 'province-registration-guide.html',
-  'procurement-checklist': 'procurement-checklist.html',
-}
-
 export default async function ThankYouPage({
   searchParams,
 }: {
@@ -27,14 +20,18 @@ export default async function ThankYouPage({
 }) {
   const { product } = searchParams
 
-  // Look up product details from KV downloads list
-  const downloads = await kvGet<Download[]>(KEYS.downloads, [])
+  // Merge KV overrides with defaults — same pattern as resources page
+  const kvData = await kvGet<Download[]>(KEYS.downloads, DEFAULT_DOWNLOADS)
+  const kvMap = new Map(kvData.map(d => [d.id, d]))
+  const downloads: Download[] = DEFAULT_DOWNLOADS.map(def => kvMap.get(def.id) ?? def)
+
   const found = downloads.find(d => d.slug === product)
 
   const title = found?.title ?? 'Your Purchase'
-  const filename = found?.filename ?? (product ? PRODUCT_FILENAMES[product] : null)
+  const filename = found?.filename ?? null
   const downloadUrl = filename ? `/downloads/${filename}` : null
-  const isKnownProduct = Boolean(found || (product && PRODUCT_FILENAMES[product]))
+  const isAIWizard = found?.format?.includes('AI-powered') ?? false
+  const isKnownProduct = Boolean(found)
 
   return (
     <div className="pt-16 min-h-screen bg-kc-warm-white">
@@ -61,7 +58,7 @@ export default async function ThankYouPage({
 
         <p className="font-sans text-[16px] leading-[1.7] text-kc-text-mid mb-10 max-w-md mx-auto">
           {isKnownProduct
-            ? <>Your purchase of <strong className="text-kc-charcoal">{title}</strong> is confirmed. Click the button below to download your guide.</>
+            ? <>Your purchase of <strong className="text-kc-charcoal">{title}</strong> is confirmed. Click below to open your {isAIWizard ? 'workbook' : 'guide'}.</>
             : 'Your purchase is confirmed. Your download link will be sent to your email shortly.'
           }
         </p>
@@ -76,10 +73,13 @@ export default async function ThankYouPage({
               className="inline-flex items-center gap-3 px-10 py-4 bg-kc-brown text-white font-sans text-xs tracking-widest uppercase font-medium hover:bg-kc-black transition-colors"
             >
               <ArrowDownToLine size={16} />
-              Download {title}
+              Open {isAIWizard ? 'Workbook' : title}
             </a>
             <p className="font-sans text-xs text-kc-gray-mid">
-              Opens in your browser — use <strong>File → Print → Save as PDF</strong> to save a copy
+              {isAIWizard
+                ? 'Opens in a new tab — answer the questions to generate your personalised output, then use the built-in PDF download button.'
+                : 'Opens in your browser — use File → Print → Save as PDF to save a copy'
+              }
             </p>
           </div>
         ) : (
@@ -96,13 +96,13 @@ export default async function ThankYouPage({
           <Link href="/resources" className="group border border-kc-gray-border bg-white p-6 hover:border-kc-brown transition-colors block">
             <p className="font-sans text-[10px] tracking-widest uppercase text-kc-brown mb-2">More Resources</p>
             <h3 className="font-display text-lg font-light text-kc-black mb-2">Browse All Downloads</h3>
-            <p className="font-sans text-xs text-kc-gray-mid leading-relaxed">Free guides, tools, and paid products for entrepreneurs and non-profits.</p>
+            <p className="font-sans text-xs text-kc-gray-mid leading-relaxed">Free guides, tools, and AI-powered workbooks for entrepreneurs and non-profits.</p>
             <p className="font-sans text-xs text-kc-brown mt-3 group-hover:underline flex items-center gap-1">Browse <ArrowRight size={11} /></p>
           </Link>
           <Link href="/contact" className="group border border-kc-gray-border bg-white p-6 hover:border-kc-brown transition-colors block">
             <p className="font-sans text-[10px] tracking-widest uppercase text-kc-brown mb-2">Ready to Go Further?</p>
             <h3 className="font-display text-lg font-light text-kc-black mb-2">Book a Strategy Call</h3>
-            <p className="font-sans text-xs text-kc-gray-mid leading-relaxed">A 90-minute Discovery Session with Jackee Kasandy to build on what you've downloaded.</p>
+            <p className="font-sans text-xs text-kc-gray-mid leading-relaxed">A 90-minute Discovery Session with Jackee Kasandy to build on what you&apos;ve just worked through.</p>
             <p className="font-sans text-xs text-kc-brown mt-3 group-hover:underline flex items-center gap-1">Book now <ArrowRight size={11} /></p>
           </Link>
         </div>
