@@ -83,9 +83,15 @@ export default function Footer() {
           <p className="font-sans text-[10px] text-white/40 tracking-wide">
             BEBC Society Certified &nbsp;|&nbsp; WBE Pending &nbsp;|&nbsp; Women Led &amp; Owned &nbsp;|&nbsp; Black-Owned Business
           </p>
-          <p className="font-sans text-[10px] text-white/40">
-            © {new Date().getFullYear()} Kasandy Consulting. All rights reserved.
-          </p>
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="font-sans text-[10px] text-white/40 hover:text-white/70 transition-colors">
+              Terms &amp; Conditions
+            </Link>
+            <span className="text-white/20 text-[10px]">|</span>
+            <p className="font-sans text-[10px] text-white/40">
+              © {new Date().getFullYear()} Kasandy Consulting Inc. All rights reserved.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

@@ -374,5 +374,39 @@ class="kc-print-footer">
 © 2026 KASANDY CONSULTING INC. · KASANDYCONSULTING.COM · PERSONAL USE LICENCE ONLY
 </div>
 <style>@media print{.kc-print-footer{display:block!important}}</style>
+
+<!-- KC Forensic Watermarking Override — DO NOT REMOVE -->
+<script>
+(function(){
+  function _kcPatch(){
+    var _orig=window.downloadPDF;
+    window.downloadPDF=async function(){
+      var doc=document.getElementById('renderedDoc');
+      if(!doc){if(typeof _orig==='function')_orig();return;}
+      if(typeof html2pdf==='undefined'){window.print();return;}
+      var btn=document.querySelector('.btn-download');
+      var origHTML=btn?btn.innerHTML:'';
+      if(btn){btn.innerHTML='&#x23F3; Generating PDF&hellip;';btn.disabled=true;}
+      var token=new URLSearchParams(window.location.search).get('token')||'';
+      var slug=typeof SLUG!=='undefined'?SLUG:'product';
+      try{
+        var opt={margin:0,filename:'kasandy-'+slug+'-'+Date.now()+'.pdf',image:{type:'jpeg',quality:.92},html2canvas:{scale:1.8,useCORS:true},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+        var pdfBuffer=await html2pdf().set(opt).from(doc).output('arraybuffer');
+        var resp=await fetch('/api/watermark-pdf',{method:'POST',headers:{'Content-Type':'application/pdf','X-KC-Token':token,'X-KC-Slug':slug},body:pdfBuffer});
+        if(!resp.ok)throw new Error('Watermark API '+resp.status);
+        var blob=await resp.blob();
+        var url=URL.createObjectURL(blob);
+        var a=document.createElement('a');a.href=url;a.download=opt.filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+      }catch(e){
+        console.warn('[KC] Server watermark failed, using local PDF:',e.message);
+        if(typeof _orig==='function')_orig();else window.print();
+      }finally{
+        if(btn){btn.innerHTML=origHTML||'&#x2B07; Download PDF';btn.disabled=false;}
+      }
+    };
+  }
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',_kcPatch);}else{_kcPatch();}
+})();
+</script>
 </body>
 </html>

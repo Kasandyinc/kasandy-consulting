@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/resources',     priority: 0.9, freq: 'weekly'  }, // revenue page — 14 paid products
     { path: '/work',          priority: 0.7, freq: 'monthly' },
     { path: '/press',         priority: 0.7, freq: 'weekly'  },
+    { path: '/terms',         priority: 0.4, freq: 'yearly'  },
   ]
 
   const staticPages = pages.map(p => ({
