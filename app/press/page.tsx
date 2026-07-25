@@ -245,7 +245,7 @@ export default async function Press() {
             For interview requests, media features, or event coverage, contact Jackee directly with <strong className="text-white">MEDIA</strong> in the subject line. Response within one business day.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <a href="mailto:jackee@kasandy.com?subject=MEDIA" className="btn-brown">
+            <a href="mailto:jackee@kasandyconsulting.com?subject=MEDIA" className="btn-brown">
               Media Enquiry
             </a>
             <a href="/files/jackee-kasandy-speaker-kit.pdf" className="btn-outline border-white text-white hover:bg-white hover:text-kc-black">

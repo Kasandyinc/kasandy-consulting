@@ -76,7 +76,6 @@ export function generateICS(p: ICSParams): string {
     'ORGANIZER;CN=Kasandy Consulting:mailto:jackee@kasandyconsulting.com',
     `ATTENDEE;CN=${escapeICS(p.clientName)};RSVP=TRUE;PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT:mailto:${p.clientEmail}`,
     'ATTENDEE;CN=Jackee Kasandy;RSVP=FALSE;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT:mailto:Jackee.Kasandy@bebcsociety.org',
-    'ATTENDEE;CN=Jackee Kasandy;RSVP=FALSE;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT:mailto:jackee@kasandyconsulting.com',
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'SEQUENCE:0',

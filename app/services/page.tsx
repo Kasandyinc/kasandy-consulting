@@ -77,7 +77,7 @@ const services = [
 ]
 
 const steps = [
-  'Book a complimentary 15-minute strategy call. Come with your goals — we\'ll come with questions.',
+  'Book a complimentary 20-minute strategy call. Come with your goals — we\'ll come with questions.',
   'We scope the engagement. A proposal and Statement of Work outlines deliverables, timeline, and investment.',
   'You sign off. We get to work.',
   'Delivery: coaching sessions, program facilitation, strategic documents, or all of the above — depending on what you need.',

@@ -136,7 +136,7 @@ export default function TermsPage() {
           </p>
           <p>
             Access links for paid products expire after 7 days and are limited to 10 uses per purchase. If you require extended access, contact us at{' '}
-            <a href="mailto:consulting@kasandy.com" className="text-kc-brown hover:underline">consulting@kasandy.com</a>.
+            <a href="mailto:consulting@kasandyconsulting.com" className="text-kc-brown hover:underline">consulting@kasandyconsulting.com</a>.
           </p>
         </Section>
 
@@ -186,7 +186,7 @@ export default function TermsPage() {
           </p>
           <p>
             If you experience a technical issue that prevents you from accessing your purchased product, contact us within 14 days of purchase at{' '}
-            <a href="mailto:consulting@kasandy.com" className="text-kc-brown hover:underline">consulting@kasandy.com</a>{' '}
+            <a href="mailto:consulting@kasandyconsulting.com" className="text-kc-brown hover:underline">consulting@kasandyconsulting.com</a>{' '}
             and we will work to resolve the issue or provide an alternative remedy.
           </p>
           <p>
@@ -218,7 +218,7 @@ export default function TermsPage() {
           </p>
           <p>
             You may request deletion of your personal data by contacting{' '}
-            <a href="mailto:consulting@kasandy.com" className="text-kc-brown hover:underline">consulting@kasandy.com</a>.
+            <a href="mailto:consulting@kasandyconsulting.com" className="text-kc-brown hover:underline">consulting@kasandyconsulting.com</a>.
             Note that forensic identifiers embedded in downloaded documents cannot be removed after the fact.
           </p>
         </Section>
@@ -240,7 +240,7 @@ export default function TermsPage() {
             <p className="font-display text-lg font-bold text-kc-charcoal mb-1">Kasandy Consulting Inc.</p>
             <p className="font-sans text-sm text-kc-text-mid">Vancouver, British Columbia, Canada</p>
             <p className="font-sans text-sm mt-3">
-              <a href="mailto:consulting@kasandy.com" className="text-kc-brown hover:underline">consulting@kasandy.com</a>
+              <a href="mailto:consulting@kasandyconsulting.com" className="text-kc-brown hover:underline">consulting@kasandyconsulting.com</a>
             </p>
             <p className="font-sans text-sm">
               <Link href="/contact" className="text-kc-brown hover:underline">kasandyconsulting.com/contact</Link>

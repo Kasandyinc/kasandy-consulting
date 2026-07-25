@@ -255,7 +255,7 @@ export default async function About() {
         <div className="max-w-xl mx-auto">
           <h2 className="font-display text-4xl font-light text-white mb-5">Want to know if we're the right fit?</h2>
           <p className="font-sans text-sm text-white/60 leading-relaxed mb-10">
-            Book a complimentary 15-minute strategy call. No pitch, no pressure — just an honest conversation about what you're building and how we might help.
+            Book a complimentary 20-minute strategy call. No pitch, no pressure — just an honest conversation about what you're building and how we might help.
           </p>
           <Link href="/contact" className="btn-brown">Book a Strategy Call</Link>
         </div>

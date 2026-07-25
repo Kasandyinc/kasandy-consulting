@@ -250,7 +250,7 @@ export default function Home() {
         <div className="max-w-2xl mx-auto">
           <h2 className="font-display text-4xl md:text-5xl font-light mb-5">Ready to get to work?</h2>
           <p className="font-sans text-sm text-white/80 leading-relaxed mb-10">
-            Book a complimentary 15-minute strategy call. Tell us where you are and where you want to go. We'll tell you honestly how we can help — and what that looks like.
+            Book a complimentary 20-minute strategy call. Tell us where you are and where you want to go. We'll tell you honestly how we can help — and what that looks like.
           </p>
           <Link href="/contact" className="inline-flex items-center px-10 py-4 bg-white text-kc-brown text-xs tracking-widest uppercase font-sans font-medium hover:bg-kc-black hover:text-white transition-colors">
             Book Your Strategy Call
