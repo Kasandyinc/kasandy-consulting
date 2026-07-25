@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { kv } from '@/lib/kv'
+import { noreply as FROM } from '@/lib/email'
 
-const FROM = 'Kasandy Consulting <consulting@kasandy.com>'
-const JACKEE_EMAIL = 'consulting@kasandy.com'
+const JACKEE_EMAIL = process.env.CONTACT_TO_EMAIL || 'ea@kasandyconsulting.com'
 
 const PROGRAM_LABELS: Record<string, string> = {
   bootcamp: '2-Day Bootcamp (Nairobi or virtual)',

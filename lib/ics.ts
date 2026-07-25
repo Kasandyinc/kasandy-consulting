@@ -1,4 +1,4 @@
-import { slotToUTC, SLOT_DURATION_MINS } from './bookings'
+import { slotToUTC } from './bookings'
 
 /** Format a Date as a compact UTC ICS timestamp: 20250603T180000Z */
 function toICSUTC(date: Date): string {
@@ -23,18 +23,21 @@ function foldLine(line: string): string {
 }
 
 export type ICSParams = {
-  dateStr: string    // YYYY-MM-DD
-  timeStr: string    // HH:MM (PST)
+  dateStr: string          // YYYY-MM-DD
+  timeStr: string          // HH:MM (PST)
   clientName: string
   clientEmail: string
   topic: string
   uid: string
+  meetingLink: string      // join URL (Microsoft Teams); may be empty
+  durationMinutes: number  // length of the call, in minutes
 }
 
 export function generateICS(p: ICSParams): string {
   const startUTC = slotToUTC(p.dateStr, p.timeStr)
-  const endUTC   = new Date(startUTC.getTime() + SLOT_DURATION_MINS * 60 * 1000)
+  const endUTC   = new Date(startUTC.getTime() + p.durationMinutes * 60 * 1000)
   const nowUTC   = new Date()
+  const location = p.meetingLink || 'Virtual — link to follow'
 
   const [year, month, day] = p.dateStr.split('-').map(Number)
   const displayDate = new Date(year, month - 1, day).toLocaleDateString('en-CA', {
@@ -49,7 +52,9 @@ export function generateICS(p: ICSParams): string {
     `⏰ IMPORTANT: This meeting is at ${p.timeStr} PST (Pacific Time, Vancouver BC).\n` +
     `If you are outside of BC, please double-check your local time before joining.\n` +
     `\n` +
-    `A virtual meeting link will be sent separately.`
+    (p.meetingLink
+      ? `Join the meeting:\n${p.meetingLink}`
+      : `A virtual meeting link will be sent separately.`)
   )
 
   const lines = [
@@ -66,11 +71,12 @@ export function generateICS(p: ICSParams): string {
     `DTEND:${toICSUTC(endUTC)}`,
     `SUMMARY:Strategy Call — Kasandy Consulting (${p.timeStr} PST)`,
     `DESCRIPTION:${description}`,
-    'LOCATION:Virtual — link to follow',
-    'ORGANIZER;CN=Kasandy Consulting:mailto:consulting@kasandy.com',
+    `LOCATION:${escapeICS(location)}`,
+    ...(p.meetingLink ? [`URL:${p.meetingLink}`] : []),
+    'ORGANIZER;CN=Kasandy Consulting:mailto:jackee@kasandyconsulting.com',
     `ATTENDEE;CN=${escapeICS(p.clientName)};RSVP=TRUE;PARTSTAT=NEEDS-ACTION;ROLE=REQ-PARTICIPANT:mailto:${p.clientEmail}`,
-    'ATTENDEE;CN=Jackee Kasandy;RSVP=FALSE;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT:mailto:jackee.kasandy@bebcsociety.org',
-    'ATTENDEE;CN=Jackee Kasandy;RSVP=FALSE;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT:mailto:jackee@kasandy.com',
+    'ATTENDEE;CN=Jackee Kasandy;RSVP=FALSE;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT:mailto:Jackee.Kasandy@bebcsociety.org',
+    'ATTENDEE;CN=Jackee Kasandy;RSVP=FALSE;PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT:mailto:jackee@kasandyconsulting.com',
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',
     'SEQUENCE:0',

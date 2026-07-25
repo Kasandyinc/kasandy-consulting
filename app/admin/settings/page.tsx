@@ -23,7 +23,7 @@ const FIELD_META: { key: keyof SiteSettings; label: string; type: 'text' | 'togg
   { key: 'heroSubtext',           label: 'Homepage hero subtext',        type: 'text',   placeholder: 'Strategy, systems, and support…' },
   { key: 'ctaLabel',              label: 'Primary CTA button label',     type: 'text',   placeholder: 'Work With Us' },
   { key: 'ctaHref',               label: 'Primary CTA button link',      type: 'text',   placeholder: '/contact' },
-  { key: 'bookingUrl',            label: 'Booking / Calendly URL',       type: 'text',   placeholder: 'https://calendly.com/…' },
+  { key: 'bookingUrl',            label: 'Booking URL',                  type: 'text',   placeholder: 'https://…' },
   { key: 'announcementBar',       label: 'Announcement bar text',        type: 'text',   placeholder: 'Now accepting clients for Q3…' },
   { key: 'announcementBarEnabled',label: 'Show announcement bar',        type: 'toggle' },
   { key: 'linkedinUrl',           label: 'LinkedIn URL',                 type: 'text',   placeholder: 'https://www.linkedin.com/in/…' },

@@ -38,20 +38,20 @@ export default function Contact() {
           </h1>
 
           <p className="font-sans text-[17px] leading-[1.7] text-kc-text-mid max-w-[480px] mb-9">
-            Book a complimentary 15-minute strategy call, or submit a project inquiry. We typically respond within one business day.
+            Book a complimentary 20-minute strategy call, or submit a project inquiry. We typically respond within one business day.
           </p>
 
-          <Link href="#book" className="btn-brown">Book a 15-Minute Strategy Call</Link>
+          <Link href="#book" className="btn-brown">Book a 20-Minute Strategy Call</Link>
         </div>
       </section>
 
-      {/* Calendly */}
+      {/* Booking */}
       <section id="book" className="py-20 px-6 bg-kc-gray-light border-b border-kc-gray-border">
         <div className="max-w-7xl mx-auto">
           <span className="section-label">Book a Call</span>
           <h2 className="section-heading mb-4">Schedule a Strategy Call</h2>
           <p className="font-sans text-sm text-kc-gray-mid mb-12 max-w-xl">
-            A complimentary 15-minute call to discuss your goals and whether we&apos;re the right fit. No pitch, no pressure.
+            A complimentary 20-minute call to discuss your goals and whether we&apos;re the right fit. No pitch, no pressure.
           </p>
           <BookingCalendar />
         </div>

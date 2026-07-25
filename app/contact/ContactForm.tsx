@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Turnstile from '@/components/Turnstile'
 
 const audienceTypes = [
   { value: 'entrepreneur', label: 'Entrepreneur / Founder' },
@@ -31,9 +32,12 @@ export default function ContactForm() {
     audienceType: '',
     message: '',
     referral: '',
+    website: '', // honeypot — must stay empty
   })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [formLoadedAt] = useState(() => Date.now())
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   const set = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }))
@@ -46,7 +50,7 @@ export default function ContactForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, formLoadedAt, turnstileToken }),
       })
       const data = await res.json()
       if (!res.ok || data.error) throw new Error(data.error || 'Submission failed')
@@ -108,6 +112,22 @@ export default function ContactForm() {
           {referralOptions.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>
+      {/* Honeypot — hidden from real users; bots that fill it are silently dropped */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+        <label>
+          Website
+          <input
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={form.website}
+            onChange={set('website')}
+          />
+        </label>
+      </div>
+
+      <Turnstile onVerify={setTurnstileToken} />
+
       {status === 'error' && (
         <p className="font-sans text-xs text-kc-red">{errorMsg}</p>
       )}

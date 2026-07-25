@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Download, CheckCircle, ArrowDownToLine } from 'lucide-react'
+import Turnstile from '@/components/Turnstile'
 
 type Props = {
   id: string          // slug — sent to API for lookup
@@ -16,8 +17,11 @@ type Props = {
 export default function LeadMagnetCard({ id, title, description, format, category, downloadUrl, comingSoon }: Props) {
   const [state, setState] = useState<'idle' | 'capturing' | 'submitting' | 'done'>('idle')
   const [email, setEmail] = useState('')
+  const [website, setWebsite] = useState('') // honeypot
   const [error, setError] = useState('')
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(downloadUrl ?? null)
+  const [formLoadedAt] = useState(() => Date.now())
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   async function handleCapture(e: React.FormEvent) {
     e.preventDefault()
@@ -28,7 +32,7 @@ export default function LeadMagnetCard({ id, title, description, format, categor
       const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, resource: id }),  // send slug, not title
+        body: JSON.stringify({ email, resource: id, website, formLoadedAt, turnstileToken }),  // send slug, not title
       })
       const data = await res.json()
       if (!res.ok || data.error) throw new Error(data.error || 'Submission failed')
@@ -77,6 +81,17 @@ export default function LeadMagnetCard({ id, title, description, format, categor
             placeholder="your@email.com"
             autoFocus
           />
+          {/* Honeypot — hidden from real users */}
+          <div aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+            <input
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={e => setWebsite(e.target.value)}
+            />
+          </div>
+          <Turnstile onVerify={setTurnstileToken} />
           {error && <p className="font-sans text-xs text-red-600">{error}</p>}
           <div className="flex gap-3">
             <button type="submit" className="btn-brown flex-1 justify-center text-xs">

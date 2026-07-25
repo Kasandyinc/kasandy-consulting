@@ -1,11 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import Turnstile from '@/components/Turnstile'
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState('')
+  const [website, setWebsite] = useState('') // honeypot
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [formLoadedAt] = useState(() => Date.now())
+  const [turnstileToken, setTurnstileToken] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -16,7 +20,7 @@ export default function NewsletterSignup() {
       const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, website, formLoadedAt, turnstileToken }),
       })
       const data = await res.json()
       if (!res.ok || data.error) throw new Error(data.error || 'Submission failed')
@@ -46,6 +50,17 @@ export default function NewsletterSignup() {
         className="w-full border border-white/20 bg-transparent px-4 py-3 text-sm font-sans text-white placeholder-white/40 focus:outline-none focus:border-white transition-colors"
         placeholder="your@email.com"
       />
+      {/* Honeypot — hidden from real users */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+        <input
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={e => setWebsite(e.target.value)}
+        />
+      </div>
+      <Turnstile onVerify={setTurnstileToken} />
       {status === 'error' && (
         <p className="font-sans text-xs text-kc-red">{errorMsg}</p>
       )}

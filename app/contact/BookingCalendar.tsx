@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Clock, Globe, CheckCircle, AlertTriangle } f
 
 const HORIZON_MONTHS = 2
 const MIN_NOTICE_HOURS = 24
-const AVAILABLE_DAYS = new Set([2, 5]) // Tuesday, Friday
+const AVAILABLE_DAYS = new Set([1, 5]) // Monday, Friday
 
 function nthSundayOfMonth(year: number, month: number, n: number): Date {
   const first = new Date(year, month - 1, 1)
@@ -68,7 +68,7 @@ function toDateStr(year: number, month: number, day: number): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-/** Is a YYYY-MM-DD date bookable (Tues/Fri, within horizon, with notice)? */
+/** Is a YYYY-MM-DD date bookable (Mon/Fri, within horizon, with notice)? */
 function isBookable(dateStr: string): boolean {
   const [y, mo, d] = dateStr.split('-').map(Number)
   const date = new Date(y, mo - 1, d)
@@ -239,7 +239,7 @@ export default function BookingCalendar() {
         <div className="grid grid-cols-7 mb-2">
           {DOW_LABELS.map(l => (
             <div key={l} className={`text-center font-mono text-[10px] tracking-widest uppercase pb-2
-              ${l === 'Tue' || l === 'Fri' ? 'text-kc-brown' : 'text-kc-gray-mid'}`}>
+              ${l === 'Mon' || l === 'Fri' ? 'text-kc-brown' : 'text-kc-gray-mid'}`}>
               {l}
             </div>
           ))}
@@ -283,7 +283,7 @@ export default function BookingCalendar() {
         {/* Legend */}
         <div className="mt-6 flex items-center gap-6 text-[11px] text-kc-gray-mid font-sans">
           <span className="flex items-center gap-2">
-            <span className="w-3 h-3 bg-kc-brown/10 rounded-sm inline-block" /> Available (Tue &amp; Fri)
+            <span className="w-3 h-3 bg-kc-brown/10 rounded-sm inline-block" /> Available (Mon &amp; Fri)
           </span>
           <span className="flex items-center gap-2">
             <span className="w-3 h-3 bg-kc-gray-border rounded-sm inline-block opacity-40" /> Unavailable
@@ -392,7 +392,7 @@ export default function BookingCalendar() {
             <span className="font-sans text-[11px] tracking-widest uppercase text-kc-brown">Your Booking</span>
           </div>
           <p className="font-sans text-sm font-semibold text-kc-charcoal">{formatSelectedDate(selectedDate!)}</p>
-          <p className="font-sans text-sm text-kc-charcoal">{formatPST(selectedTime!)} PST · 15 minutes</p>
+          <p className="font-sans text-sm text-kc-charcoal">{formatPST(selectedTime!)} PST · 20 minutes</p>
           {localDisplay && (
             <p className="font-sans text-xs text-kc-brown mt-1">({localDisplay} your time)</p>
           )}

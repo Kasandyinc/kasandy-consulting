@@ -4,6 +4,7 @@ import { Resend } from 'resend'
 import { createDownloadToken, updateTokenEmail } from '@/lib/tokens'
 import { kv } from '@vercel/kv'
 import { DEFAULT_DOWNLOADS } from '@/data/downloads'
+import { noreply } from '@/lib/email'
 
 // Map Square line item names → product slugs
 // Update this map if product names change in Square
@@ -104,7 +105,7 @@ export async function POST(req: NextRequest) {
         const expiryDate = new Date(Date.now() + 7 * 24 * 3600 * 1000).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })
 
         await resend.emails.send({
-          from: 'Kasandy Consulting <consulting@kasandy.com>',
+          from: noreply,
           to: buyerEmail,
           subject: `Your download is ready — ${productTitle}`,
           html: `
