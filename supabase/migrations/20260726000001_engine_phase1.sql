@@ -450,3 +450,7 @@ create policy audit_log_read on audit_log for select to authenticated
 -- ─── Seed: the singleton settings row ───────────────────────────────────────
 insert into settings (id, timezone) values (true, 'America/Vancouver')
 on conflict (id) do nothing;
+
+-- Seed the operator allow-list (mirrors ENGINE_OPERATOR_EMAILS).
+insert into engine_operators (email) values ('ea@kasandyconsulting.com')
+on conflict (email) do nothing;
