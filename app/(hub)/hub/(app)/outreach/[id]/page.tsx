@@ -11,6 +11,7 @@ import {
 } from '@/lib/engine/types'
 import { SystemStrip, Provenance, OrgFlags } from '../../../../_components/ui'
 import SignOffButton from './SignOffButton'
+import SequenceTab from './SequenceTab'
 
 export const dynamic = 'force-dynamic'
 
@@ -190,20 +191,11 @@ export default async function OrgRecord({
       )}
 
       {tab === 'sequence' && (
-        <div className="card">
-          <div className="card-h"><h3>Sequence</h3></div>
-          <div className="card-b">
-            {(sequences ?? []).length === 0 ? (
-              <p className="empty">
-                No sequence staged. Templates, the composer, and the send-gate arrive in the next PR.
-              </p>
-            ) : (
-              <pre className="mono" style={{ fontSize: 11.5 }}>
-                {JSON.stringify(sequences, null, 2)}
-              </pre>
-            )}
-          </div>
-        </div>
+        <SequenceTab
+          orgId={o.id}
+          sequences={(sequences ?? []) as never}
+          blockers={blockers}
+        />
       )}
 
       {tab === 'consent' && (

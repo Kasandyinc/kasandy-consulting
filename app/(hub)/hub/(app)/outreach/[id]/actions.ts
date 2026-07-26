@@ -6,6 +6,7 @@ import { isOperator } from '@/lib/engine/operators'
 import { checkSend, deliver, type TemplateRow, type SettingsRow } from '@/lib/engine/send'
 import { optOutUrl } from '@/lib/engine/optout'
 import type { Org, Contact, ConsentRow } from '@/lib/engine/types'
+import { FOUNDER_OUTREACH_V1, stepDueDate } from '@/lib/engine/sequence'
 
 /**
  * Owner-only sign-off for a Black-led / Indigenous-serving org (§7.2).
@@ -141,5 +142,71 @@ export async function sendOutreach(args: { orgId: string; templateId: string; co
   })
 
   revalidatePath(`/outreach/${args.orgId}`)
+  return { ok: true }
+}
+
+/**
+ * Stage Founder Outreach v1 for an org (§10 item 7).
+ *
+ * Creates the sequence and its steps with due dates from the matrix ladder. Staging is
+ * deliberately allowed for orgs that cannot yet be sent to — the steps show their
+ * blocking reason instead of being hidden, so the work is visible before it is
+ * unblocked. A held org is the exception: the database refuses the sequence outright.
+ */
+export async function stageSequence(orgId: string) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+
+  const { data: existing } = await supabase
+    .from('sequences')
+    .select('id')
+    .eq('org_id', orgId)
+    .in('status', ['staged', 'live'])
+    .limit(1)
+
+  if (existing?.length) return { ok: false, error: 'A sequence is already running for this org.' }
+
+  const startedOn = new Date()
+  const { data: sequence, error: seqError } = await supabase
+    .from('sequences')
+    .insert({ org_id: orgId, status: 'staged', started_on: startedOn.toISOString().slice(0, 10) })
+    .select('id')
+    .single()
+
+  // The HOLD trigger raises here for a held org — surface its message as-is.
+  if (seqError) {
+    await supabase.from('audit_log').insert({
+      actor: user!.email,
+      action: 'sequence.refused',
+      entity: 'orgs',
+      entity_id: orgId,
+      meta: { reason: seqError.message },
+    })
+    return { ok: false, error: seqError.message }
+  }
+
+  const steps = FOUNDER_OUTREACH_V1.map((s) => ({
+    sequence_id: sequence!.id,
+    template_id: s.templateId,
+    due_on: stepDueDate(startedOn, s.offsetDays),
+    status: 'staged' as const,
+  }))
+
+  const { error: stepError } = await supabase.from('sequence_steps').insert(steps)
+  if (stepError) return { ok: false, error: stepError.message }
+
+  await supabase.from('audit_log').insert({
+    actor: user!.email,
+    action: 'sequence.staged',
+    entity: 'sequences',
+    entity_id: sequence!.id,
+    meta: { org_id: orgId, steps: steps.length, sequence: 'Founder Outreach v1' },
+  })
+
+  revalidatePath(`/outreach/${orgId}`)
   return { ok: true }
 }
