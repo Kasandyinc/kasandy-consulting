@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "engine:import": "node scripts/engine-import.mjs"
+    "engine:import": "node scripts/engine-import.mjs",
+    "test": "node --test --experimental-strip-types \"lib/**/*.test.ts\"",
+    "engine:templates": "node scripts/gen-templates-sql.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
