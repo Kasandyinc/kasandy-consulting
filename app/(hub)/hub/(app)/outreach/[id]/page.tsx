@@ -72,9 +72,18 @@ export default async function OrgRecord({
               .join(' · ')}
           </p>
         </div>
-        <div className="row" style={{ gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-          <OrgFlags org={o} />
-          <span className="tag">{STAGE_LABEL[o.stage as Stage] ?? o.stage}</span>
+        <div style={{ textAlign: 'right' }}>
+          <div className="row" style={{ gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <OrgFlags org={o} />
+            <span className="tag">{STAGE_LABEL[o.stage as Stage] ?? o.stage}</span>
+          </div>
+          <Link
+            href={`/outreach/${o.id}/compose`}
+            className={`btn sm ${blockers.length === 0 ? 'ox' : ''}`}
+            style={{ marginTop: 10 }}
+          >
+            ✉ Compose
+          </Link>
         </div>
       </div>
 
