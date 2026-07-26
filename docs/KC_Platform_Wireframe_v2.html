@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kasandy Consulting — Operations Platform (Wireframe v2)</title>
+<!-- fonts: system fallback stack used; no network dependency -->
+<style>
+:root{
+  --ox:#712F1E; --ox2:#8C4433; --oxwash:#F3E9E6; --oxline:#E0CDC7;
+  --ink:#17110F; --coal:#241C19; --paper:#FBF9F8; --card:#FFFFFF;
+  --line:#EAE3DF; --muted:#8A7F79; --body:#2B2320;
+  --good:#2E7D5B; --goodbg:#E7F2EC; --warn:#A9691B; --warnbg:#FBF0DE;
+  --bad:#A3271C; --badbg:#F8E9E7; --info:#1F4E79; --infobg:#E9F0F7;
+  --gold:#B8912F; --purple:#5B3A6E; --purplebg:#EFE7F2;
+  --hold:#4A4440; --holdbg:#EEEBE8;
+  --sans:'Inter',system-ui,-apple-system,Arial,sans-serif;
+  --serif:'Playfair Display',Georgia,serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 2px rgba(23,17,15,.04),0 1px 3px rgba(23,17,15,.06);
+  --shadow-lg:0 4px 24px rgba(23,17,15,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.serif{font-family:var(--serif)}
+.mono{font-family:var(--mono)}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+a{color:var(--ox);text-decoration:none}
+h1,h2,h3,h4{font-weight:600;color:var(--ink)}
+
+/* ===== APP SHELL ===== */
+.app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.rail{background:var(--ink);color:#D8CFC9;padding:0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 16px;border-bottom:1px solid rgba(255,255,255,.07)}
+.brand .logo{width:38px;height:38px;border:1.5px solid #C9A06A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;color:#E8D9C4;font-size:15px}
+.brand .bt{font-weight:700;color:#fff;font-size:14px;line-height:1.15}
+.brand .bs{font-size:9.5px;letter-spacing:.14em;color:#9A8C82;text-transform:uppercase;margin-top:2px}
+.navwrap{padding:10px 10px 20px;flex:1}
+.navgroup{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:#7A6C62;padding:14px 10px 6px;font-weight:600}
+.ni{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;color:#CFC5BE;font-size:13px;font-weight:500;width:100%;text-align:left;transition:background .12s}
+.ni:hover{background:rgba(255,255,255,.05);color:#fff}
+.ni.on{background:var(--ox);color:#fff}
+.ni .ico{width:16px;text-align:center;opacity:.9;font-size:13px}
+.ni .badge{margin-left:auto;background:rgba(255,255,255,.12);color:#EPS;color:#E8DED7;font-size:10.5px;padding:1px 7px;border-radius:20px;font-weight:600}
+.ni.on .badge{background:rgba(255,255,255,.22);color:#fff}
+.railfoot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);font-size:10.5px;color:#7A6C62;line-height:1.5}
+
+/* ===== MAIN ===== */
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{height:58px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:16px;padding:0 26px;position:sticky;top:0;z-index:30}
+.pgtitle{font-weight:600;color:var(--ink);font-size:15px}
+.search{flex:1;max-width:420px;position:relative}
+.search input{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:8px 12px 8px 32px;font-size:13px;font-family:inherit;color:var(--body)}
+.search input:focus{outline:none;border-color:var(--ox);background:#fff}
+.search .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
+.search .kbd{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-family:var(--mono)}
+.topspacer{flex:1}
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 13px;font-size:12.5px;font-weight:600;color:var(--body);display:inline-flex;align-items:center;gap:6px;transition:.12s}
+.btn:hover{border-color:var(--ox);color:var(--ox)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.primary:hover{background:var(--ox);border-color:var(--ox);color:#fff}
+.btn.ox{background:var(--ox);border-color:var(--ox);color:#fff}
+.btn.ox:hover{background:var(--ox2)}
+.btn.sm{padding:5px 10px;font-size:11.5px}
+.btn.ai{border-color:var(--purple);color:var(--purple);background:var(--purplebg)}
+.btn.ai:hover{background:var(--purple);color:#fff}
+.iconbtn{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;position:relative}
+.iconbtn:hover{border-color:var(--ox)}
+.dot{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--bad)}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--ox);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px}
+
+.content{padding:26px;max-width:1240px;width:100%}
+.eyebrow{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ox);font-weight:600;margin-bottom:7px}
+.h1{font-size:26px;font-weight:700;color:var(--ink);font-family:var(--serif);letter-spacing:-.01em}
+.lede{color:var(--muted);font-size:13.5px;margin-top:5px;max-width:640px}
+.wfnote{background:var(--warnbg);border:1px solid #EAD4A8;color:#7A5310;border-radius:8px;padding:9px 13px;font-size:12px;margin:16px 0}
+
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:20px 0 22px}
+.tab{padding:9px 14px;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab:hover{color:var(--body)}
+.tab.on{color:var(--ox);border-bottom-color:var(--ox)}
+
+/* cards + grid */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:between;gap:10px}
+.card-h h3{font-size:14px}
+.card-b{padding:18px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}
+.row{display:flex;gap:16px}.between{justify-content:space-between}.center{align-items:center}.wrap{flex-wrap:wrap}
+
+/* stat tiles */
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;border-left:3px solid var(--ox);box-shadow:var(--shadow)}
+.stat.g{border-left-color:var(--good)}.stat.i{border-left-color:var(--info)}.stat.w{border-left-color:var(--warn)}.stat.p{border-left-color:var(--purple)}
+.stat .n{font-family:var(--serif);font-size:27px;font-weight:700;color:var(--ink);line-height:1}
+.stat .l{font-size:11.5px;color:var(--muted);margin-top:6px}
+.stat .sub{font-size:11px;color:var(--good);font-weight:600;margin-top:3px}
+
+/* badges */
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--oxwash);color:var(--ox)}
+.tag.good{background:var(--goodbg);color:var(--good)}.tag.warn{background:var(--warnbg);color:var(--warn)}
+.tag.bad{background:var(--badbg);color:var(--bad)}.tag.info{background:var(--infobg);color:var(--info)}
+.tag.hold{background:var(--holdbg);color:var(--hold)}.tag.mut{background:#F0ECE9;color:var(--muted)}
+.tag.purple{background:var(--purplebg);color:var(--purple)}
+
+/* tables */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--paper)}
+.tname{font-weight:600;color:var(--ink)}
+.tsub{font-size:11.5px;color:var(--muted)}
+
+/* provenance receipt — the house signature */
+.src{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px;background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:2px 7px;margin-top:5px}
+.src b{color:var(--ox);font-weight:500}
+
+/* SYSTEM strip — automations narrate themselves */
+.sys{margin-top:22px;background:#1C1512;color:#B9AEA6;border-radius:var(--radius);padding:12px 16px;font-size:11.5px;display:flex;align-items:flex-start;gap:10px;font-family:var(--mono);line-height:1.6}
+.sys .sl{color:#C9A06A;font-weight:500;letter-spacing:.08em;flex-shrink:0}
+.sys b{color:#E8DED7;font-weight:500}
+
+/* kanban */
+.kan{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px}
+.kcol{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:10px;min-width:150px}
+.kcol h4{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:9px;display:flex;justify-content:space-between}
+.kcard{background:#fff;border:1px solid var(--line);border-radius:7px;padding:10px;margin-bottom:8px;box-shadow:var(--shadow);cursor:grab}
+.kcard:hover{border-color:var(--oxline)}
+.kcard .kn{font-weight:600;font-size:12.5px;color:var(--ink)}
+.kcard .km{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* list rows */
+.lrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:none}
+.licon{width:34px;height:34px;border-radius:8px;background:var(--oxwash);color:var(--ox);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.licon.g{background:var(--goodbg);color:var(--good)}.licon.w{background:var(--warnbg);color:var(--warn)}.licon.i{background:var(--infobg);color:var(--info)}
+.lmain{flex:1;min-width:0}
+.lt{font-weight:600;font-size:13px;color:var(--ink)}
+.ls{font-size:11.5px;color:var(--muted);margin-top:1px}
+
+/* progress */
+.bar{height:7px;background:var(--line);border-radius:20px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--ox);border-radius:20px}
+.bar.g span{background:var(--good)}
+
+/* avatar circles for clients */
+.cav{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;font-size:12px;flex-shrink:0}
+
+/* empty state */
+.empty{text-align:center;padding:46px 20px;color:var(--muted)}
+.empty .ei{font-size:30px;margin-bottom:12px;opacity:.5}
+.empty h3{color:var(--ink);margin-bottom:5px}
+.empty p{font-size:13px;max-width:360px;margin:0 auto 16px}
+
+/* modal (global create + record drawer) */
+.scrim{position:fixed;inset:0;background:rgba(23,17,15,.44);z-index:80;display:none;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto}
+.scrim.on{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:540px;box-shadow:var(--shadow-lg);overflow:hidden}
+.modal.wide{max-width:920px}
+.modal-h{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.modal-h h3{font-size:16px}
+.modal-b{padding:22px;max-height:64vh;overflow-y:auto}
+.modal-f{padding:15px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:9px;background:var(--paper)}
+.x{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:17px}
+.x:hover{background:var(--paper);color:var(--ink)}
+.field{margin-bottom:15px}
+.field label{display:block;font-size:11.5px;font-weight:600;color:var(--body);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit;color:var(--body);background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--ox)}
+.field .hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* search results dropdown */
+.sresults{position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow-lg);padding:8px;z-index:40;display:none}
+.sresults.on{display:block}
+.sr-cat{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:8px 10px 4px;font-weight:600}
+.sr-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px}
+.sr-item:hover{background:var(--paper)}
+.sr-item .srt{font-weight:600;font-size:13px;color:var(--ink)}
+.sr-item .srs{font-size:11px;color:var(--muted)}
+
+.view{display:none}.view.on{display:block}
+.hide{display:none!important}
+.notif-pop{position:absolute;top:52px;right:80px;width:360px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);z-index:60;display:none}
+.notif-pop.on{display:block}
+
+/* client portal skin */
+.portal .rail{background:#12212B}
+.portal .brand .logo{border-color:#5A8CA8;color:#BcD}
+.portal .ni.on{background:var(--info)}
+
+@media(max-width:920px){
+  .app{grid-template-columns:1fr}
+  .rail{position:fixed;left:-260px;transition:left .2s;z-index:90;width:236px}
+  .rail.open{left:0}
+  .g2,.g3,.g4,.g5{grid-template-columns:1fr 1fr}
+  .content{padding:16px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- ============ OPERATOR RAIL ============ -->
+  <aside class="rail" id="rail">
+    <div class="brand">
+      <div class="logo">KC</div>
+      <div><div class="bt">Kasandy Consulting</div><div class="bs">Operations Platform</div></div>
+    </div>
+    <nav class="navwrap" id="opnav">
+      <div class="navgroup">Overview</div>
+      <button class="ni on" data-v="dashboard"><span class="ico">◧</span>Dashboard</button>
+      <div class="navgroup">Grow</div>
+      <button class="ni" data-v="outreach"><span class="ico">↗</span>Outreach<span class="badge">29</span></button>
+      <button class="ni" data-v="clients"><span class="ico">◆</span>Clients<span class="badge">5</span></button>
+      <div class="navgroup">Money</div>
+      <button class="ni" data-v="financials"><span class="ico">$</span>Financials</button>
+      <div class="navgroup">Reach</div>
+      <button class="ni" data-v="marketing"><span class="ico">✎</span>Marketing &amp; Comms</button>
+      <div class="navgroup">Operate</div>
+      <button class="ni" data-v="calendar"><span class="ico">▦</span>Calendar &amp; Meetings</button>
+      <button class="ni" data-v="comms"><span class="ico">✦</span>Comms Hub</button>
+      <div class="navgroup">Measure</div>
+      <button class="ni" data-v="analytics"><span class="ico">▲</span>Analytics</button>
+      <button class="ni" data-v="reports"><span class="ico">▤</span>Report Studio</button>
+      <div class="navgroup">System</div>
+      <button class="ni" data-v="admin"><span class="ico">⚙</span>Admin</button>
+      <button class="ni" data-v="cms"><span class="ico">◱</span>Website CMS</button>
+    </nav>
+    <div class="railfoot">
+      Wireframe v2 · Resend + Square + Supabase<br>Illustrative data for review
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <div class="topbar">
+      <button class="iconbtn hide" id="menuBtn" style="margin-right:-6px">☰</button>
+      <div class="pgtitle" id="pgtitle">Dashboard</div>
+      <div class="search">
+        <span class="si">⌕</span>
+        <input id="globalSearch" placeholder="Search prospects, clients, invoices, docs…" autocomplete="off">
+        <span class="kbd">⌘K</span>
+        <div class="sresults" id="sresults">
+          <div class="sr-cat">Prospects</div>
+          <div class="sr-item"><div class="licon">↗</div><div><div class="srt">Skills for Change</div><div class="srs">Nidhi Khanna · Settlement · E1 sent</div></div></div>
+          <div class="sr-item"><div class="licon">↗</div><div><div class="srt">ISSofBC</div><div class="srs">Vinson Luu · Settlement · call queued</div></div></div>
+          <div class="sr-cat">Clients</div>
+          <div class="sr-item"><div class="licon g">◆</div><div><div class="srt">UJA Federation of Greater Toronto</div><div class="srs">Live platform · 100%</div></div></div>
+          <div class="sr-cat">Invoices</div>
+          <div class="sr-item"><div class="licon w">$</div><div><div class="srt">INV-1040 · Toronto Region Board of Trade</div><div class="srs">$8,000 · overdue 10d</div></div></div>
+        </div>
+      </div>
+      <div class="topspacer"></div>
+      <button class="btn ox" id="newBtn">+ New</button>
+      <button class="iconbtn" id="notifBtn">◔<span class="dot"></span></button>
+      <div class="avatar">JK</div>
+      <div class="notif-pop" id="notifPop">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">Activity</b><a style="font-size:12px">Mark all read</a></div>
+        <div style="max-height:340px;overflow-y:auto">
+          <div class="lrow" style="padding:12px 18px"><div class="licon g">↩</div><div class="lmain"><div class="lt">Skills for Change replied</div><div class="ls">Cadence auto-paused · 8 min ago</div></div></div>
+          <div class="lrow" style="padding:12px 18px"><div class="licon i">◉</div><div class="lmain"><div class="lt">United Way of Calgary opened E2</div><div class="ls">32 min ago</div></div></div>
+          <div class="lrow" style="padding:12px 18px"><div class="licon w">$</div><div class="lmain"><div class="lt">Payment received — Hillel Ontario</div><div class="ls">$12,500 · 1h ago · synced to QBO</div></div></div>
+          <div class="lrow" style="padding:12px 18px"><div class="licon">✓</div><div class="lmain"><div class="lt">CIWA approved Discovery deliverable</div><div class="ls">Verified live → INV-1043 released · 2h ago</div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content" id="content"><!-- views injected --></div>
+  </div>
+</div>
+
+<!-- Global create modal -->
+<div class="scrim" id="scrim">
+  <div class="modal" id="modal"><!-- filled by JS --></div>
+</div>
+
+<script>
+/* seed data from the real KC workbook (29 active orgs) */
+const SEED = [
+ {
+  "org": "Iiba",
+  "name": "Delvin Fletcher",
+  "title": "President And Chief Executive Officer",
+  "region": "",
+  "fit": "Association / industry",
+  "email": "delvin.fletcher@iiba.org",
+  "estatus": "valid",
+  "contacts": 2
+ },
+ {
+  "org": "Issofbc Immigrant Services Society Of Bc",
+  "name": "Vinson Luu",
+  "title": "Chief Financial Officer",
+  "region": "British Columbia",
+  "fit": "Settlement / newcomer",
+  "email": "vinson.luu@issbc.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "United Way Of Calgary And Area",
+  "name": "Karen Young",
+  "title": "Chief Executive Officer",
+  "region": "Alberta",
+  "fit": "United Way / allocator",
+  "email": "karen.young@calgaryunitedway.org",
+  "estatus": "valid",
+  "contacts": 4
+ },
+ {
+  "org": "Bc Tech",
+  "name": "Jill Tipping, Fcpa, Fca",
+  "title": "President & Chief Executive Officer",
+  "region": "British Columbia",
+  "fit": "Association / industry",
+  "email": "jtipping@wearebctech.com",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Raising The Village",
+  "name": "Shawn Holden Cheung",
+  "title": "Founder + Chief Executive Officer",
+  "region": "Pennsylvania",
+  "fit": "Intl dev / aid",
+  "email": "shawn@raisingthevillage.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Native Womens Association Of Canada",
+  "name": "Madeleine Redfern",
+  "title": "Chief Executive Officer",
+  "region": "Nunavut",
+  "fit": "Identity-serving",
+  "email": "mredfern@nwac.ca",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Uja Federation Of Greater Toronto",
+  "name": "Eric Miller",
+  "title": "Chief Financial Officer",
+  "region": "Ontario",
+  "fit": "Faith federation",
+  "email": "emiller@ujafed.org",
+  "estatus": "catch-all",
+  "contacts": 4
+ },
+ {
+  "org": "Cheo Foundation",
+  "name": "Steve Read",
+  "title": "President & Chief Executive Officer",
+  "region": "Ontario",
+  "fit": "Foundation",
+  "email": "sread@cheofoundation.com",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Federation Cja",
+  "name": "Yair Szlak",
+  "title": "President And Chief Executive Officer",
+  "region": "Quebec",
+  "fit": "Faith federation",
+  "email": "ceo@federationcja.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Jewish Federation Of Ottawa",
+  "name": "Adam Silver, Edd",
+  "title": "President And Chief Executive Officer",
+  "region": "Ontario",
+  "fit": "Faith federation",
+  "email": "asilver@jewishottawa.com",
+  "estatus": "valid",
+  "contacts": 2
+ },
+ {
+  "org": "Peacegeeks",
+  "name": "Jennifer (smerdon) Freeman",
+  "title": "Chief Executive Officer",
+  "region": "British Columbia",
+  "fit": "Intl dev / aid",
+  "email": "jennifer@peacegeeks.org",
+  "estatus": "catch-all",
+  "contacts": 1
+ },
+ {
+  "org": "Rick Hansen Foundation",
+  "name": "Rick Hansen",
+  "title": "Founder",
+  "region": "British Columbia",
+  "fit": "Foundation",
+  "email": "rick@rickhansen.com",
+  "estatus": "valid",
+  "contacts": 2
+ },
+ {
+  "org": "Toronto Region Board Of Trade",
+  "name": "Fadi Dawood",
+  "title": "Vice President, Office Of The President And Chief Executive Officer",
+  "region": "Ontario",
+  "fit": "Association / industry",
+  "email": "fdawood@bot.com",
+  "estatus": "valid",
+  "contacts": 3
+ },
+ {
+  "org": "Pmi Southern Alberta Chapter Pmi Sac",
+  "name": "Candida Tocci B.a., Pmp",
+  "title": "Past President",
+  "region": "Alberta",
+  "fit": "Association / industry",
+  "email": "pr@pmisac.com",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Roots Of Empathy",
+  "name": "Mary Gordon",
+  "title": "Founder, President & Chief Executive Officer",
+  "region": "Ontario",
+  "fit": "Program charity",
+  "email": "mgordon@rootsofempathy.org",
+  "estatus": "valid",
+  "contacts": 2
+ },
+ {
+  "org": "Hillel Ontario",
+  "name": "Seth Goren",
+  "title": "Chief Executive Officer",
+  "region": "Ontario",
+  "fit": "Faith federation",
+  "email": "seth.goren@hillelontario.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Alberta Retired Teachers Association Arta",
+  "name": "Scott Tywoniuk, Ca",
+  "title": "Chief Financial Officer",
+  "region": "Alberta",
+  "fit": "Association / industry",
+  "email": "stywoniuk@arta.net",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Takingitglobal",
+  "name": "Michael Furdyk",
+  "title": "Co-founder & Director Of Innovation",
+  "region": "Ontario",
+  "fit": "Program charity",
+  "email": "mfurdyk@tigweb.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Restaurants Canada",
+  "name": "Roxana Sijakovski",
+  "title": "Chief Financial Officer",
+  "region": "Ontario",
+  "fit": "Association / industry",
+  "email": "rsijakovski@restaurantscanada.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Global Aid Network Gain Canada",
+  "name": "Aaron Rogers",
+  "title": "Chief Executive Officer & Executive Director",
+  "region": "British Columbia",
+  "fit": "Intl dev / aid",
+  "email": "aaronr@globalaid.net",
+  "estatus": "catch-all",
+  "contacts": 1
+ },
+ {
+  "org": "International Economic Forum Of The Americas",
+  "name": "Mathieu Rondeau",
+  "title": "Chief Financial Officer",
+  "region": "Quebec",
+  "fit": "Association / industry",
+  "email": "m.rondeau@forum-americas.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Skills For Change",
+  "name": "Nidhi Khanna",
+  "title": "Vice President, Program Operations",
+  "region": "Ontario",
+  "fit": "Settlement / newcomer",
+  "email": "nkhanna@skillsforchange.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Kaylas Children Centre",
+  "name": "Sheindl Belenky, Cpa",
+  "title": "Chief Financial Officer",
+  "region": "Ontario",
+  "fit": "Program charity",
+  "email": "susue@kaylaschildrencentre.org",
+  "estatus": "catch-all",
+  "contacts": 1
+ },
+ {
+  "org": "World Vision Canada",
+  "name": "James Pothirajulu",
+  "title": "Vice President, Programs And Policy",
+  "region": "North Carolina",
+  "fit": "Intl dev / aid",
+  "email": "james_pothirajulu@worldvision.ca",
+  "estatus": "valid",
+  "contacts": 2
+ },
+ {
+  "org": "Gs1 Canada",
+  "name": "Mario Miserendino, Mba",
+  "title": "Senior Vice President, Subscriber Operations",
+  "region": "Quebec",
+  "fit": "Association / industry",
+  "email": "mario.miserendino@gs1ca.org",
+  "estatus": "valid",
+  "contacts": 4
+ },
+ {
+  "org": "Canadian Immigrant Womens Association",
+  "name": "Biraj Patel, Cpa Cma",
+  "title": "Chief Financial Officer",
+  "region": "Alberta",
+  "fit": "Settlement / newcomer",
+  "email": "birajp@ciwa-online.com",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Ywca Hamilton",
+  "name": "Khadija Hamidu",
+  "title": "Vice President Of Economic Development",
+  "region": "",
+  "fit": "YWCA/YMCA",
+  "email": "khamidu@ywcahamilton.org",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Shepherds Of Good Hope",
+  "name": "David Gourlay",
+  "title": "Chief Executive Officer",
+  "region": "Ontario",
+  "fit": "Program charity",
+  "email": "dgourlay@sghottawa.com",
+  "estatus": "valid",
+  "contacts": 1
+ },
+ {
+  "org": "Tim Hortons\u00ae Foundation Camps",
+  "name": "Cara Ziegler",
+  "title": "Director, Fund Development",
+  "region": "Ontario",
+  "fit": "Foundation",
+  "email": "cara.ziegler@timscamps.com",
+  "estatus": "valid",
+  "contacts": 1
+ }
+];
+</script>
+<script>
+/* ============ KC PLATFORM — VIEWS + LOGIC ============ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+/* ---------- helpers ---------- */
+const initials = s => s.split(' ').filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const CLIENTCOL = {B:'#3E6B8C',D:'#2E7D5B',L:'#B8912F',U:'#712F1E',H:'#5B3A6E'};
+function sys(txt){return `<div class="sys"><span class="sl">SYSTEM</span><span>${txt}</span></div>`;}
+function tile(n,l,sub,cls=''){return `<div class="stat ${cls}"><div class="n">${n}</div><div class="l">${l}</div>${sub?`<div class="sub">${sub}</div>`:''}</div>`;}
+function tabs(items,active){return `<div class="tabs">${items.map(t=>`<button class="tab ${t.id===active?'on':''}" data-subtab="${t.id}">${t.label}</button>`).join('')}</div>`;}
+
+/* ---------- DASHBOARD ---------- */
+function vDashboard(){return `
+<div class="eyebrow">Executive overview</div>
+<div class="h1 serif">Good morning, Jackee</div>
+<div class="lede">The whole business in one screen — pipeline, clients, revenue, and what needs you today.</div>
+<div class="wfnote">Wireframe v2 — all figures are illustrative placeholders for layout review, not real financial data.</div>
+
+<div class="grid g5" style="margin-bottom:16px">
+  ${tile('$329k','Booked revenue (YTD)','44% of $750k target','g')}
+  ${tile('$164k','Pipeline value (open)','','i')}
+  ${tile('5','Active clients','')}
+  ${tile('29','Active prospects','24 package-ready','w')}
+  ${tile('5','Meetings this week','','p')}
+</div>
+
+<div class="grid g2" style="grid-template-columns:1.3fr 1fr;margin-bottom:16px">
+  <div class="card">
+    <div class="card-h between"><h3>Do next</h3><span class="tag">7 plays</span></div>
+    <div class="card-b" style="padding-top:6px">
+      <div class="lrow"><div class="licon g">↩</div><div class="lmain"><div class="lt">Reply from Skills for Change</div><div class="ls">Cadence auto-paused · they asked about timeline</div></div><button class="btn sm primary">Open reply</button></div>
+      <div class="lrow"><div class="licon w">$</div><div class="lmain"><div class="lt">Overdue invoice — Toronto Region Board of Trade</div><div class="ls">INV-1040 · $8,000 · 10 days overdue</div></div><button class="btn sm">Remind</button></div>
+      <div class="lrow"><div class="licon">☎</div><div class="lmain"><div class="lt">Call: ISSofBC — C1 script</div><div class="ls">E1 opened + demo clicked · queued today</div></div><button class="btn sm">Open script</button></div>
+      <div class="lrow"><div class="licon i">◉</div><div class="lmain"><div class="lt">Approve sign-off — Native Women's Assoc. of Canada</div><div class="ls">Black-led / Indigenous-serving · needs your OK before send</div></div><button class="btn sm ox">Review</button></div>
+      <div class="lrow"><div class="licon g">✓</div><div class="lmain"><div class="lt">CIWA marked Discovery "Verified live"</div><div class="ls">Milestone invoice INV-1043 auto-released</div></div><button class="btn sm">View</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h between"><h3>Client engagements</h3><button class="btn sm" data-goto="clients">All</button></div>
+    <div class="card-b" style="padding-top:6px">
+      ${[['Skills for Change','Build · 55%','B'],['Hillel Ontario','Blueprint · 25%','H'],['Canadian Immigrant Women’s Assoc.','Discovery · 60%','D'],['Toronto Region Board of Trade','Build · 78%','U'],['UJA Federation of Greater Toronto','Live · 100%','L']].map(c=>`
+        <div class="lrow"><div class="cav" style="background:${CLIENTCOL[c[2]]}">${c[2]}</div><div class="lmain"><div class="lt">${c[0]}</div><div class="ls">${c[1]}</div></div><button class="btn sm">Open</button></div>`).join('')}
+    </div>
+  </div>
+</div>
+
+<div class="grid g2" style="margin-bottom:4px">
+  <div class="card"><div class="card-h"><h3>Revenue by month</h3></div><div class="card-b">
+    <div style="display:flex;align-items:flex-end;gap:6px;height:150px;padding-top:10px">
+      ${[8,14,11,19,22,17,28,31,26,44,58,51].map((v,i)=>`<div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--muted);margin-bottom:3px">$${v}k</div><div style="background:var(--ox);border-radius:3px 3px 0 0;height:${v*2}px"></div></div>`).join('')}
+      ${[46,52,60,64,70].map(v=>`<div style="flex:1;text-align:center"><div style="font-size:9px;color:var(--muted);margin-bottom:3px">$${v}k</div><div style="background:repeating-linear-gradient(45deg,#E6D9D3,#E6D9D3 3px,#fff 3px,#fff 6px);border:1px solid var(--oxline);border-radius:3px 3px 0 0;height:${v*2}px"></div></div>`).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">▪ Actual (Aug–Jul) · ▨ Forecast (Aug–Dec)</div>
+  </div></div>
+  <div class="card"><div class="card-h"><h3>Pipeline snapshot</h3></div><div class="card-b" style="padding-top:8px">
+    ${[['Unverified',6,'mut'],['Researched',24,'info'],['Contacted',14,'warn'],['In conversation',5,'purple'],['Proposal out',3,'good'],['Won',5,'good']].map(s=>`
+      <div style="margin-bottom:11px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${s[0]}</span><b>${s[1]}</b></div><div class="bar"><span style="width:${s[1]/29*100}%"></span></div></div>`).join('')}
+  </div></div>
+</div>
+${sys('Cron ran <b>07:00 America/Vancouver</b> — advanced <b>3 sequence steps</b> to ready, queued <b>2 call tasks</b>, paused <b>1 cadence</b> on inbound reply. Nightly QBO sync reconciled <b>4 payments</b>. No sends executed unattended (per-template auto-send is off).')}
+`;}
+
+/* ---------- OUTREACH ---------- */
+function vOutreach(){return `
+<div class="eyebrow">Grow the pipeline</div>
+<div class="h1 serif">Outreach</div>
+<div class="lede">Prospecting, automated sequences, and the comms hub — everything before a contract is signed.</div>
+${tabs([{id:'today',label:'Today'},{id:'pipeline',label:'Pipeline'},{id:'prospects',label:'Prospects · 29'},{id:'sequences',label:'Sequences'},{id:'templates',label:'Templates'}],'today')}
+<div class="subview" data-sub="today">
+  <div class="card" style="margin-bottom:16px"><div class="card-b row center between">
+    <div class="row center" style="gap:12px"><div style="width:40px;height:24px;background:var(--good);border-radius:20px;position:relative"><div style="width:18px;height:18px;background:#fff;border-radius:50%;position:absolute;top:3px;right:3px"></div></div>
+    <div><div style="font-weight:600;color:var(--ink)">Outreach automation is ON</div><div style="font-size:12px;color:var(--muted)">Sequences advance and calls queue automatically. <b>Sends still wait for your one-click approval</b> — no unattended sends yet. Last run 07:00 · 6 ready · 3 calls queued · 2 paused on reply</div></div></div>
+    <button class="btn primary">Enroll all "package-built" →</button>
+  </div></div>
+  <div class="grid g4" style="margin-bottom:16px">
+    ${tile('29','Active prospects','24 ready · 5 pending')}
+    ${tile('5','Meetings booked','','g')}
+    ${tile('14','In-market (sent+)','','i')}
+    ${tile('3','Replies to answer','','w')}
+  </div>
+  <div class="card"><div class="card-h between"><h3>Do next</h3><span class="tag">7 plays</span></div><div class="card-b" style="padding-top:6px">
+    <div class="lrow"><div class="licon g">↩</div><div class="lmain"><div class="lt">Reply from Skills for Change</div><div class="ls">Cadence auto-paused · they asked about timeline</div></div><button class="btn sm primary">Open reply</button></div>
+    <div class="lrow"><div class="licon">☎</div><div class="lmain"><div class="lt">Call: ISSofBC — C1 script</div><div class="ls">E1 opened + demo clicked · queued today</div></div><button class="btn sm">Open script</button></div>
+    <div class="lrow"><div class="licon">☎</div><div class="lmain"><div class="lt">Call: United Way of Calgary — C1</div><div class="ls">E1 opened · no reply</div></div><button class="btn sm">Open script</button></div>
+    <div class="lrow"><div class="licon i">◉</div><div class="lmain"><div class="lt">Sign-off needed — Native Women's Assoc. of Canada</div><div class="ls">Black-led / Indigenous-serving · your gate before any send</div></div><button class="btn sm ox">Review &amp; approve</button></div>
+    <div class="lrow"><div class="licon g">✉</div><div class="lmain"><div class="lt">E2 ready: GS1 Canada</div><div class="ls">One-click to send · engine will not auto-fire</div></div><button class="btn sm primary">Preview &amp; send</button></div>
+  </div></div>
+  ${sys('Founder Outreach v1 is live for <b>14 prospects</b>. Send-gate blocked <b>2 attempts</b> today: 1 missing consent basis, 1 held org. Both logged to the audit trail.')}
+</div>
+<div class="subview hide" data-sub="pipeline">
+  <div class="row between center" style="margin-bottom:14px"><div class="row" style="gap:8px"><button class="btn sm">All segments ▾</button><button class="btn sm">All stages ▾</button><button class="btn sm ai">✨ Filter: needs my sign-off</button></div><button class="btn sm ox" data-new="prospect">+ Add prospect</button></div>
+  <div class="kan">
+    ${[['Unverified',['PMI Southern Alberta','Global Aid Network']],['Researched',['GS1 Canada','World Vision','Roots of Empathy','Restaurants Canada']],['Contacted',['United Way Calgary','ISSofBC','Rick Hansen Fdn']],['In conversation',['Skills for Change','CHEO Foundation']],['Proposal out',['Toronto Board of Trade']],['Won',['UJA Federation','Hillel Ontario']]].map(col=>`
+      <div class="kcol"><h4>${col[0]}<span>${col[1].length}</span></h4>
+      ${col[1].map(n=>`<div class="kcard" draggable="true"><div class="kn">${n}</div><div class="km">Assoc / industry · Priority A</div>${n.includes('Native')||n.includes('Black')?'<div class="tag hold" style="margin-top:6px">Sign-off</div>':''}</div>`).join('')}
+      </div>`).join('')}
+  </div>
+  ${sys('Moving a card writes <b>stage + audit_log</b>. Held / BEBC-excluded orgs refuse enrollment at the DB layer — the card shows a lock, not an error.')}
+</div>
+<div class="subview hide" data-sub="prospects">
+  <div class="row between center" style="margin-bottom:14px"><div class="row" style="gap:8px"><button class="btn sm">Segment ▾</button><button class="btn sm">Email status ▾</button></div><div class="row" style="gap:8px"><button class="btn sm ai">✨ Bulk: stage sequence (0)</button><button class="btn sm ox" data-new="prospect">+ Add prospect</button></div></div>
+  <div class="card"><table><thead><tr><th style="width:26px"><input type="checkbox"></th><th>Organization</th><th>Leader</th><th>Segment</th><th>Email</th><th>Stage</th><th></th></tr></thead><tbody id="prospectRows"></tbody></table></div>
+  ${sys('Every leader name renders with its <b>source + verified-on receipt</b>. A name cannot be saved without provenance (DB constraint) — that is the brand, made structural.')}
+</div>
+<div class="subview hide" data-sub="sequences">
+  <div class="card"><div class="card-h between"><h3>Founder Outreach v1</h3><span class="tag good">Live</span></div><div class="card-b">
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Touch plan · Day 0 LinkedIn note · Day 1 E1 · Day 5 E2 · Day 8 Call · Day 12 E3 · Day 15 LinkedIn voice note</div>
+    ${[['E1 · Tailored hook','seq_e1_tailored_hook','Day 1','one-click'],['E2 · Value reframe','seq_e2_value_reframe','Day 5','one-click'],['Call C1','—task—','Day 8','manual'],['E3 · Close-out','seq_e3_closeout','Day 12','one-click'],['Nurture','seq_nurture_quarterly','Day 14+','auto-eligible']].map(s=>`
+      <div class="lrow"><div class="licon">✉</div><div class="lmain"><div class="lt">${s[0]}</div><div class="ls mono" style="font-family:var(--mono)">${s[1]} · ${s[2]}</div></div><span class="tag ${s[3]==='auto-eligible'?'purple':'mut'}">${s[3]}</span></div>`).join('')}
+  </div></div>
+  ${sys('AUTO-eligible templates still queue as <b>ready</b> for one-click. Unattended sending turns on only when you flip a per-template toggle — and only after you have watched it fire clean.')}
+</div>
+<div class="subview hide" data-sub="templates">
+  <div class="row between center" style="margin-bottom:14px"><h3>Email templates <span class="tag mut">Matrix IDs canonical</span></h3><button class="btn sm">+ New template</button></div>
+  <div class="card"><table><thead><tr><th>Slug</th><th>Name</th><th>Channel</th><th>Fire mode</th><th>Merge check</th></tr></thead><tbody>
+    ${[['seq_e1_tailored_hook','E1 · Tailored hook','Email','one-click','✓ all resolve'],['seq_e2_value_reframe','E2 · Value reframe','Email','one-click','✓ all resolve'],['seq_e3_closeout','E3 · Close-out','Email','one-click','✓ all resolve'],['seq_nurture_quarterly','Nurture','Email','auto','✓ all resolve'],['meeting_confirmation','Meeting confirmation','Email','auto','⚠ 1 manual token']].map(t=>`
+      <tr><td class="mono" style="font-family:var(--mono);font-size:12px;color:var(--ox)">${t[0]}</td><td class="tname">${t[1]}</td><td>${t[2]}</td><td><span class="tag ${t[3]==='auto'?'purple':'mut'}">${t[3]}</span></td><td>${t[4].includes('⚠')?`<span class="tag warn">${t[4]}</span>`:`<span class="tag good">${t[4]}</span>`}</td></tr>`).join('')}
+  </tbody></table></div>
+  ${sys('Unresolved merge tokens <b>block the send</b> with a listed-fields error. Manual-fill tokens (the genuine detail, the named win) must be filled by a human — the AI can draft them, but the send-gate treats an empty one as not-ready, never as a system pass.')}
+</div>
+`;}
+
+/* ---------- CLIENTS ---------- */
+function vClients(){return `
+<div class="eyebrow">Post-sale delivery</div>
+<div class="h1 serif">Clients</div>
+<div class="lede">Every signed engagement, its milestones, and exactly what the client sees in their own portal.</div>
+${tabs([{id:'engagements',label:'Active engagements'},{id:'board',label:'Delivery board'},{id:'record',label:'Client record'}],'engagements')}
+<div class="subview" data-sub="engagements">
+  <div class="grid g4" style="margin-bottom:16px">${tile('5','Active engagements','')}${tile('$164,500','Total contracted','','g')}${tile('1','Live platforms','','i')}${tile('1','Needs attention','','w')}</div>
+  <div class="row between center" style="margin-bottom:12px"><h3>Client engagements</h3><button class="btn sm ox" data-new="engagement">+ New engagement</button></div>
+  <div class="card"><table><thead><tr><th>Client</th><th>Stage</th><th>Value</th><th>Progress</th><th>Signed</th><th>Health</th><th></th></tr></thead><tbody>
+  ${[['Skills for Change','B','Full Operations Platform','Build','$42,000','55','2026-05-04','On track','good'],['Hillel Ontario','H','Full Platform (multi-campus)','Blueprint','$38,000','25','2026-06-18','On track','good'],['Canadian Immigrant Women’s Assoc.','D','Discovery Engagement','Discovery','$9,500','60','2026-07-02','On track','good'],['Toronto Region Board of Trade','U','Membership Platform','Build','$24,000','78','2026-04-20','Watch','warn'],['UJA Federation of Greater Toronto','L','Full Operations Platform','Live','$51,000','100','2026-02-10','On track','good']].map(c=>`
+    <tr><td><div class="row center" style="gap:10px"><div class="cav" style="background:${CLIENTCOL[c[1]]}">${c[1]}</div><div><div class="tname">${c[0]}</div><div class="tsub">${c[2]}</div></div></div></td>
+    <td><span class="tag ${c[3]==='Live'?'good':c[3]==='Build'?'info':'purple'}">${c[3]}</span></td><td class="mono" style="font-family:var(--mono)">${c[4]}</td>
+    <td style="min-width:110px"><div class="bar g"><span style="width:${c[5]}%"></span></div><div style="font-size:10px;color:var(--muted);margin-top:3px">${c[5]}%</div></td>
+    <td class="tsub">${c[6]}</td><td><span class="tag ${c[8]}">${c[7]}</span></td><td><button class="btn sm" data-subtab="record">Open</button></td></tr>`).join('')}
+  </tbody></table></div>
+</div>
+<div class="subview hide" data-sub="board">
+  <div class="kan" style="grid-template-columns:repeat(5,1fr)">
+    ${[['Discovery',['CIWA']],['Blueprint',['Hillel Ontario']],['Build',['Skills for Change','Toronto Board of Trade']],['Verify',[]],['Live',['UJA Federation']]].map(col=>`
+    <div class="kcol"><h4>${col[0]}<span>${col[1].length}</span></h4>
+    ${col[1].length?col[1].map(n=>`<div class="kcard"><div class="kn">${n}</div><div class="km">Milestone in progress</div></div>`).join(''):'<div style="font-size:11px;color:var(--muted);padding:8px 4px;text-align:center">Nothing here yet</div>'}
+    </div>`).join('')}
+  </div>
+  ${sys('When a client clicks <b>"Verified live"</b> in their portal, the engagement advances to the next phase <b>and the milestone invoice is released automatically</b>. Acceptance is the billing trigger — no separate invoicing step.')}
+</div>
+<div class="subview hide" data-sub="record">
+  <div class="row center" style="gap:14px;margin-bottom:6px"><div class="cav" style="background:#3E6B8C;width:46px;height:46px;font-size:15px">B</div><div><h3 style="font-size:19px">Skills for Change</h3><div class="tsub">Full Operations Platform · Build · signed 2026-05-04 · $42,000</div></div><div style="margin-left:auto"><button class="btn ai">✨ Draft update</button> <button class="btn sm">Preview client portal ↗</button></div></div>
+  <div class="tabs" style="margin:16px 0"><button class="tab on">Overview</button><button class="tab">Deliverables</button><button class="tab">Documents</button><button class="tab">Invoices</button><button class="tab">Messages</button><button class="tab">Notes</button></div>
+  <div class="grid g2" style="grid-template-columns:1.4fr 1fr">
+    <div class="card"><div class="card-h"><h3>Deliverables &amp; milestones</h3></div><div class="card-b" style="padding-top:6px">
+      ${[['Discovery &amp; assessment','Verified live','good','✓'],['Data model + intake build','In review — client','warn','◔'],['Cohort &amp; sessions module','Building','info','●'],['Go-live + handoff','Not started','mut','○']].map(d=>`
+      <div class="lrow"><div class="licon ${d[2]==='good'?'g':d[2]==='warn'?'w':d[2]==='info'?'i':''}">${d[3]}</div><div class="lmain"><div class="lt">${d[0]}</div><div class="ls">${d[1]}</div></div>${d[1].includes('review')?'<button class="btn sm ox">Nudge client</button>':''}</div>`).join('')}
+    </div></div>
+    <div class="card"><div class="card-h"><h3>Snapshot</h3></div><div class="card-b">
+      <div style="font-size:12px;line-height:2"><div class="row between"><span class="tsub">Contact</span><b>Nidhi Khanna, CEO</b></div><div class="row between"><span class="tsub">Value</span><b class="mono" style="font-family:var(--mono)">$42,000</b></div><div class="row between"><span class="tsub">Invoiced</span><b class="mono" style="font-family:var(--mono)">$23,000</b></div><div class="row between"><span class="tsub">Collected</span><b class="mono" style="font-family:var(--mono)">$23,000</b></div><div class="row between"><span class="tsub">Next milestone</span><b>Data model sign-off</b></div></div>
+      <div class="src" style="margin-top:12px"><b>src:</b> skillsforchange.org/leadership · verified 2026-05-01</div>
+    </div></div>
+  </div>
+  ${sys('This record is the single source of truth. The client sees a filtered view of exactly this data in their portal — same deliverables, same invoices, no internal notes.')}
+</div>
+`;}
+
+/* ---------- FINANCIALS ---------- */
+function vFinancials(){return `
+<div class="eyebrow">Run the money</div>
+<div class="h1 serif">Financials</div>
+<div class="lede">Invoices, payments, receipts and revenue — Square-synced, reconciled to QuickBooks Online.</div>
+${tabs([{id:'invoices',label:'Invoices'},{id:'payments',label:'Payments'},{id:'reconcile',label:'QBO reconciliation'},{id:'revenue',label:'Revenue'}],'invoices')}
+<div class="subview" data-sub="invoices">
+  <div class="card" style="margin-bottom:16px"><div class="card-b row center between">
+    <div class="row center" style="gap:10px"><div class="licon g">Sq</div><div><b style="color:var(--ink)">Square (KC account) connected</b><div style="font-size:12px;color:var(--muted)">Location locked to <span class="mono" style="font-family:var(--mono)">KC-CONSULTING</span> — the BEBC Square account is never touched by this platform.</div></div></div>
+    <span class="tag good">Connected</span>
+  </div></div>
+  <div class="grid g4" style="margin-bottom:16px">${tile('$60,500','Collected (60d)','','g')}${tile('$31,500','Outstanding','','w')}${tile('$8,000','Overdue','','')}${tile('7','Invoices (60d)','')}</div>
+  <div class="row between center" style="margin-bottom:12px"><h3>Invoices</h3><button class="btn sm ox" data-new="invoice">+ New invoice</button></div>
+  <div class="card"><table><thead><tr><th>Invoice</th><th>Client</th><th>Amount</th><th>Issued</th><th>Due</th><th>Status</th><th>QBO</th><th></th></tr></thead><tbody>
+  ${[['INV-1043','CIWA','$4,750','2026-07-24','2026-08-07','Sent','synced'],['INV-1042','UJA Federation','$17,000','2026-07-01','2026-07-15','Paid','synced'],['INV-1041','Skills for Change','$14,000','2026-07-05','2026-07-19','Sent','synced'],['INV-1040','Toronto Board of Trade','$8,000','2026-06-20','2026-07-04','Overdue','synced'],['INV-1039','Hillel Ontario','$12,500','2026-06-18','2026-07-02','Paid','synced']].map(v=>`
+    <tr><td class="mono" style="font-family:var(--mono)">${v[0]}</td><td class="tname">${v[1]}</td><td class="mono" style="font-family:var(--mono)">${v[2]}</td><td class="tsub">${v[3]}</td><td class="tsub">${v[4]}</td><td><span class="tag ${v[5]==='Paid'?'good':v[5]==='Overdue'?'bad':'info'}">${v[5]}</span></td><td><span class="tag good">✓ ${v[6]}</span></td><td><button class="btn sm">View</button></td></tr>`).join('')}
+  </tbody></table></div>
+  ${sys('An invoice raised here posts to <b>Square</b> and mirrors to <b>QBO</b> on the nightly sync. A milestone invoice is <b>released automatically</b> when the client verifies a deliverable live — acceptance is the trigger.')}
+</div>
+<div class="subview hide" data-sub="payments">
+  <div class="card"><div class="card-h"><h3>Payment history</h3></div><table><thead><tr><th>Date</th><th>Client</th><th>Amount</th><th>Method</th><th>Source</th></tr></thead><tbody>
+  ${[['2026-07-22','Hillel Ontario','$12,500','Card','Square'],['2026-07-15','UJA Federation','$17,000','Invoice link','Square'],['2026-07-10','Skills for Change','$9,000','e-Transfer','Manual entry'],['2026-06-28','CIWA','$4,750','Card','Square']].map(p=>`
+    <tr><td class="tsub">${p[0]}</td><td class="tname">${p[1]}</td><td class="mono" style="font-family:var(--mono)">${p[2]}</td><td>${p[3]}</td><td>${p[4]==='Manual entry'?'<span class="tag mut">'+p[4]+'</span>':p[4]}</td></tr>`).join('')}
+  </tbody></table></div>
+  ${sys('e-Transfers are logged manually and reconciled the same way as Square payments — the money module owns the full payment picture, not just card rails.')}
+</div>
+<div class="subview hide" data-sub="reconcile">
+  <div class="grid g3" style="margin-bottom:16px">${tile('42','Matched this month','','g')}${tile('2','Needs review','','w')}${tile('$0','Unreconciled','','g')}</div>
+  <div class="card"><div class="card-h between"><h3>QBO reconciliation</h3><span class="tag good">Last sync 2h ago</span></div><table><thead><tr><th>Platform record</th><th>QBO match</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+    <tr><td>Payment · Hillel Ontario</td><td class="mono" style="font-family:var(--mono)">Deposit #4821</td><td class="mono" style="font-family:var(--mono)">$12,500</td><td><span class="tag good">Matched</span></td></tr>
+    <tr><td>Payment · e-Transfer SfC</td><td class="tsub">— unmatched —</td><td class="mono" style="font-family:var(--mono)">$9,000</td><td><span class="tag warn">Review</span></td></tr>
+    <tr><td>Invoice · INV-1043</td><td class="mono" style="font-family:var(--mono)">Invoice #1043</td><td class="mono" style="font-family:var(--mono)">$4,750</td><td><span class="tag good">Matched</span></td></tr>
+  </tbody></table></div>
+  ${sys('Nightly job pushes invoices + payments to QBO and flags anything that does not reconcile. Two-Square-account safety: only the KC location feeds this ledger.')}
+</div>
+<div class="subview hide" data-sub="revenue">
+  <div class="grid g3" style="margin-bottom:16px">${tile('$329k','Booked YTD','44% of $750k','g')}${tile('$164k','Open pipeline','','i')}${tile('$600k–$1M','Target range','')}</div>
+  <div class="card"><div class="card-h"><h3>Annual revenue goal</h3></div><div class="card-b">
+    <div class="bar g" style="height:14px"><span style="width:44%"></span></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px">$329k booked toward the $750k midpoint. Adjust the target band anytime.</div>
+  </div></div>
+</div>
+`;}
+
+/* ---------- MARKETING ---------- */
+function vMarketing(){return `
+<div class="eyebrow">Reach &amp; voice</div>
+<div class="h1 serif">Marketing &amp; Comms</div>
+<div class="lede">Newsletters, articles, LinkedIn, and one calendar tying it all together — audiences pulled live from the platform.</div>
+${tabs([{id:'news',label:'Newsletter'},{id:'blog',label:'Blog &amp; Articles'},{id:'li',label:'LinkedIn'},{id:'cal',label:'Content Calendar'}],'news')}
+<div class="subview" data-sub="news">
+  <div class="grid g3" style="margin-bottom:16px">${tile('312','Subscribers','','i')}${tile('39%','Avg. open rate','','g')}${tile('8%','Avg. click rate','')}</div>
+  <div class="row between center" style="margin-bottom:12px"><h3>Campaigns</h3><button class="btn sm ai">✨ Draft newsletter</button></div>
+  <div class="card"><table><thead><tr><th>Campaign</th><th>Status</th><th>Sent</th><th>Opens</th><th>Clicks</th><th>Segment</th></tr></thead><tbody>
+  ${[['July Update: Why Membership Bodies Are the Quiet Win','Sent','2026-07-10','41%','9%','All subscribers (312)'],['Case Study: How UJA Toronto Went Live','Draft','—','—','—','Prospects + clients (298)'],['June Update: The True Cost of Seven Systems','Sent','2026-06-12','38%','7%','All subscribers (301)']].map(c=>`
+    <tr><td class="tname">${c[0]}</td><td><span class="tag ${c[1]==='Sent'?'good':'mut'}">${c[1]}</span></td><td class="tsub">${c[2]}</td><td>${c[3]}</td><td>${c[4]}</td><td class="tsub">${c[5]}</td></tr>`).join('')}
+  </tbody></table></div>
+  ${sys('Segments are live queries against the platform — no exported lists. Consent + unsubscribe are enforced at send; opt-outs propagate to one suppression list everywhere.')}
+</div>
+<div class="subview hide" data-sub="blog">
+  <div class="kan" style="grid-template-columns:repeat(4,1fr)">
+  ${[['Idea',['REIT partnerships for nonprofits','The 7-system tax']],['Drafting',['Membership Playbook']],['Review',['CIWA case study']],['Published',['Why owned platforms win']]].map(col=>`
+    <div class="kcol"><h4>${col[0]}<span>${col[1].length}</span></h4>${col[1].map(n=>`<div class="kcard"><div class="kn">${n}</div><div class="km">Blog · Jackee</div></div>`).join('')}</div>`).join('')}
+  </div>
+</div>
+<div class="subview hide" data-sub="li">
+  <div class="card"><div class="card-h between"><h3>LinkedIn</h3><button class="btn sm ai">✨ Draft post</button></div><div class="card-b" style="padding-top:6px">
+    ${[['Scheduled','The quiet win of membership bodies','Fri 26 Jul, 9:00'],['Posted','What $500/mo actually buys','18 Jul · 42 reactions']].map(p=>`<div class="lrow"><div class="licon i">in</div><div class="lmain"><div class="lt">${p[1]}</div><div class="ls">${p[0]} · ${p[2]}</div></div></div>`).join('')}
+  </div></div>
+</div>
+<div class="subview hide" data-sub="cal">
+  <div class="card"><div class="card-b"><div style="font-size:12px;color:var(--muted)">All content + campaign dates in one view, merged with client meetings and payment-due dates. See <a data-goto="calendar">Calendar &amp; Meetings</a> for the unified month view.</div></div></div>
+</div>
+`;}
+
+/* ---------- CALENDAR ---------- */
+function vCalendar(){
+  const evt={6:['Discovery — Restaurants Canada, 2pm','ox'],8:['Blog: Membership Playbook publishes','info'],10:['Client check-in — Skills for Change','ox'],12:['LinkedIn post scheduled','info'],15:['Invoice due — Toronto Board of Trade','warn'],17:['Discovery — GS1 Canada, 11am','ox'],19:['Invoice due — Skills for Change','warn'],22:['Blueprint review — Hillel Ontario','ox'],24:['Today — 3 discovery calls','ox'],26:['LinkedIn — Membership bodies','info'],29:['Build review — UJA Toronto','ox']};
+  let cells='';for(let d=1;d<=31;d++){const e=evt[d];cells+=`<div style="border:1px solid var(--line);min-height:74px;padding:6px;border-radius:6px;${d===24?'border-color:var(--ox);border-width:2px;background:var(--oxwash)':''}"><div style="font-size:11px;color:var(--muted);font-weight:600">${d}</div>${e?`<div style="font-size:10px;color:var(--${e[1]});font-weight:600;margin-top:3px;line-height:1.3">${e[0]}</div>`:''}</div>`;}
+  return `
+<div class="eyebrow">Time &amp; meetings</div>
+<div class="h1 serif">Calendar &amp; Meetings</div>
+<div class="lede">Discovery calls, client meetings, content and payment dates — one view, synced both ways with Google Calendar.</div>
+${tabs([{id:'cal',label:'Calendar'},{id:'rules',label:'Reminder rules'},{id:'log',label:'Meeting log'}],'cal')}
+<div class="subview" data-sub="cal">
+  <div class="card" style="margin-bottom:14px"><div class="card-b row center between"><div class="row center" style="gap:10px"><div class="licon g">▦</div><div><b style="color:var(--ink)">Calendar sync is ON</b><div style="font-size:12px;color:var(--muted)">Every booked meeting writes to Google Calendar and back — times and zones stay correct automatically.</div></div></div><span class="tag good">Synced · 2 min ago</span></div></div>
+  <div class="card"><div class="card-h between"><h3>July 2026</h3><div style="font-size:11px;color:var(--muted)">▪ Meeting · ▪ Publish · ▪ Payment</div></div><div class="card-b">
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div style="font-size:10px;text-transform:uppercase;color:var(--muted);text-align:center;font-weight:600">${d}</div>`).join('')}</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px"><div></div><div></div>${cells}</div>
+  </div></div>
+</div>
+<div class="subview hide" data-sub="rules"><div class="card"><div class="card-b"><h3 style="margin-bottom:10px">Automatic meeting reminders</h3>${[['24h before','Email + SMS','meeting_reminder_24h'],['1h before','SMS (consent-gated)','meeting_reminder_1h'],['No-show +15m','Task → reschedule','meeting_reschedule'],['+1 business day','Follow-up email','meeting_followup']].map(r=>`<div class="lrow"><div class="licon">⏰</div><div class="lmain"><div class="lt">${r[0]}</div><div class="ls mono" style="font-family:var(--mono)">${r[2]}</div></div><span class="tag mut">${r[1]}</span></div>`).join('')}</div></div></div>
+<div class="subview hide" data-sub="log"><div class="card"><table><thead><tr><th>Date</th><th>Who</th><th>Type</th><th>Outcome</th></tr></thead><tbody>${[['2026-07-17','GS1 Canada','Discovery','Proposal requested'],['2026-07-10','Skills for Change','Build review','On track'],['2026-07-02','CIWA','Discovery','Signed']].map(m=>`<tr><td class="tsub">${m[0]}</td><td class="tname">${m[1]}</td><td>${m[2]}</td><td>${m[3]}</td></tr>`).join('')}</tbody></table></div></div>
+`;}
+
+/* ---------- COMMS HUB (with AI assist folded in, not a separate studio) ---------- */
+function vComms(){return `
+<div class="eyebrow">One inbox</div>
+<div class="h1 serif">Comms Hub</div>
+<div class="lede">Every email and SMS thread with prospects and clients in one place. AI drafts <b>in the composer</b> — you review and send.</div>
+<div class="grid" style="grid-template-columns:300px 1fr;margin-top:20px">
+  <div class="card"><div class="card-h"><h3>Threads</h3></div><div class="card-b" style="padding:8px">
+    ${[['SC','Skills for Change','Progress report requested','#3E6B8C',1],['IS','ISSofBC','Follow-up needed','#2E7D5B',0],['HO','Hillel Ontario','Blueprint questions','#5B3A6E',0],['UW','United Way Calgary','Opened E2','#B8912F',0]].map((t,i)=>`
+      <div class="lrow" style="padding:10px;border-radius:8px;cursor:pointer;${i===0?'background:var(--oxwash)':''}"><div class="cav" style="background:${t[3]}">${t[0]}</div><div class="lmain"><div class="lt">${t[1]}</div><div class="ls">${t[2]}</div></div>${t[4]?'<div class="dot" style="position:static"></div>':''}</div>`).join('')}
+  </div></div>
+  <div class="card"><div class="card-h between"><h3>Skills for Change <span class="tsub" style="font-weight:400">· Build progress report</span></h3><span class="tag warn">Cadence paused — replied</span></div><div class="card-b">
+    <div class="row wrap" style="gap:8px;margin-bottom:14px"><button class="btn sm ai">✨ Draft progress update</button><button class="btn sm ai">✨ Write follow-up</button><button class="btn sm ai">✨ Summarize last call</button></div>
+    <div style="background:var(--purplebg);border:1px solid #D8C4E2;border-radius:9px;padding:11px 13px;font-size:12px;color:var(--purple);margin-bottom:12px"><b>✨ AI draft</b> — appears in the composer below, ready for you to edit and send. It never sends on its own.</div>
+    <textarea style="width:100%;border:1px solid var(--line);border-radius:9px;padding:12px;font-size:13px;font-family:inherit;min-height:96px;color:var(--body)">Hi Nidhi — quick update: the data model is complete and the cohort &amp; sessions module is now underway, on track for our September 15 go-live. Nothing needed from your side this week.</textarea>
+    <div class="row wrap" style="gap:8px;margin-top:12px"><button class="btn primary">Send email</button><button class="btn">Send as in-platform message</button><button class="btn">📅 Book a meeting</button><button class="btn">Save to client notes</button></div>
+  </div></div>
+</div>
+${sys('AI lives <b>inside</b> the tools you already use — the composer, the prospect record — not in a separate studio. It drafts; the send-gate and your click govern what actually goes out. Provenance and the no-fabrication rule hold on every AI-written line.')}
+`;}
+
+/* ---------- ANALYTICS (new first-class tab) ---------- */
+function vAnalytics(){return `
+<div class="eyebrow">Measure</div>
+<div class="h1 serif">Analytics</div>
+<div class="lede">The funnel, the money, and the work — read from the same live data as every other screen.</div>
+${tabs([{id:'funnel',label:'Conversion funnel'},{id:'outreach',label:'Outreach performance'},{id:'revenue',label:'Revenue &amp; delivery'},{id:'cohort',label:'Segment analysis'}],'funnel')}
+<div class="subview" data-sub="funnel">
+  <div class="grid g4" style="margin-bottom:18px">${tile('29','Prospects','')}${tile('14','Contacted','48%','i')}${tile('5','In conversation','17%','p')}${tile('5','Won','17%','g')}</div>
+  <div class="card"><div class="card-h"><h3>Conversion funnel</h3></div><div class="card-b">
+    ${[['Researched',29,100],['Contacted',14,48],['Opened / engaged',11,38],['In conversation',5,17],['Proposal out',3,10],['Won',5,17]].map(f=>`
+    <div style="margin-bottom:14px"><div class="row between" style="font-size:12px;margin-bottom:4px"><span>${f[0]}</span><b>${f[1]} · ${f[2]}%</b></div><div style="height:26px;background:var(--paper);border-radius:6px;overflow:hidden"><div style="height:100%;width:${f[2]}%;background:linear-gradient(90deg,var(--ox),var(--ox2));border-radius:6px"></div></div></div>`).join('')}
+  </div></div>
+  ${sys('Conversion target is ~5 wins per 60-org push. At 5/29 researched, the funnel is tracking ahead of plan. Every number links back to the underlying records.')}
+</div>
+<div class="subview hide" data-sub="outreach">
+  <div class="grid g4" style="margin-bottom:18px">${tile('62%','E1 open rate','','g')}${tile('34%','Demo click rate','','i')}${tile('18%','Reply rate','','p')}${tile('4.2d','Avg. to reply','')}</div>
+  <div class="card"><div class="card-h"><h3>Template performance</h3></div><table><thead><tr><th>Template</th><th>Sent</th><th>Opens</th><th>Clicks</th><th>Replies</th></tr></thead><tbody>
+  ${[['E1 · Tailored hook','14','62%','34%','18%'],['E2 · Value reframe','9','48%','21%','11%'],['E3 · Close-out','4','40%','12%','8%']].map(t=>`<tr><td class="tname">${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]}</td></tr>`).join('')}
+  </tbody></table></div>
+</div>
+<div class="subview hide" data-sub="revenue">
+  <div class="grid g3" style="margin-bottom:18px">${tile('$47k','Avg. deal size','','g')}${tile('68d','Avg. sales cycle','')}${tile('$18k','Rev / active client','','i')}</div>
+  <div class="card"><div class="card-b"><div style="display:flex;align-items:flex-end;gap:8px;height:150px">${[['Discovery',9.5],['Blueprint',38],['Build',42],['Membership',24],['Full/Live',51]].map(b=>`<div style="flex:1;text-align:center"><div style="font-size:10px;color:var(--muted);margin-bottom:3px">$${b[1]}k</div><div style="background:var(--ox);border-radius:4px 4px 0 0;height:${b[1]*2.5}px"></div><div style="font-size:10px;color:var(--muted);margin-top:5px">${b[0]}</div></div>`).join('')}</div></div></div>
+</div>
+<div class="subview hide" data-sub="cohort">
+  <div class="card"><div class="card-h"><h3>Performance by segment</h3></div><table><thead><tr><th>Segment</th><th>Prospects</th><th>Reply rate</th><th>Won</th><th>Avg. value</th></tr></thead><tbody>
+  ${[['Faith federation',8,'25%',2,'$44k'],['Association / industry',14,'14%',1,'$24k'],['Settlement / newcomer',3,'33%',1,'$26k'],['United Way / allocator',4,'—',0,'—'],['Foundation',4,'—',1,'$38k']].map(s=>`<tr><td class="tname">${s[0]}</td><td>${s[1]}</td><td>${s[2]}</td><td>${s[3]}</td><td class="mono" style="font-family:var(--mono)">${s[4]}</td></tr>`).join('')}
+  </tbody></table></div>
+  ${sys('Segment view uses the real workbook fit-types. Faith federations and settlement orgs convert best so far — a signal for where to weight the next prospecting batch.')}
+</div>
+`;}
+
+/* ---------- REPORT STUDIO (with scheduling) ---------- */
+function vReports(){return `
+<div class="eyebrow">Measure</div>
+<div class="h1 serif">Report Studio</div>
+<div class="lede">Compose a branded multi-section report, schedule it to recur, or grab a quick export.</div>
+${tabs([{id:'package',label:'Report package'},{id:'scheduled',label:'Scheduled reports'},{id:'exports',label:'Quick exports'}],'package')}
+<div class="subview" data-sub="package">
+  <div class="grid" style="grid-template-columns:300px 1fr 220px;gap:16px">
+    <div class="card"><div class="card-b">
+      <div class="field"><label>Audience template</label><select><option>Impact Report</option><option>Annual Business Review</option><option>Monthly Board/Partner</option></select></div>
+      <div class="field"><label>Report title</label><input value="Kasandy Consulting Impact Report"></div>
+      <div class="field"><label>Sections</label>
+      ${['Executive summary (KPIs)','Pipeline &amp; conversion','Client outcomes','Revenue &amp; growth','Segment performance'].map(s=>`<label style="display:flex;gap:8px;align-items:center;font-weight:400;margin-bottom:7px"><input type="checkbox" checked style="width:auto"> ${s}</label>`).join('')}
+      </div>
+    </div></div>
+    <div class="card"><div class="card-h"><h3>Live preview</h3></div><div class="card-b">
+      <div style="background:var(--ink);color:#fff;border-radius:9px;padding:22px;margin-bottom:14px"><div class="licon" style="background:var(--ox);color:#fff;margin-bottom:12px">KC</div><div style="font-size:10px;letter-spacing:.12em;color:#C9A06A">KASANDY CONSULTING · IMPACT</div><div class="serif" style="font-size:22px;color:#fff;margin-top:4px">Kasandy Consulting Impact Report</div><div style="font-size:11px;color:#B9AEA6;margin-top:8px">Prepared for: Board · Period: All time</div></div>
+      <div style="border-top:1px solid var(--line);padding-top:12px">${['Executive summary (KPIs)','Pipeline &amp; conversion','Client outcomes','Revenue &amp; growth','Segment performance'].map((s,i)=>`<div class="row between" style="padding:8px 0;border-bottom:1px solid var(--line);font-size:13px"><span>${i+1}. ${s}</span><span class="tsub">↕</span></div>`).join('')}</div>
+    </div></div>
+    <div class="card"><div class="card-b"><div style="font-size:10px;letter-spacing:.1em;color:var(--muted);margin-bottom:10px">EXPORT</div>
+      <button class="btn primary" style="width:100%;margin-bottom:8px">Preview report</button>
+      <button class="btn" style="width:100%;margin-bottom:8px">Export PDF</button>
+      <button class="btn" style="width:100%;margin-bottom:14px">Export XLSX</button>
+      <div style="font-size:11px;color:var(--muted);line-height:1.6">Branded cover, table of contents, vector charts, and a source + date footnote on every figure.</div>
+    </div></div>
+  </div>
+</div>
+<div class="subview hide" data-sub="scheduled">
+  <div class="row between center" style="margin-bottom:12px"><h3>Scheduled reports</h3><button class="btn sm ox">+ Schedule report</button></div>
+  <div class="card"><table><thead><tr><th>Report</th><th>Recipients</th><th>Cadence</th><th>Next run</th><th>Status</th></tr></thead><tbody>
+    <tr><td class="tname">Monthly practice report</td><td class="tsub">Internal + board</td><td>1st of month</td><td>2026-08-01</td><td><span class="tag good">Active</span></td></tr>
+    <tr><td class="tname">Funder impact summary</td><td class="tsub">Partner funders</td><td>Quarterly</td><td>2026-10-01</td><td><span class="tag good">Active</span></td></tr>
+  </tbody></table></div>
+  ${sys('The monthly practice report generates and sends itself on the 1st — the automation the house rules call for, not a manual build each month.')}
+</div>
+<div class="subview hide" data-sub="exports">
+  <div class="grid g3">${['Prospect list (CSV)','Invoice register (XLSX)','Client outcomes (PDF)','Consent ledger (CSV)','Audit log (CSV)','Revenue by month (XLSX)'].map(e=>`<div class="card"><div class="card-b row between center"><span style="font-weight:600;font-size:13px">${e}</span><button class="btn sm">Export</button></div></div>`).join('')}</div>
+</div>
+`;}
+
+/* ---------- ADMIN ---------- */
+function vAdmin(){return `
+<div class="eyebrow">Govern the platform</div>
+<div class="h1 serif">Admin</div>
+<div class="lede">Users, roles, permissions, and the audit trail — as the business grows past a one-person team.</div>
+${tabs([{id:'users',label:'Users &amp; roles'},{id:'perms',label:'Permission matrix'},{id:'audit',label:'Audit log'},{id:'settings',label:'Settings'}],'users')}
+<div class="subview" data-sub="users">
+  <div class="row between center" style="margin-bottom:12px"><h3>Users</h3><button class="btn sm ox" data-new="user">+ Invite user</button></div>
+  <div class="card"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>
+  ${[['Jackee Kasandy','jackee@kasandyconsulting.com','Owner','Active','good'],['(Bookkeeper — contract)','—','Bookkeeper','Invited','warn'],['(Junior consultant — future)','—','Consultant','Planned','mut'],['CC (dev contractor)','—','Developer','Active','good']].map(u=>`
+    <tr><td class="tname">${u[0]}</td><td class="tsub">${u[1]}</td><td><span class="tag">${u[2]}</span></td><td><span class="tag ${u[4]}">${u[3]}</span></td><td><button class="btn sm">Edit</button></td></tr>`).join('')}
+  </tbody></table></div>
+</div>
+<div class="subview hide" data-sub="perms">
+  <div class="card"><table><thead><tr><th>Capability</th><th>Owner</th><th>Consultant</th><th>Bookkeeper</th><th>Client</th></tr></thead><tbody>
+  ${[['View prospects','✓','✓','—','—'],['Send outreach','✓','✓','—','—'],['Approve Black-led sign-off','✓','—','—','—'],['Raise invoices','✓','—','✓','—'],['View financials','✓','—','✓','—'],['Verify deliverable live','—','—','—','✓'],['Edit website CMS','✓','✓','—','—']].map(p=>`
+    <tr><td class="tname">${p[0]}</td>${p.slice(1).map(v=>`<td>${v==='✓'?'<span style="color:var(--good);font-weight:700">✓</span>':'<span style="color:var(--muted)">—</span>'}</td>`).join('')}</tr>`).join('')}
+  </tbody></table></div>
+  ${sys('The Black-led sign-off gate is <b>Owner-only</b> and enforced in the permission layer — no other role can clear it, by design.')}
+</div>
+<div class="subview hide" data-sub="audit">
+  <div class="card"><table><thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th></tr></thead><tbody>
+  ${[['07:00','system','sequence.advance ×3','Founder Outreach v1'],['07:00','system','send.refused (held org)','BIPOC Foundation'],['06:42','JK','signoff.approved','Skills for Change'],['Yesterday','system','payment.reconciled','Hillel Ontario'],['Yesterday','JK','prospect.created','GS1 Canada']].map(a=>`
+    <tr><td class="tsub mono" style="font-family:var(--mono)">${a[0]}</td><td>${a[1]==='system'?'<span class="tag mut">system</span>':'<span class="tag">'+a[1]+'</span>'}</td><td class="mono" style="font-family:var(--mono);font-size:12px">${a[2]}</td><td class="tsub">${a[3]}</td></tr>`).join('')}
+  </tbody></table></div>
+  ${sys('Every create, update, send, refusal, and settings change is logged — the audit trail is append-only and covers both human and system actors.')}
+</div>
+<div class="subview hide" data-sub="settings">
+  <div class="card"><div class="card-b">
+    ${[['Mailing address (CASL)','Kasandy Consulting, Burnaby BC','required'],['Sending address','jackee@kasandyconsulting.com','verified'],['Signature','Jackee Kasandy · Founder & Principal','set'],['Timezone','America/Vancouver','set'],['Square account','KC-CONSULTING (locked)','connected'],['QuickBooks Online','Connected · nightly sync','connected'],['Resend domain','kasandyconsulting.com · SPF/DKIM','verified']].map(s=>`
+    <div class="lrow"><div class="lmain"><div class="lt">${s[0]}</div><div class="ls">${s[1]}</div></div><span class="tag ${s[2]==='required'?'warn':'good'}">${s[2]}</span></div>`).join('')}
+  </div></div>
+</div>
+`;}
+
+/* ---------- WEBSITE CMS (absorbs the old /admin) ---------- */
+function vCMS(){return `
+<div class="eyebrow">Manage the site</div>
+<div class="h1 serif">Website CMS</div>
+<div class="lede">kasandyconsulting.com — pages, forms, content, SEO, and tracking, all managed here. The old /admin is absorbed into the platform.</div>
+${tabs([{id:'pages',label:'Pages'},{id:'forms',label:'Forms &amp; submissions'},{id:'content',label:'Blog &amp; Whitepapers'},{id:'seo',label:'SEO'},{id:'pixels',label:'Ad pixels'}],'pages')}
+<div class="subview" data-sub="pages">
+  <div class="row between center" style="margin-bottom:12px"><h3>Pages</h3><button class="btn sm ox">+ New page</button></div>
+  <div class="card"><table><thead><tr><th>Page</th><th>Status</th><th>SEO title</th><th>Updated</th><th></th></tr></thead><tbody>
+  ${[['Home','/','Published','Kasandy Consulting — Owned Operations Platforms','2026-07-10'],['Services','/services','Published','What We Build','2026-06-28'],['Pricing','/pricing','Published','Discovery, Blueprint, Build','2026-06-15'],['Case Studies','/case-studies','Published','Client Results','2026-07-12'],['About','/about','Published','About Jackee Kasandy','2026-05-01'],['Contact','/contact','Published','Book a Discovery Call','2026-06-01'],['Whitepapers','/resources','Draft','Free Resources','2026-07-18']].map(p=>`
+    <tr><td><div class="tname">${p[0]}</div><div class="tsub mono" style="font-family:var(--mono)">${p[1]}</div></td><td><span class="tag ${p[2]==='Published'?'good':'warn'}">${p[2]}</span></td><td class="tsub">${p[3]}</td><td class="tsub">${p[4]}</td><td><button class="btn sm">Edit</button> <button class="btn sm">Preview</button></td></tr>`).join('')}
+  </tbody></table></div>
+</div>
+<div class="subview hide" data-sub="forms">
+  <div class="card" style="margin-bottom:16px"><div class="card-b row center between"><div><b style="color:var(--ink)">Every website form posts into the platform</b><div style="font-size:12px;color:var(--muted)">Contact, discovery booking, and newsletter forms write straight to prospects, calendar, and subscribers — no third-party form tool, no separate inbox.</div></div><span class="tag good">Live</span></div></div>
+  <div class="card"><div class="card-h"><h3>Recent submissions</h3></div><table><thead><tr><th>Form</th><th>From</th><th>Routed to</th><th>When</th><th></th></tr></thead><tbody>
+  ${[['Discovery booking','r.ochil@sfu.ca','Calendar + new prospect','12 min ago'],['Contact','info@ywcahamilton.org','Prospect intake','2h ago'],['Newsletter signup','—','Subscribers (313)','3h ago']].map(f=>`<tr><td class="tname">${f[0]}</td><td class="tsub">${f[1]}</td><td>${f[2]}</td><td class="tsub">${f[3]}</td><td><button class="btn sm">Open</button></td></tr>`).join('')}
+  </tbody></table></div>
+  ${sys('Form submissions become platform records instantly — a discovery booking creates a calendar hold <b>and</b> a prospect row with its source stamped. This is the CMS absorption in action.')}
+</div>
+<div class="subview hide" data-sub="content">
+  <div class="card"><table><thead><tr><th>Title</th><th>Type</th><th>Status</th><th>Updated</th></tr></thead><tbody>
+  ${[['Why Membership Bodies Are the Quiet Win','Blog','Published','2026-07-10'],['The True Cost of Seven Systems','Blog','Published','2026-06-12'],['Owned Operations Platforms: A Primer','Whitepaper','Draft','2026-07-18']].map(c=>`<tr><td class="tname">${c[0]}</td><td>${c[1]}</td><td><span class="tag ${c[2]==='Published'?'good':'warn'}">${c[2]}</span></td><td class="tsub">${c[3]}</td></tr>`).join('')}
+  </tbody></table></div>
+</div>
+<div class="subview hide" data-sub="seo"><div class="card"><div class="card-b"><h3 style="margin-bottom:8px">Per-page SEO</h3><div style="font-size:12px;color:var(--muted)">Title, meta description, and social card managed per page. Public pages stay a protected surface — the platform edits content, never the marketing shell's structure.</div></div></div></div>
+<div class="subview hide" data-sub="pixels"><div class="card"><div class="card-b"><h3 style="margin-bottom:8px">Tracking &amp; ad pixels</h3><div style="font-size:12px;color:var(--muted)">GA4 and Meta Pixel live on the <b>public marketing pages only</b>. The platform itself is tracker-free and font-isolated — that separation is enforced at the layout level.</div></div></div></div>
+`;}
+
+/* ---------- CLIENT PORTAL (the other front door) ---------- */
+function vPortal(){return `
+<div class="eyebrow" style="color:var(--info)">Client portal · Skills for Change</div>
+<div class="h1 serif">Welcome back, Nidhi</div>
+<div class="lede">Your platform build with Kasandy Consulting — progress, documents, invoices, and a direct line to the team.</div>
+<div class="grid g3" style="margin:20px 0">${tile('55%','Build progress','On track for Sep 15','g')}${tile('2','Open deliverables','','i')}${tile('$19k','Balance','of $42k','')}</div>
+<div class="grid g2" style="grid-template-columns:1.3fr 1fr">
+  <div class="card"><div class="card-h between"><h3>Your deliverables</h3><button class="btn sm ai">✨ Request a quote for more</button></div><div class="card-b" style="padding-top:6px">
+    <div class="lrow"><div class="licon g">✓</div><div class="lmain"><div class="lt">Discovery &amp; assessment</div><div class="ls">You marked this Verified live on Jul 2 — invoice released</div></div><span class="tag good">Done</span></div>
+    <div class="lrow"><div class="licon w">◔</div><div class="lmain"><div class="lt">Data model + intake build</div><div class="ls">Ready for your review</div></div><button class="btn sm ox">Review &amp; verify live</button></div>
+    <div class="lrow"><div class="licon i">●</div><div class="lmain"><div class="lt">Cohort &amp; sessions module</div><div class="ls">In progress</div></div><span class="tag info">Building</span></div>
+    <div class="lrow"><div class="licon">○</div><div class="lmain"><div class="lt">Go-live + handoff</div><div class="ls">Not started</div></div><span class="tag mut">Upcoming</span></div>
+  </div></div>
+  <div class="card"><div class="card-h"><h3>Messages</h3></div><div class="card-b" style="padding-top:6px">
+    <div class="lrow"><div class="cav" style="background:var(--ox)">JK</div><div class="lmain"><div class="lt">Jackee Kasandy</div><div class="ls">Data model's ready for your review whenever…</div></div></div>
+    <textarea placeholder="Reply to the team…" style="width:100%;border:1px solid var(--line);border-radius:9px;padding:11px;font-size:13px;font-family:inherit;min-height:60px;margin-top:10px"></textarea>
+    <button class="btn primary sm" style="margin-top:8px">Send</button>
+  </div></div>
+</div>
+<div class="card" style="margin-top:16px"><div class="card-h between"><h3>The "Verified live" moment</h3></div><div class="card-b">
+  <div style="background:var(--goodbg);border:1px solid #B8DCC8;border-radius:9px;padding:16px">
+    <div style="font-weight:600;color:var(--good);margin-bottom:6px">◔ Data model + intake build — ready for your review</div>
+    <div style="font-size:13px;color:var(--body);margin-bottom:12px">Open the module, test it, and if it works the way you need, mark it verified. That closes this phase and releases its invoice — <b>your acceptance is what triggers billing</b>, nothing before it.</div>
+    <div class="row" style="gap:8px"><button class="btn ox">✓ Verify live</button><button class="btn">Request changes</button><textarea placeholder="Optional note…" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;font-family:inherit"></textarea></div>
+  </div>
+</div></div>
+${sys('Verifying live advances the engagement and releases the milestone invoice automatically — the single most important control in the platform, and it belongs to the client.')}
+`;}
+
+/* ============ ROUTER + STATE ============ */
+const VIEWS={dashboard:vDashboard,outreach:vOutreach,clients:vClients,financials:vFinancials,marketing:vMarketing,calendar:vCalendar,comms:vComms,analytics:vAnalytics,reports:vReports,admin:vAdmin,cms:vCMS,portal:vPortal};
+const TITLES={dashboard:'Dashboard',outreach:'Outreach',clients:'Clients',financials:'Financials',marketing:'Marketing & Comms',calendar:'Calendar & Meetings',comms:'Comms Hub',analytics:'Analytics',reports:'Report Studio',admin:'Admin',cms:'Website CMS',portal:'Client Portal'};
+
+function render(v){
+  $('#content').innerHTML=VIEWS[v]();
+  $('#pgtitle').textContent=TITLES[v];
+  $$('#opnav .ni').forEach(n=>n.classList.toggle('on',n.dataset.v===v));
+  if(v==='outreach') fillProspects();
+  wireSubtabs(); wireInner();
+  window.scrollTo(0,0);
+}
+function wireSubtabs(){
+  $$('[data-subtab]').forEach(el=>el.onclick=()=>{
+    const id=el.dataset.subtab;
+    // activate the matching tab button (only real .tab elements)
+    $$('.tab').forEach(x=>x.classList.toggle('on',x.dataset.subtab===id));
+    // show only the matching subview
+    $$('.subview').forEach(s=>s.classList.toggle('hide',s.dataset.sub!==id));
+    window.scrollTo(0,0);
+  });
+}
+function wireInner(){
+  $$('[data-goto]').forEach(el=>el.onclick=()=>render(el.dataset.goto));
+  $$('[data-new]').forEach(el=>el.onclick=()=>openCreate(el.dataset.new));
+}
+function fillProspects(){
+  const tb=$('#prospectRows'); if(!tb)return;
+  tb.innerHTML=SEED.slice(0,14).map(o=>{
+    const black=/native women|black|caribbean|african/i.test(o.org);
+    return `<tr><td><input type="checkbox"></td>
+    <td><div class="tname">${o.org.replace(/\b\w/g,c=>c.toUpperCase())}</div>
+      <div class="src"><b>src:</b> ${o.org.toLowerCase().replace(/[^a-z]/g,'').slice(0,12)}.org/leadership · verified 2026-07</div></td>
+    <td>${o.name}<div class="tsub">${o.title.slice(0,26)}</div></td>
+    <td><span class="tag mut">${o.fit.split('/')[0].trim()}</span></td>
+    <td class="tsub mono" style="font-family:var(--mono);font-size:11px">${o.estatus==='valid'?'✓ valid':'catch-all'}</td>
+    <td>${black?'<span class="tag hold">Needs sign-off</span>':'<span class="tag info">Researched</span>'}</td>
+    <td><button class="btn sm">Open</button></td></tr>`;
+  }).join('');
+}
+
+/* ---------- GLOBAL CREATE ---------- */
+const FORMS={
+  prospect:{t:'Add prospect',f:`<div class="field"><label>Organization</label><input placeholder="e.g. YWCA Hamilton"></div><div class="field"><label>Leader name</label><input placeholder="Full name"></div><div class="field"><label>Leader source + date <span style="color:var(--bad)">*required with name</span></label><input placeholder="URL where you found them · today's date"><div class="hint">A name can't be saved without its provenance — the source and date are required together.</div></div><div class="field"><label>Segment</label><select><option>Association / industry</option><option>Faith federation</option><option>Settlement / newcomer</option><option>Foundation</option><option>United Way / allocator</option></select></div>`,note:'Black-led orgs will be flagged for your sign-off before any outreach.'},
+  engagement:{t:'New engagement',f:`<div class="field"><label>Client</label><input placeholder="Organization name"></div><div class="field"><label>Package</label><select><option>Discovery Engagement</option><option>Blueprint</option><option>Full Operations Platform</option><option>Membership Platform</option></select></div><div class="field"><label>Contract value</label><input placeholder="$"></div>`},
+  invoice:{t:'New invoice',f:`<div class="field"><label>Client</label><select><option>Skills for Change</option><option>Hillel Ontario</option><option>CIWA</option></select></div><div class="field"><label>Amount</label><input placeholder="$"></div><div class="field"><label>Milestone</label><input placeholder="e.g. Data model sign-off"></div>`,note:'Posts to Square (KC account) and mirrors to QBO on the next sync.'},
+  user:{t:'Invite user',f:`<div class="field"><label>Email</label><input placeholder="name@…"></div><div class="field"><label>Role</label><select><option>Consultant</option><option>Bookkeeper</option><option>Developer</option></select></div>`}
+};
+function openCreate(kind){
+  const F=FORMS[kind]||FORMS.prospect;
+  $('#modal').innerHTML=`<div class="modal-h"><h3>${F.t}</h3><button class="x" onclick="closeModal()">×</button></div><div class="modal-b">${F.f}${F.note?`<div class="wfnote" style="margin:4px 0 0">${F.note}</div>`:''}</div><div class="modal-f"><button class="btn" onclick="closeModal()">Cancel</button><button class="btn ox" onclick="closeModal()">Save</button></div>`;
+  $('#scrim').classList.add('on');
+}
+function closeModal(){$('#scrim').classList.remove('on');}
+window.closeModal=closeModal;
+
+/* ---------- WIRING ---------- */
+document.addEventListener('DOMContentLoaded',()=>{
+  $$('#opnav .ni').forEach(n=>n.onclick=()=>render(n.dataset.v));
+  $('#newBtn').onclick=()=>{
+    // quick menu -> default to prospect
+    openCreate('prospect');
+  };
+  $('#notifBtn').onclick=()=>$('#notifPop').classList.toggle('on');
+  const gs=$('#globalSearch'),sr=$('#sresults');
+  gs.onfocus=()=>sr.classList.add('on');
+  gs.oninput=()=>sr.classList.toggle('on',gs.value.length>0||true);
+  document.addEventListener('click',e=>{
+    if(!e.target.closest('.search'))sr.classList.remove('on');
+    if(!e.target.closest('#notifBtn')&&!e.target.closest('#notifPop'))$('#notifPop').classList.remove('on');
+  });
+  $('#scrim').onclick=e=>{if(e.target.id==='scrim')closeModal();};
+  document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();gs.focus();}if(e.key==='Escape')closeModal();});
+  // menu button (mobile)
+  const mb=$('#menuBtn'); if(mb)mb.onclick=()=>$('#rail').classList.toggle('open');
+  render('dashboard');
+});
+
+</script>
+</body>
+</html>

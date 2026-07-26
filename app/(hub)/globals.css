@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Kasandy Engine — hub design tokens (brief §4).
+ * Tracker-free and font-free by rule: system/serif/mono stacks only, no external
+ * font network dependency. Self-hosted display faces can be added later.
+ */
+:root {
+  --ox: #712f1e;
+  --ox2: #8c4433;
+  --ink: #17110f;
+  --paper: #fbf9f8;
+  --card: #ffffff;
+  --line: #eae3df;
+  --muted: #8a7f79;
+  --good: #2e7d5b;
+  --warn: #a9691b;
+  --bad: #a3271c;
+  --info: #1f4e79;
+  --ai: #5b3a6e;
+  --hold: #4a4440;
+
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
