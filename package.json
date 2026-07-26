@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "engine:import": "node scripts/engine-import.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.3",
@@ -16,13 +17,16 @@
     "lucide-react": "^0.400.0",
     "next": "14.2.5",
     "pdf-lib": "^1.17.1",
+    "pg": "^8.22.0",
     "react": "^18",
     "react-dom": "^18",
     "resend": "^6.11.0",
-    "square": "^44.0.1"
+    "square": "^44.0.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/pg": "^8.20.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.19",
