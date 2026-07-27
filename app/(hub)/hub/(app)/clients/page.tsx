@@ -107,11 +107,9 @@ export default async function ClientsPage() {
                     )}
                   </td>
                   <td>
-                    {c.orgs && (
-                      <Link href={`/outreach/${c.orgs.id}`} className="btn sm">
-                        Open
-                      </Link>
-                    )}
+                    <Link href={`/clients/${c.id}`} className="btn sm">
+                      Open
+                    </Link>
                   </td>
                 </tr>
               )

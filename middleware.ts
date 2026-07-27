@@ -72,14 +72,24 @@ export async function middleware(req: NextRequest) {
     const { supabaseResponse, user } = await updateSession(req)
     const allowed = isOperator(user?.email)
     const isAuthRoute = pathname === '/login' || pathname.startsWith('/auth/')
+    // The client portal is the one operator-free surface. Being signed in is enough
+    // to reach it; whether there is anything to see is RLS's decision, not this
+    // file's — a signed-in stranger gets an empty portal, never someone else's
+    // engagement. Checking membership here would mean a database round-trip in
+    // middleware and a second place for the rule to drift.
+    const isPortal = pathname === '/portal' || pathname.startsWith('/portal/')
 
-    // Everything except the login page + auth callback requires an operator.
-    if (!allowed && !isAuthRoute) {
+    // Everything except the login page, auth callback and portal requires an operator.
+    if (!allowed && !isAuthRoute && !(isPortal && user)) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
     // Signed-in operators shouldn't sit on the login page.
     if (allowed && pathname === '/login') {
       return NextResponse.redirect(new URL('/', req.url))
+    }
+    // A signed-in non-operator has exactly one destination.
+    if (!allowed && user && !isPortal && !isAuthRoute) {
+      return NextResponse.redirect(new URL('/portal', req.url))
     }
 
     // Map clean hub URLs onto the internal /hub/* tree (URL bar stays clean).
