@@ -19,6 +19,15 @@ function hasValidPurchaseCookie(req: NextRequest): boolean {
   return UUID_RE.test(token)
 }
 
+/**
+ * Documents a client opens with a token instead of an account: the intake form and
+ * the proposal they sign. Matched narrowly — the token segment must be present and
+ * hex — so this cannot become a general hole in the operator gate.
+ */
+function isClientDocRoute(pathname: string): boolean {
+  return /^\/(intake|proposal)\/[0-9a-f]{32,64}\/?$/i.test(pathname)
+}
+
 function isHubHost(host: string | null): boolean {
   if (!host) return false
   const h = host.split(':')[0].toLowerCase()
@@ -45,6 +54,18 @@ export async function middleware(req: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
       return apiRes
+    }
+
+    // Client-facing documents reached by an unguessable token: an intake form and a
+    // proposal to sign. The recipient has no account — in Phase 3 the token IS the
+    // credential, so these cannot sit behind the operator gate. They are noindex
+    // like the rest of the hub, and each page resolves its own token server-side;
+    // an unknown token renders not-found rather than anything belonging to someone
+    // else.
+    if (isClientDocRoute(pathname)) {
+      const clientUrl = req.nextUrl.clone()
+      clientUrl.pathname = `/hub${pathname}`
+      return NextResponse.rewrite(clientUrl)
     }
 
     // Refresh the Supabase session first, then read the user.

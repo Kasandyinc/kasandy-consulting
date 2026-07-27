@@ -14,7 +14,7 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
     group: 'Grow',
     items: [
       { href: '/outreach', icon: '↗', label: 'Outreach' },
-      { href: '/clients', icon: '◆', label: 'Clients', soon: true },
+      { href: '/clients', icon: '◆', label: 'Clients' },
     ],
   },
   {
@@ -28,7 +28,7 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
   {
     group: 'Operate',
     items: [
-      { href: '/calendar', icon: '▦', label: 'Calendar & Meetings', soon: true },
+      { href: '/calendar', icon: '▦', label: 'Calendar & Meetings' },
       { href: '/comms', icon: '✦', label: 'Comms Hub', soon: true },
     ],
   },
