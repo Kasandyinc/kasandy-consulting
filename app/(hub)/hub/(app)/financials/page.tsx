@@ -11,6 +11,7 @@ import {
   type Payment,
 } from '@/lib/engine/money'
 import { SystemStrip } from '../../../_components/ui'
+import MoneyForms, { IssueButton } from './MoneyForms'
 
 export const dynamic = 'force-dynamic'
 
@@ -101,6 +102,21 @@ export default async function Financials() {
         </div>
       )}
 
+      <MoneyForms
+        clients={(clientRes.data ?? []).map((c: { id: string; orgs: { name: string } | { name: string }[] | null }) => ({
+          id: c.id,
+          name: (Array.isArray(c.orgs) ? c.orgs[0]?.name : c.orgs?.name) ?? 'Unnamed client',
+        }))}
+        invoices={invoices
+          .filter((i) => i.status !== 'void' && i.status !== 'paid' && i.status !== 'draft')
+          .map((i) => ({
+            id: i.id,
+            number: i.number,
+            status: i.status,
+            balance: formatMoney(balanceCents(i, payments), i.currency),
+          }))}
+      />
+
       <div className="card" style={{ marginTop: 20 }}>
         <div className="card-h between">
           <h3>Invoices</h3>
@@ -110,7 +126,7 @@ export default async function Financials() {
           <thead>
             <tr>
               <th>Number</th><th>Client</th><th>Amount</th><th>Balance</th>
-              <th>Status</th><th>Due</th><th>Aging</th>
+              <th>Status</th><th>Due</th><th>Aging</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -135,12 +151,13 @@ export default async function Financials() {
                     {agingBucket(i)}
                     {level > 0 && <span className="tag bad" style={{ marginLeft: 6 }}>dunning L{level}</span>}
                   </td>
+                  <td>{i.status === 'draft' && <IssueButton invoiceId={i.id} />}</td>
                 </tr>
               )
             })}
             {invoices.length === 0 && (
               <tr>
-                <td colSpan={7} className="empty">
+                <td colSpan={8} className="empty">
                   No invoices. There are no signed engagements yet — billing begins when
                   Phase 3 produces one.
                 </td>
