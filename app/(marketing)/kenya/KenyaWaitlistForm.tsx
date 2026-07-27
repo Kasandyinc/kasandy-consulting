@@ -1,12 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import Turnstile from '@/components/Turnstile'
 import { CheckCircle } from 'lucide-react'
 
 export default function KenyaWaitlistForm() {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', country: '', business: '', program: '', goals: '',
   })
+  const [website, setWebsite] = useState('') // honeypot
+  const [formLoadedAt] = useState(() => Date.now())
+  const [turnstileToken, setTurnstileToken] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,7 +26,7 @@ export default function KenyaWaitlistForm() {
       const res = await fetch('/api/kenya-waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, website, formLoadedAt, turnstileToken }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Submission failed.')
@@ -102,6 +106,13 @@ export default function KenyaWaitlistForm() {
       </div>
 
       {error && <p className="text-sm text-red-400 font-sans">{error}</p>}
+      {/* Honeypot — hidden from real users; bots that fill it are silently dropped */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+        <input type="text" tabIndex={-1} autoComplete="off"
+          value={website} onChange={e => setWebsite(e.target.value)} />
+      </div>
+      <Turnstile onVerify={setTurnstileToken} />
+
 
       <button type="submit" disabled={submitting}
         className="w-full py-3.5 font-sans text-xs tracking-widest uppercase font-bold text-kc-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"

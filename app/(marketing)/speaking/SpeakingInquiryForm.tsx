@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Turnstile from '@/components/Turnstile'
 
 const formats = [
   'Keynote (45–60 min)',
@@ -36,6 +37,9 @@ export default function SpeakingInquiryForm() {
     budget: '',
     notes: '',
   })
+  const [website, setWebsite] = useState('') // honeypot
+  const [formLoadedAt] = useState(() => Date.now())
+  const [turnstileToken, setTurnstileToken] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -50,7 +54,7 @@ export default function SpeakingInquiryForm() {
       const res = await fetch('/api/speaking-inquiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, website, formLoadedAt, turnstileToken }),
       })
       const data = await res.json()
       if (!res.ok || data.error) throw new Error(data.error || 'Submission failed')
@@ -131,6 +135,13 @@ export default function SpeakingInquiryForm() {
       {status === 'error' && (
         <p className="font-sans text-xs text-kc-red">{errorMsg}</p>
       )}
+      {/* Honeypot — hidden from real users; bots that fill it are silently dropped */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+        <input type="text" tabIndex={-1} autoComplete="off"
+          value={website} onChange={e => setWebsite(e.target.value)} />
+      </div>
+      <Turnstile onVerify={setTurnstileToken} />
+
       <button type="submit" disabled={status === 'loading'} className="btn-brown w-full justify-center">
         {status === 'loading' ? 'Submitting...' : 'Submit Speaking Inquiry'}
       </button>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import { Resend } from 'resend'
 import { noreply } from '@/lib/email'
 
@@ -6,10 +7,28 @@ export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
   const TO = process.env.CONTACT_TO_EMAIL || 'ea@kasandyconsulting.com'
   try {
-    const { name, title, organisation, quote, audience } = await req.json()
+    const { name, title, organisation, quote, audience, website, formLoadedAt, turnstileToken } = await req.json()
 
     if (!name || !quote) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // ── Spam protection (same controls as contact/newsletter) ───────────────
+    if (website) {
+      return NextResponse.json({ success: true })   // honeypot: pretend success
+    }
+    if (tooFast(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please take a moment before submitting.' }, { status: 400 })
+    }
+    const ip = getClientIp(req)
+    if (!(await verifyTurnstile(turnstileToken, ip))) {
+      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
+    }
+
+    const emailOk = await rateLimit(`rl:reviews:email:${normalizeEmail(name)}`, 3, 3600)
+    const ipOk = await rateLimit(`rl:reviews:ip:${ip}`, 5, 3600)
+    if (!emailOk || !ipOk) {
+      return NextResponse.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 })
     }
 
     await resend.emails.send({

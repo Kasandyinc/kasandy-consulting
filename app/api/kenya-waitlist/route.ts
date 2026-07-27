@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import { Resend } from 'resend'
 import { kv } from '@/lib/kv'
 import { noreply as FROM } from '@/lib/email'
@@ -16,13 +17,32 @@ export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
 
   try {
-    const { name, email, phone, country, business, program, goals } = await req.json() as {
+    const { name, email, phone, country, business, program, goals, website, formLoadedAt, turnstileToken } = await req.json() as {
       name: string; email: string; phone: string; country: string
       business: string; program: string; goals: string
+      website?: string; formLoadedAt?: number; turnstileToken?: string
     }
 
     if (!name || !email || !phone || !country || !business) {
       return NextResponse.json({ error: 'Please fill in all required fields.' }, { status: 400 })
+    }
+
+    // ── Spam protection (same controls as contact/newsletter) ───────────────
+    if (website) {
+      return NextResponse.json({ success: true })   // honeypot: pretend success
+    }
+    if (tooFast(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please take a moment before submitting.' }, { status: 400 })
+    }
+    const ip = getClientIp(req)
+    if (!(await verifyTurnstile(turnstileToken, ip))) {
+      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
+    }
+
+    const emailOk = await rateLimit(`rl:kenya:email:${normalizeEmail(email)}`, 3, 3600)
+    const ipOk = await rateLimit(`rl:kenya:ip:${ip}`, 5, 3600)
+    if (!emailOk || !ipOk) {
+      return NextResponse.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 })
     }
 
     const entry = { name, email, phone, country, business, program, goals, createdAt: new Date().toISOString() }
