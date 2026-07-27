@@ -30,6 +30,8 @@ yarn-error.log*
 # prospect workbooks — contain real prospect PII (names/emails); keep local, never commit.
 # The engine:import script reads them from /data at import time.
 /data/*.xlsx
+# Outreach drafts name real people and carry their email addresses — keep local.
+/data/KC_Outreach_Drafts_*.md
 # Generated prospect seed SQL also contains PII — never commit.
 /supabase/seed/*.sql
 

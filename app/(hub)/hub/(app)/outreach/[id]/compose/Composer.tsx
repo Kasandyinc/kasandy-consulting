@@ -14,6 +14,8 @@ export default function Composer({
   templates,
   selectedTemplateId,
   selectedContactId,
+  subjects,
+  subjectIndex,
   initialCheck,
 }: {
   orgId: string
@@ -22,6 +24,8 @@ export default function Composer({
   templates: Tpl[]
   selectedTemplateId: string | null
   selectedContactId: string | null
+  subjects: string[]
+  subjectIndex: number
   initialCheck: { ready: boolean; reasons: string[]; subject: string; full: string }
 }) {
   const router = useRouter()
@@ -70,6 +74,24 @@ export default function Composer({
             ))}
           </select>
 
+          {subjects.length > 1 && (
+            <>
+              <label className="eyebrow" style={{ display: 'block', marginTop: 14 }}>
+                Subject line ({subjects.length} approved options)
+              </label>
+              <select
+                className="btn"
+                style={{ width: '100%' }}
+                value={String(subjectIndex)}
+                onChange={(e) => swap('subject', e.target.value)}
+              >
+                {subjects.map((s, i) => (
+                  <option key={s} value={i}>{s}</option>
+                ))}
+              </select>
+            </>
+          )}
+
           {/* Refusals, listed plainly, before anyone tries. */}
           {initialCheck.reasons.length > 0 ? (
             <div className="err" style={{ marginTop: 16 }}>
@@ -94,6 +116,7 @@ export default function Composer({
                   orgId,
                   templateId: selectedTemplateId!,
                   contactId: selectedContactId!,
+                  subjectIndex,
                 })
                 setResult({ ok: res.ok, message: res.ok ? 'Sent and logged.' : res.error ?? 'Refused.' })
                 router.refresh()

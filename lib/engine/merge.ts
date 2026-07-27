@@ -25,6 +25,8 @@ export type MergeContext = {
     website?: string | null
     why_fit?: string | null
     angle_13?: string | null
+    /** Sourced tailoring detail. Only ever set alongside its source + date (Addendum 1). */
+    detail_hook?: string | null
   }
   contact?: {
     name?: string | null
@@ -37,6 +39,7 @@ export type MergeContext = {
     mailing_address?: string | null
     sending_address?: string | null
     booking_link?: string | null
+    phone?: string | null
   } | null
   /** Human (or AI-drafted, human-confirmed) values for manual-fill tokens. */
   manualFills?: Record<string, string>
@@ -60,7 +63,9 @@ export type MergeResult = {
   ready: boolean
 }
 
-const TOKEN_RE = /\[([^\][\n]+)\]/g
+// A merge token is [Field]. A markdown link is [text](url) — the trailing "(" is
+// what tells them apart, so link text is never mistaken for an unresolved field.
+const TOKEN_RE = /\[([^\][\n]+)\](?!\()/g
 
 function firstName(full?: string | null): string | null {
   if (!full) return null
@@ -106,6 +111,8 @@ function resolveAuto(name: string, ctx: MergeContext): string | null {
       return org.angle_13 ?? null
     case 'booking link':
       return s.booking_link ?? null
+    case 'phone':
+      return s.phone ?? null
     case 'signature':
       return s.signature_md ?? null
     case 'mailing address':
@@ -128,7 +135,10 @@ export function renderTemplate(body: string, ctx: MergeContext): MergeResult {
     const name = rawName.trim()
 
     if (isManual(name)) {
-      const fill = ctx.manualFills?.[name.toLowerCase()]
+      // Addendum 1 §3: the research tokens resolve against orgs.detail_hook, which
+      // the database only accepts alongside a source and a verified-on date. So a
+      // resolved token always carries a receipt; an absent hook still blocks.
+      const fill = ctx.manualFills?.[name.toLowerCase()] ?? ctx.org?.detail_hook ?? ''
       if (!fill || !fill.trim()) {
         // Left visible on purpose: a preview should show exactly what is missing.
         if (!unfilled.includes(name)) unfilled.push(name)

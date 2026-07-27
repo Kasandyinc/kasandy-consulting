@@ -12,6 +12,7 @@ import {
 import { SystemStrip, Provenance, OrgFlags } from '../../../../_components/ui'
 import SignOffButton from './SignOffButton'
 import SequenceTab from './SequenceTab'
+import StagePicker from './StagePicker'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,7 +77,7 @@ export default async function OrgRecord({
         <div style={{ textAlign: 'right' }}>
           <div className="row" style={{ gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <OrgFlags org={o} />
-            <span className="tag">{STAGE_LABEL[o.stage as Stage] ?? o.stage}</span>
+            <StagePicker orgId={o.id} stage={o.stage as Stage} />
           </div>
           <Link
             href={`/outreach/${o.id}/compose`}
@@ -137,6 +138,29 @@ export default async function OrgRecord({
                 <>
                   <p style={{ color: 'var(--muted)' }}>
                     No leader asserted. Names are only stored with a source and a date.
+                  </p>
+                  <Provenance source={null} on={null} />
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-h between">
+              <h3>Tailoring detail</h3>
+              {o.detail_is_general && <span className="tag warn">general — not dated news</span>}
+            </div>
+            <div className="card-b">
+              {o.detail_hook ? (
+                <>
+                  <div>{o.detail_hook}</div>
+                  <Provenance source={o.detail_source} on={o.detail_verified_on} />
+                </>
+              ) : (
+                <>
+                  <p style={{ color: 'var(--muted)' }}>
+                    No sourced detail. Outreach that needs one will refuse to send rather
+                    than invent it.
                   </p>
                   <Provenance source={null} on={null} />
                 </>

@@ -3,9 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { isOperator } from '@/lib/engine/operators'
-import { checkSend, deliver, type TemplateRow, type SettingsRow } from '@/lib/engine/send'
+import { checkSend, deliver, type TemplateRow, type SettingsRow, type DraftRow } from '@/lib/engine/send'
 import { optOutUrl } from '@/lib/engine/optout'
-import type { Org, Contact, ConsentRow } from '@/lib/engine/types'
+import { STAGES, type Org, type Contact, type ConsentRow } from '@/lib/engine/types'
 import { FOUNDER_OUTREACH_V1, stepDueDate } from '@/lib/engine/sequence'
 
 /**
@@ -55,7 +55,12 @@ export async function approveSignOff(orgId: string) {
  * never trusted. Refusals are returned with their reason and written to the audit
  * log, because a refusal is as much a record as a send.
  */
-export async function sendOutreach(args: { orgId: string; templateId: string; contactId: string }) {
+export async function sendOutreach(args: {
+  orgId: string
+  templateId: string
+  contactId: string
+  subjectIndex?: number
+}) {
   const supabase = createClient()
   const {
     data: { user },
@@ -74,6 +79,14 @@ export async function sendOutreach(args: { orgId: string; templateId: string; co
 
   if (!org) return { ok: false, error: 'Organisation not found.' }
 
+  const STEP_FOR: Record<string, string> = { 'O-01': 'E1', 'O-03': 'E2', 'O-05': 'E3' }
+  const { data: draftRows } = await supabase
+    .from('outreach_drafts')
+    .select('*')
+    .eq('org_id', args.orgId)
+    .eq('step', STEP_FOR[args.templateId] ?? '')
+  const draft = ((draftRows ?? []) as DraftRow[])[0] ?? null
+
   const contactList = (contacts ?? []) as Contact[]
   const contact = contactList.find((c) => c.id === args.contactId) ?? null
 
@@ -84,6 +97,8 @@ export async function sendOutreach(args: { orgId: string; templateId: string; co
     consent: (consent ?? []) as ConsentRow[],
     template: (template ?? null) as TemplateRow | null,
     settings: (settings ?? null) as SettingsRow | null,
+    draft,
+    subjectIndex: args.subjectIndex ?? 0,
   })
 
   const logRefusal = async (reason: string) => {
@@ -102,6 +117,30 @@ export async function sendOutreach(args: { orgId: string; templateId: string; co
     return { ok: false, error: `Refused — ${reason}` }
   }
 
+  // Claim the send in the database FIRST. Inserting fires the send-gate trigger, so
+  // if the database refuses — held, suppressed, sign-off pending, no consent basis —
+  // nothing has been delivered yet. Doing this after delivery would mean an email
+  // could leave that the database then declines to record, which would make the
+  // "database is the final authority" guarantee untrue.
+  const { data: sendRow, error: rowError } = await supabase
+    .from('sends')
+    .insert({
+      org_id: args.orgId,
+      contact_id: contact!.id,
+      template_id: args.templateId,
+      subject: check.subject,
+      body_rendered: check.full,
+      route: contact!.email,
+      channel: 'email',
+    })
+    .select('id')
+    .single()
+
+  if (rowError) {
+    await logRefusal(`database refused the send: ${rowError.message}`)
+    return { ok: false, error: `Refused — ${rowError.message}` }
+  }
+
   const sent = await deliver({
     to: contact!.email!,
     from: (settings as SettingsRow).sending_address!,
@@ -111,26 +150,29 @@ export async function sendOutreach(args: { orgId: string; templateId: string; co
   })
 
   if (!sent.ok) {
+    // Delivery failed, so the claimed row would be a false record of a sent email.
+    // Remove it and log the failure instead.
+    await supabase.from('sends').delete().eq('id', sendRow!.id)
     await logRefusal(`delivery failed: ${sent.error}`)
     return { ok: false, error: sent.error }
   }
 
-  // The DB send-gate runs again on insert; if it refuses, the email left but the row
-  // will not be written, so surface that rather than reporting a clean success.
-  const { error: rowError } = await supabase.from('sends').insert({
-    org_id: args.orgId,
-    contact_id: contact!.id,
-    template_id: args.templateId,
-    subject: check.subject,
-    body_rendered: check.full,
-    route: contact!.email,
-    channel: 'email',
-    provider_message_id: sent.id,
-  })
+  await supabase
+    .from('sends')
+    .update({ provider_message_id: sent.id })
+    .eq('id', sendRow!.id)
 
-  if (rowError) {
-    await logRefusal(`sent but not recorded: ${rowError.message}`)
-    return { ok: false, error: `Delivered, but the send could not be recorded: ${rowError.message}` }
+  // The pipeline should reflect reality: a first touch moves the org to 4_sent.
+  const currentStage = (org as Org).stage
+  if (currentStage === '3_packaged' || currentStage === '2_researched') {
+    await supabase.from('orgs').update({ stage: '4_sent' }).eq('id', args.orgId)
+    await supabase.from('audit_log').insert({
+      actor: user!.email,
+      action: 'stage.changed',
+      entity: 'orgs',
+      entity_id: args.orgId,
+      meta: { from: currentStage, to: '4_sent', because: 'first outreach sent' },
+    })
   }
 
   await supabase.from('audit_log').insert({
@@ -208,5 +250,37 @@ export async function stageSequence(orgId: string) {
   })
 
   revalidatePath(`/outreach/${orgId}`)
+  return { ok: true }
+}
+
+/**
+ * Move an org along the pipeline (§10 item 3). Every move writes the old and new
+ * stage to the audit log, so the board's history is reconstructable.
+ */
+export async function changeStage(orgId: string, to: string) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+  if (!(STAGES as readonly string[]).includes(to)) {
+    return { ok: false, error: 'Unknown stage.' }
+  }
+
+  const { data: before } = await supabase.from('orgs').select('stage').eq('id', orgId).maybeSingle()
+  const { error } = await supabase.from('orgs').update({ stage: to }).eq('id', orgId)
+  if (error) return { ok: false, error: error.message }
+
+  await supabase.from('audit_log').insert({
+    actor: user!.email,
+    action: 'stage.changed',
+    entity: 'orgs',
+    entity_id: orgId,
+    meta: { from: before?.stage ?? null, to },
+  })
+
+  revalidatePath(`/outreach/${orgId}`)
+  revalidatePath('/outreach')
   return { ok: true }
 }

@@ -31,9 +31,20 @@ export async function middleware(req: NextRequest) {
 
   // ─── Hub subdomain: isolated, auth-gated Engine ────────────────────────────
   if (isHubHost(host)) {
-    // API + framework assets pass through untouched (no path rewrite).
-    if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
+    // Framework assets pass through. So do public API endpoints that must work
+    // without a session — the one-click unsubscribe is clicked from an inbox, and
+    // the cron endpoint authenticates itself with a secret.
+    if (pathname.startsWith('/_next') || pathname.startsWith('/api/engine')) {
       return NextResponse.next()
+    }
+    // Every other API route is gated the same way as the rest of the hub: the
+    // legacy /api/admin surface must not become reachable via the hub host.
+    if (pathname.startsWith('/api')) {
+      const { supabaseResponse: apiRes, user: apiUser } = await updateSession(req)
+      if (!isOperator(apiUser?.email)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      return apiRes
     }
 
     // Refresh the Supabase session first, then read the user.
@@ -65,6 +76,21 @@ export async function middleware(req: NextRequest) {
   // Keep the hub's internal tree invisible from the public host.
   if (pathname === '/hub' || pathname.startsWith('/hub/')) {
     return NextResponse.redirect(new URL('/', req.url))
+  }
+
+  // Admin API protection. The legacy CMS routes under /api/admin read and write
+  // submissions, subscribers and site settings, but only login/logout check the
+  // session themselves — and the original matcher ('/admin/:path*') never covered
+  // '/api/admin'. So they were reachable unauthenticated. Gate them here.
+  if (
+    pathname.startsWith('/api/admin') &&
+    !pathname.startsWith('/api/admin/login') &&
+    !pathname.startsWith('/api/admin/logout')
+  ) {
+    const session = req.cookies.get('admin_session')
+    if (!session?.value) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   // Admin protection (existing)

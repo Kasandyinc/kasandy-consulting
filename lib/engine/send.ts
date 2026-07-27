@@ -29,6 +29,15 @@ export type SettingsRow = {
   sending_address: string | null
   signature_md: string | null
   casl_footer_md: string | null
+  phone: string | null
+}
+
+/** The approved, per-org copy. When present it is what actually sends. */
+export type DraftRow = {
+  id: string
+  step: string
+  subjects: string[]
+  body_md: string
 }
 
 /**
@@ -44,16 +53,32 @@ export function checkSend(args: {
   template: TemplateRow | null
   settings: SettingsRow | null
   manualFills?: Record<string, string>
+  /** Approved per-org copy; overrides the generic template body when present. */
+  draft?: DraftRow | null
+  /** Which of the draft's alternative subject lines to use. */
+  subjectIndex?: number
 }): SendCheck {
-  const { org, contact, contacts, consent, template, settings, manualFills } = args
+  const { org, contact, contacts, consent, template, settings, manualFills, draft } = args
   const reasons = sendBlockers(org, contacts, consent)
 
   if (!template) {
     return { ready: false, reasons: [...reasons, 'No template selected'], subject: '', body: '', full: '' }
   }
   if (!template.active) reasons.push(`Template ${template.id} is not active`)
-  if (!template.body_md?.trim()) {
-    reasons.push(`Template ${template.id} has no body yet — load the approved copy first`)
+
+  // The approved per-org draft is the copy of record; the generic template body is
+  // only a fallback. If neither exists there is nothing to send.
+  const bodySource = draft?.body_md?.trim() || template.body_md?.trim() || ''
+  const subjectSource =
+    draft?.subjects?.[args.subjectIndex ?? 0] || template.subject || ''
+  if (!bodySource) {
+    reasons.push(`No approved copy for ${template.id} yet — load the outreach drafts first`)
+  }
+  // An email with an empty subject line would still deliver, so block it here. The
+  // E3 re-touch drafts carry no subject of their own (they read as a reply), so this
+  // surfaces that rather than sending a blank-subject email.
+  if (!subjectSource.trim()) {
+    reasons.push(`No subject line in the approved copy for ${template.id} — add one before sending`)
   }
   if (!settings?.mailing_address?.trim()) {
     reasons.push('settings.mailing_address is not set (CASL requires a physical address)')
@@ -72,12 +97,13 @@ export function checkSend(args: {
       mailing_address: settings?.mailing_address,
       sending_address: settings?.sending_address,
       booking_link: process.env.NEXT_PUBLIC_BOOKING_URL ?? 'https://kasandyconsulting.com/contact#book',
+      phone: settings?.phone,
     },
     manualFills,
   }
 
-  const bodyResult = renderTemplate(template.body_md ?? '', ctx)
-  const subjResult = renderTemplate(template.subject ?? '', ctx)
+  const bodyResult = renderTemplate(bodySource, ctx)
+  const subjResult = renderTemplate(subjectSource, ctx)
 
   const missingAuto = Array.from(new Set([...bodyResult.unresolved, ...subjResult.unresolved]))
   const missingManual = Array.from(new Set([...bodyResult.unfilled, ...subjResult.unfilled]))

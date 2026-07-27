@@ -76,3 +76,45 @@ test('CASL footer appends signature, mailing address and an opt-out link', () =>
   assert.match(out, /Vancouver, BC, Canada/)
   assert.match(out, /Unsubscribe: https:\/\/hub\.kasandyconsulting\.com\/optout\?t=abc/)
 })
+
+test('a manual-fill token resolves from the org’s sourced detail hook', () => {
+  const r = renderTemplate('I noticed [genuine detail].', {
+    ...ctx,
+    org: { ...ctx.org, detail_hook: 'Global Business Analysis Day drawing over 6,400 practitioners' },
+  })
+  assert.equal(r.rendered, 'I noticed Global Business Analysis Day drawing over 6,400 practitioners.')
+  assert.ok(r.ready)
+})
+
+test('an explicit manual fill still wins over the stored hook', () => {
+  const r = renderTemplate('[genuine detail]', {
+    ...ctx,
+    org: { ...ctx.org, detail_hook: 'stored hook' },
+    manualFills: { 'genuine detail': 'operator override' },
+  })
+  assert.equal(r.rendered, 'operator override')
+})
+
+test('no hook and no fill still blocks — the detail is never invented', () => {
+  const r = renderTemplate('[genuine detail]', { ...ctx, org: { ...ctx.org, detail_hook: null } })
+  assert.deepEqual(r.unfilled, ['genuine detail'])
+  assert.equal(r.ready, false)
+})
+
+test('[Phone] resolves from settings and blocks when unset', () => {
+  const withPhone = renderTemplate('Call [Phone]', {
+    ...ctx,
+    settings: { ...ctx.settings, phone: '+1 778 385 4480' },
+  })
+  assert.equal(withPhone.rendered, 'Call +1 778 385 4480')
+  const without = renderTemplate('Call [Phone]', ctx)
+  assert.deepEqual(without.unresolved, ['Phone'])
+})
+
+test('a markdown link is not treated as an unresolved merge token', () => {
+  const r = renderTemplate('See [our demo](https://kc.com/demo) — for [Org].', ctx)
+  assert.deepEqual(r.unresolved, [])
+  assert.ok(r.ready)
+  assert.match(r.rendered, /\[our demo\]\(https:\/\/kc\.com\/demo\)/)
+  assert.match(r.rendered, /Roots Of Empathy/)
+})

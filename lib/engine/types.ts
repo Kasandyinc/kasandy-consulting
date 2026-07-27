@@ -57,6 +57,10 @@ export type Org = {
   priority: number | null
   priority_label: string | null
   tailoring_caution: string | null
+  detail_hook: string | null
+  detail_source: string | null
+  detail_verified_on: string | null
+  detail_is_general: boolean
   stage: Stage
   next_action: string | null
   notes: string | null
