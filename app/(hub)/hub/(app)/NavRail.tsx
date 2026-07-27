@@ -35,8 +35,8 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
   {
     group: 'Measure',
     items: [
-      { href: '/analytics', icon: '▲', label: 'Analytics', soon: true },
-      { href: '/reports', icon: '▤', label: 'Report Studio', soon: true },
+      { href: '/analytics', icon: '▲', label: 'Analytics' },
+      { href: '/reports', icon: '▤', label: 'Report Studio' },
     ],
   },
   {
