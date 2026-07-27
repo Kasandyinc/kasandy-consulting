@@ -10,6 +10,7 @@ export default function SpeakingInquiryForm({
 }: { config?: FormConfig }) {
   const [form, setForm] = useState({
     name: '',
+    email: '',
     organisation: '',
     eventName: '',
     eventDate: '',
@@ -67,9 +68,13 @@ export default function SpeakingInquiryForm({
           <input required value={form.name} onChange={set('name')} className="input-field" placeholder="Full name" />
         </div>
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'organisation')}{isRequired(config, 'organisation') ? ' *' : ''}</label>
-          <input required value={form.organisation} onChange={set('organisation')} className="input-field" placeholder="Company / organisation" />
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'email')}{isRequired(config, 'email') ? ' *' : ''}</label>
+          <input required={isRequired(config, 'email')} type="email" value={form.email} onChange={set('email')} className="input-field" placeholder="your@email.com" />
         </div>
+      </div>
+      <div>
+        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'organisation')}{isRequired(config, 'organisation') ? ' *' : ''}</label>
+        <input required value={form.organisation} onChange={set('organisation')} className="input-field" placeholder="Company / organisation" />
       </div>
       <div className="grid sm:grid-cols-2 gap-6">
         <div>

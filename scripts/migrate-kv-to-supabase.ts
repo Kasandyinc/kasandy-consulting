@@ -1,21 +1,19 @@
 /**
  * E7 — move the legacy /admin CMS's data out of Vercel KV and into Supabase.
  *
- *   npx tsx scripts/migrate-kv-to-supabase.ts --dry-run
- *   npx tsx scripts/migrate-kv-to-supabase.ts
+ *   npm run migrate:kv -- --dry-run     # prints what it would write, touches nothing
+ *   npm run migrate:kv                  # applies
  *
- * Run with a dry run first; it prints exactly what it would write and touches nothing.
+ * Needs KV_REST_API_URL, KV_REST_API_TOKEN, NEXT_PUBLIC_SUPABASE_URL and
+ * SUPABASE_SECRET_KEY. Pull them first with:  vercel env pull .env.local
  *
  * The script is idempotent — it can be run repeatedly and will not duplicate rows —
  * because a data migration you are afraid to re-run is one you cannot recover from
  * halfway. It also never deletes from KV: the old data stays where it is until the
  * legacy /admin is retired, so a mistake here costs a re-run rather than the records.
- *
- * Requires KV_REST_API_URL / KV_REST_API_TOKEN and SUPABASE_SECRET_KEY in the
- * environment. Pull them with `vercel env pull .env.local`.
  */
 
-import { kv, KEYS } from '../lib/kv'
+import { kv, KEYS } from '../lib/kv.ts'
 import { createClient } from '@supabase/supabase-js'
 
 const DRY = process.argv.includes('--dry-run')
@@ -51,6 +49,15 @@ async function readList(key: string): Promise<Record<string, unknown>[]> {
       .filter(Boolean) as Record<string, unknown>[]
   } catch {
     return []
+  }
+}
+
+/** Read one KV key, tolerating an unreachable store the way readList does. */
+async function readKey<T>(key: string): Promise<T | null> {
+  try {
+    return (await kv.get<T>(key)) ?? null
+  } catch {
+    return null
   }
 }
 
@@ -175,7 +182,7 @@ async function migrateSubscribers() {
  */
 async function migrateTestimonials() {
   const c = count('testimonials')
-  const reviews = (await kv.get<Record<string, unknown>[]>(KEYS.testimonials)) ?? []
+  const reviews = (await readKey<Record<string, unknown>[]>(KEYS.testimonials)) ?? []
   c.read = reviews.length
 
   for (const r of reviews) {
@@ -223,7 +230,7 @@ async function migrateTestimonials() {
 /** Blog articles become posts. Slug is the identity, so a re-run updates in place. */
 async function migrateArticles() {
   const c = count('posts')
-  const articles = (await kv.get<Record<string, unknown>[]>(KEYS.articles)) ?? []
+  const articles = (await readKey<Record<string, unknown>[]>(KEYS.articles)) ?? []
   c.read = articles.length
 
   for (const a of articles) {
@@ -269,7 +276,7 @@ async function migrateArticles() {
 /** Site settings: the ad pixel IDs, which stay on the public site only. */
 async function migrateSiteSettings() {
   const c = count('site_settings')
-  const settings = (await kv.get<Record<string, unknown>>(KEYS.siteSettings)) ?? {}
+  const settings = (await readKey<Record<string, unknown>>(KEYS.siteSettings)) ?? {}
   c.read = Object.keys(settings).length ? 1 : 0
   if (!c.read) return
 
@@ -299,8 +306,16 @@ async function migrateSiteSettings() {
 async function main() {
   console.log(DRY ? '── DRY RUN — nothing will be written ──\n' : '── Migrating KV → Supabase ──\n')
 
-  if (!process.env.SUPABASE_SECRET_KEY) {
-    console.error('SUPABASE_SECRET_KEY is not set. Run: vercel env pull .env.local')
+  const missing = [
+    'NEXT_PUBLIC_SUPABASE_URL',
+    'SUPABASE_SECRET_KEY',
+    'KV_REST_API_URL',
+    'KV_REST_API_TOKEN',
+  ].filter((k) => !process.env[k])
+
+  if (missing.length) {
+    console.error(`Missing: ${missing.join(', ')}`)
+    console.error('Pull them first:  vercel env pull .env.local')
     process.exit(1)
   }
 

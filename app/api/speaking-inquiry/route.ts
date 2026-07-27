@@ -10,12 +10,15 @@ export async function POST(req: NextRequest) {
   const TO = process.env.CONTACT_TO_EMAIL || 'ea@kasandyconsulting.com'
   try {
     const {
-      name, organisation, eventName, eventDate, location, website, formLoadedAt, turnstileToken,
+      name, email, organisation, eventName, eventDate, location, website, formLoadedAt, turnstileToken,
       audienceSize, format, topicInterest, budget, notes,
     } = await req.json()
 
-    if (!name || !organisation || !eventName) {
+    if (!name || !email || !organisation || !eventName) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email))) {
+      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
     }
 
     // ── Spam protection (same controls as contact/newsletter) ───────────────
@@ -30,7 +33,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
     }
 
-    const emailOk = await rateLimit(`rl:speaking:email:${normalizeEmail(name)}`, 3, 3600)
+    const emailOk = await rateLimit(`rl:speaking:email:${normalizeEmail(email)}`, 3, 3600)
     const ipOk = await rateLimit(`rl:speaking:ip:${ip}`, 5, 3600)
     if (!emailOk || !ipOk) {
       return NextResponse.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 })
@@ -39,7 +42,7 @@ export async function POST(req: NextRequest) {
     // Persist to KV so it's visible in admin
     const entry = {
       id: Date.now().toString(),
-      name, organisation, eventName,
+      name, email, organisation, eventName,
       eventDate: eventDate || '', location: location || '',
       audienceSize: audienceSize || '', format: format || '',
       topicInterest: topicInterest || '', budget: budget || '',
@@ -48,13 +51,11 @@ export async function POST(req: NextRequest) {
     }
     await kv.lpush(KEYS.speakingSubmissions, JSON.stringify(entry))
 
-    // E7: the enquiry also becomes a platform record. Note there is no email field
-    // on this form — see the note in the CMS — so the submission is stored without a
-    // route back to the sender.
+    // E7: the enquiry also becomes a platform record.
     await recordSubmission({
       formSlug: 'speaking-inquiry',
       name,
-      email: null,
+      email,
       organisation,
       message: notes || null,
       payload: entry,
@@ -65,9 +66,11 @@ export async function POST(req: NextRequest) {
     await resend.emails.send({
       from: noreply,
       to: TO,
+      replyTo: email,
       subject: `Speaking Inquiry — ${eventName} — ${name}`,
       text: [
         `Name: ${name}`,
+        `Email: ${email}`,
         `Organisation: ${organisation}`,
         `Event Name: ${eventName}`,
         `Event Date: ${eventDate || '—'}`,

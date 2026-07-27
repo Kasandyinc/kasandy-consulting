@@ -122,13 +122,14 @@ export const FORM_DEFAULTS: Record<string, FormConfig> = {
     notifyEmail: null,
     active: true,
     fields: [
-      f('name', 'Your Name', 'text', true, 1),
-      f('organisation', 'Organisation', 'text', true, 2),
-      f('eventName', 'Event Name', 'text', true, 3),
-      f('eventDate', 'Event Date', 'date', false, 4),
-      f('location', 'Location', 'text', false, 5, undefined, 'City, Province / Virtual'),
-      f('audienceSize', 'Audience Size', 'text', false, 6, undefined, 'e.g. 200 attendees'),
-      f('format', 'Format', 'select', true, 7, [
+      f('name', 'Your Name', 'text', true, 1, undefined, 'Full name'),
+      f('email', 'Your Email', 'email', true, 2, undefined, 'your@email.com'),
+      f('organisation', 'Organisation', 'text', true, 3, undefined, 'Company / organisation'),
+      f('eventName', 'Event Name', 'text', true, 4),
+      f('eventDate', 'Event Date', 'date', false, 5),
+      f('location', 'Location', 'text', false, 6, undefined, 'City, Province / Virtual'),
+      f('audienceSize', 'Audience Size', 'text', false, 7, undefined, 'e.g. 200 attendees'),
+      f('format', 'Format', 'select', true, 8, [
         'Keynote (45–60 min)',
         'Panel',
         'Workshop / Masterclass (2–4 hr)',
@@ -138,7 +139,7 @@ export const FORM_DEFAULTS: Record<string, FormConfig> = {
         'Emcee / Host',
         'Other',
       ], 'Select format'),
-      f('topicInterest', 'Topic Interest', 'select', false, 8, [
+      f('topicInterest', 'Topic Interest', 'select', false, 9, [
         'The Procurement Opportunity Nobody Talks About',
         'Supplier Diversity as Economic Strategy',
         "From Founder to Procurement-Ready — What They Don't Teach You",
@@ -147,8 +148,8 @@ export const FORM_DEFAULTS: Record<string, FormConfig> = {
         'The Non-Profit Trap — Why Good Missions Fail and How to Break the Cycle',
         'Custom / Open to suggestions',
       ], 'Select a topic'),
-      f('budget', 'Budget / Honorarium Range', 'text', false, 9, undefined, 'e.g. $3,000–$5,000, or TBD'),
-      f('notes', 'Additional Notes', 'textarea', false, 10, undefined,
+      f('budget', 'Budget / Honorarium Range', 'text', false, 10, undefined, 'e.g. $3,000–$5,000, or TBD'),
+      f('notes', 'Additional Notes', 'textarea', false, 11, undefined,
         'Event context, audience profile, specific session goals, logistics, etc.'),
     ],
   },
