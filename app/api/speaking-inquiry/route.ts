@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { kv, KEYS } from '@/lib/kv'
+import { noreply } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const TO = process.env.CONTACT_TO_EMAIL || 'consulting@kasandy.com'
+  const TO = process.env.CONTACT_TO_EMAIL || 'ea@kasandyconsulting.com'
   try {
     const {
       name, organisation, eventName, eventDate, location,
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
     await kv.lpush(KEYS.speakingSubmissions, JSON.stringify(entry))
 
     await resend.emails.send({
-      from: 'Kasandy Consulting <consulting@kasandy.com>',
+      from: noreply,
       to: TO,
       subject: `Speaking Inquiry — ${eventName} — ${name}`,
       text: [

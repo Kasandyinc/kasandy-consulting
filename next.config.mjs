@@ -3,6 +3,20 @@ const nextConfig = {
   staticPageGenerationTimeout: 120,
   images: {
     formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+        port: '',
+        pathname: '/images/**',
+      },
+    ],
+  },
+  experimental: {
+    outputFileTracingIncludes: {
+      // Include protected HTML files in the /api/serve/[slug] serverless bundle
+      '/api/serve/[slug]': ['./protected-downloads/**/*'],
+    },
   },
   async headers() {
     return [

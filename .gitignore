@@ -27,6 +27,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# prospect workbooks — contain real prospect PII (names/emails); keep local, never commit.
+# The engine:import script reads them from /data at import time.
+/data/*.xlsx
+# Generated prospect seed SQL also contains PII — never commit.
+/supabase/seed/*.sql
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

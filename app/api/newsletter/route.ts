@@ -1,17 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { kvGet, kv, KEYS } from '@/lib/kv'
+import { noreply } from '@/lib/email'
+import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import type { Download } from '@/types/downloads'
 import { DEFAULT_DOWNLOADS } from '@/data/downloads'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
-  const NOTIFY = process.env.CONTACT_TO_EMAIL || 'consulting@kasandy.com'
+  const NOTIFY = process.env.CONTACT_TO_EMAIL || 'ea@kasandyconsulting.com'
   try {
-    const { email, resource } = await req.json()  // resource = slug of the download
+    const { email, resource, website, formLoadedAt, turnstileToken } = await req.json()  // resource = slug of the download
+
+    // ── Honeypot ────────────────────────────────────────────────────────────
+    if (website) {
+      return NextResponse.json({ success: true })
+    }
 
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+    }
+
+    // ── Timing check ────────────────────────────────────────────────────────
+    if (tooFast(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please take a moment before submitting.' }, { status: 400 })
+    }
+
+    // ── Turnstile (fails open when unconfigured) ────────────────────────────
+    const ip = getClientIp(req)
+    if (!(await verifyTurnstile(turnstileToken, ip))) {
+      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
+    }
+
+    // ── Rate limit: 3/hour per email, 5/hour per IP ─────────────────────────
+    const emailOk = await rateLimit(`rl:news:email:${normalizeEmail(email)}`, 3, 3600)
+    const ipOk = await rateLimit(`rl:news:ip:${ip}`, 5, 3600)
+    if (!emailOk || !ipOk) {
+      return NextResponse.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 })
     }
 
     const isLeadMagnet = Boolean(resource)
@@ -22,7 +47,7 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     }
 
-    // Save to appropriate KV list
+    // Persist only after every check passes, so spam never pollutes the lists.
     if (isLeadMagnet) {
       await kv.lpush(KEYS.resourceDownloads, JSON.stringify(entry))
     } else {
@@ -48,7 +73,7 @@ export async function POST(req: NextRequest) {
     await Promise.all([
       // Confirmation email to subscriber
       resend.emails.send({
-        from: 'Jackee Kasandy <consulting@kasandy.com>',
+        from: noreply,
         to: email,
         subject: isLeadMagnet ? `Your free download — ${productTitle}` : 'Welcome to The Kasandy Brief',
         text: isLeadMagnet
@@ -86,7 +111,7 @@ export async function POST(req: NextRequest) {
 
       // Internal notification
       resend.emails.send({
-        from: 'Kasandy Consulting <consulting@kasandy.com>',
+        from: noreply,
         to: NOTIFY,
         subject: isLeadMagnet
           ? `Lead Download — ${productTitle} — ${email}`

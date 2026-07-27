@@ -16,11 +16,14 @@ export type SlotStatus = 'available' | 'booked' | 'blocked'
 
 /** PST slot windows per day-of-week (0=Sun … 6=Sat) */
 export const AVAILABILITY: Record<number, { start: number; end: number }> = {
-  2: { start: 10, end: 12 }, // Tuesday  10:00 AM – 12:00 PM PST  (8 slots)
-  5: { start: 10, end: 15 }, // Friday   10:00 AM –  3:00 PM PST (20 slots)
+  1: { start: 13, end: 18 }, // Monday  1:00 PM – 6:00 PM PST
+  5: { start: 10, end: 13 }, // Friday  10:00 AM – 1:00 PM PST
 }
 
-export const SLOT_DURATION_MINS = 15
+/** Length of the call itself, in minutes. */
+export const SLOT_DURATION_MINS = 20
+/** Spacing between slot start times: 20-min call + 5-min break. */
+export const SLOT_SPACING_MINS = 25
 export const BOOKING_HORIZON_MONTHS = 2
 export const MIN_NOTICE_HOURS = 24
 
@@ -37,15 +40,22 @@ export function getDayOfWeek(dateStr: string): number {
   return parseDateStr(dateStr).getDay()
 }
 
-/** Generate all PST time strings (HH:MM) for a given day-of-week */
+/**
+ * Generate all PST time strings (HH:MM) for a given day-of-week.
+ * Steps by SLOT_SPACING_MINS (25 min = 20-min call + 5-min break) from the
+ * window start, including a slot only when the full 20-min call fits before
+ * the window end.
+ */
 export function getDaySlots(dayOfWeek: number): string[] {
   const cfg = AVAILABILITY[dayOfWeek]
   if (!cfg) return []
   const slots: string[] = []
-  for (let h = cfg.start; h < cfg.end; h++) {
-    for (let m = 0; m < 60; m += SLOT_DURATION_MINS) {
-      slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
-    }
+  const startMins = cfg.start * 60
+  const endMins   = cfg.end * 60
+  for (let t = startMins; t + SLOT_DURATION_MINS <= endMins; t += SLOT_SPACING_MINS) {
+    const h = Math.floor(t / 60)
+    const m = t % 60
+    slots.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
   }
   return slots
 }
@@ -86,7 +96,7 @@ export function slotToUTC(dateStr: string, timeStr: string): Date {
   return new Date(Date.UTC(y, mo - 1, d, h, m) - offsetMins * 60 * 1000)
 }
 
-/** True if a date is a Tuesday or Friday within the bookable window */
+/** True if a date is a Monday or Friday within the bookable window */
 export function isDateBookable(dateStr: string): boolean {
   const date   = parseDateStr(dateStr)
   const now    = new Date()

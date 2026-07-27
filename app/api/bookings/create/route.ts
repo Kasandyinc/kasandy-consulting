@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createBooking, isDateBookable, slotToUTC, getDayOfWeek, getDaySlots } from '@/lib/bookings'
 import { generateICS } from '@/lib/ics'
+import { bookings as FROM } from '@/lib/email'
 
-const JACKEE_EMAILS = ['jackee.kasandy@bebcsociety.org', 'jackee@kasandy.com']
-const FROM = 'Kasandy Consulting <consulting@kasandy.com>'
+const JACKEE_EMAILS = ['Jackee.Kasandy@bebcsociety.org', 'jackee@kasandyconsulting.com']
+const MEETING_LINK = process.env.MEETING_LINK || ''
 
 function formatPSTDisplay(dateStr: string, timeStr: string): string {
   const [y, m, d] = dateStr.split('-').map(Number)
@@ -69,7 +70,10 @@ export async function POST(req: NextRequest) {
 
     // ── Generate .ics invite ──────────────────────────────────────────────────
     const uid = `${date}-${time.replace(':', '')}-${Date.now()}@kasandyconsulting.com`
-    const icsContent = generateICS({ dateStr: date, timeStr: time, clientName: name, clientEmail: email, topic, uid })
+    const icsContent = generateICS({
+      dateStr: date, timeStr: time, clientName: name, clientEmail: email, topic, uid,
+      meetingLink: MEETING_LINK, durationMinutes: 20,
+    })
     const icsAttachment = {
       filename: 'strategy-call.ics',
       content: Buffer.from(icsContent).toString('base64'),
@@ -105,10 +109,14 @@ export async function POST(req: NextRequest) {
   <div class="callout">
     <h2>Your Booking Details</h2>
     <div class="detail-row"><span class="detail-label">Date &amp; Time</span><strong>${pstDisplay}</strong></div>
-    <div class="detail-row"><span class="detail-label">Duration</span>15 minutes</div>
-    <div class="detail-row"><span class="detail-label">Format</span>Virtual (link to follow)</div>
+    <div class="detail-row"><span class="detail-label">Duration</span>20 minutes</div>
+    <div class="detail-row"><span class="detail-label">Format</span>${MEETING_LINK ? `<a href="${MEETING_LINK}" style="color:#8B4513;font-weight:bold">Microsoft Teams — join link below</a>` : 'Virtual (link to follow)'}</div>
     <div class="detail-row"><span class="detail-label">Topic</span>${topic}</div>
   </div>
+
+  ${MEETING_LINK ? `<div style="text-align:center;margin:24px 0;">
+    <a href="${MEETING_LINK}" style="display:inline-block;background:#8B4513;color:#ffffff;text-decoration:none;padding:14px 32px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">Join the Microsoft Teams Meeting →</a>
+  </div>` : ''}
 
   <div class="warning">
     ⏰ <strong>Important — Pacific Time:</strong> This meeting is scheduled for <strong>${time} PST (Pacific Time, Vancouver BC)</strong>.
@@ -142,6 +150,7 @@ export async function POST(req: NextRequest) {
   <div class="row"><span class="lbl">Name</span>${name}</div>
   <div class="row"><span class="lbl">Email</span><a href="mailto:${email}">${email}</a></div>
   <div class="row"><span class="lbl">Topic</span>${topic}</div>
+  ${MEETING_LINK ? `<div class="row"><span class="lbl">Meeting Link</span><a href="${MEETING_LINK}">${MEETING_LINK}</a></div>` : ''}
   <div class="row"><span class="lbl">Their TZ</span>${timezone || '—'}</div>
   ${timezone && timezone !== 'Unknown' ? `<div class="row"><span class="lbl">Their Time</span>${localDisplay}</div>` : ''}
   <br><p>Calendar invite attached. Reply to this email to contact the client.</p>
@@ -153,7 +162,7 @@ export async function POST(req: NextRequest) {
       resend.emails.send({
         from: FROM,
         to: email,
-        replyTo: 'consulting@kasandy.com',
+        replyTo: 'jackee@kasandyconsulting.com',
         subject: `Confirmed: Your Strategy Call — ${pstDisplay}`,
         html: clientHtml,
         attachments: [icsAttachment],
