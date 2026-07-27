@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import { Resend } from 'resend'
 import { kv } from '@/lib/kv'
+import { recordSubmission } from '@/lib/forms/record'
 import { noreply as FROM } from '@/lib/email'
 
 const JACKEE_EMAIL = process.env.CONTACT_TO_EMAIL || 'ea@kasandyconsulting.com'
@@ -49,6 +50,18 @@ export async function POST(req: NextRequest) {
 
     // Store in KV
     await kv.lpush('kenya:waitlist', JSON.stringify(entry))
+
+    // E7: the enquiry also becomes a platform record.
+    await recordSubmission({
+      formSlug: 'kenya-waitlist',
+      name,
+      email,
+      organisation: business,
+      message: goals || null,
+      payload: entry,
+      sourcePath: '/kenya',
+      ip,
+    })
     await kv.incr('kenya:waitlist:count')
 
     const programLabel = PROGRAM_LABELS[program] || program || '—'

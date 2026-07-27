@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { kv, KEYS } from '@/lib/kv'
+import { recordSubmission, linkSubmissionToProspect } from '@/lib/forms/record'
 import { noreply } from '@/lib/email'
 import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 
@@ -59,6 +60,25 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     }
     await kv.lpush(KEYS.contactSubmissions, JSON.stringify(entry))
+
+    // E7: the enquiry also becomes a platform record, and — when they named an
+    // organisation — a prospect with an express inbound consent basis. Wrapped so a
+    // Supabase problem can never break the form; KV already holds the submission.
+    const recorded = await recordSubmission({
+      formSlug: 'contact',
+      name, email, organisation, message,
+      payload: entry,
+      sourcePath: '/contact',
+      ip: getClientIp(req),
+    })
+    if (recorded.ok && recorded.id) {
+      await linkSubmissionToProspect({
+        submissionId: recorded.id,
+        organisation: organisation || null,
+        email,
+        name,
+      })
+    }
 
     await resend.emails.send({
       from: noreply,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import { Resend } from 'resend'
 import { kv, KEYS } from '@/lib/kv'
+import { recordSubmission } from '@/lib/forms/record'
 import { noreply } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
@@ -46,6 +47,20 @@ export async function POST(req: NextRequest) {
       createdAt: new Date().toISOString(),
     }
     await kv.lpush(KEYS.speakingSubmissions, JSON.stringify(entry))
+
+    // E7: the enquiry also becomes a platform record. Note there is no email field
+    // on this form — see the note in the CMS — so the submission is stored without a
+    // route back to the sender.
+    await recordSubmission({
+      formSlug: 'speaking-inquiry',
+      name,
+      email: null,
+      organisation,
+      message: notes || null,
+      payload: entry,
+      sourcePath: '/speaking',
+      ip,
+    })
 
     await resend.emails.send({
       from: noreply,

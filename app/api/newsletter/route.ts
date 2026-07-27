@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { kvGet, kv, KEYS } from '@/lib/kv'
+import { recordSubmission, recordSubscriber } from '@/lib/forms/record'
 import { noreply } from '@/lib/email'
 import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import type { Download } from '@/types/downloads'
@@ -53,6 +54,21 @@ export async function POST(req: NextRequest) {
     } else {
       await kv.lpush(KEYS.newsletterSubscribers, JSON.stringify(entry))
     }
+
+    // E7: a consented subscriber in the platform. Someone who previously opted out
+    // stays off the list — the database refuses to clear an unsubscribe.
+    await recordSubscriber({
+      email,
+      basis: 'express_signup',
+      source: isLeadMagnet ? `resource: ${resource}` : 'newsletter form',
+    })
+    await recordSubmission({
+      formSlug: isLeadMagnet ? 'resource-download' : 'newsletter',
+      email,
+      payload: entry,
+      sourcePath: '/resources',
+      ip: getClientIp(req),
+    })
 
     // Find the download URL if it exists (match by slug)
     let downloadUrl: string | null = null
