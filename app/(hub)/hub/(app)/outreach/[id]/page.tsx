@@ -145,6 +145,29 @@ export default async function OrgRecord({
           </div>
 
           <div className="card">
+            <div className="card-h between">
+              <h3>Tailoring detail</h3>
+              {o.detail_is_general && <span className="tag warn">general — not dated news</span>}
+            </div>
+            <div className="card-b">
+              {o.detail_hook ? (
+                <>
+                  <div>{o.detail_hook}</div>
+                  <Provenance source={o.detail_source} on={o.detail_verified_on} />
+                </>
+              ) : (
+                <>
+                  <p style={{ color: 'var(--muted)' }}>
+                    No sourced detail. Outreach that needs one will refuse to send rather
+                    than invent it.
+                  </p>
+                  <Provenance source={null} on={null} />
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="card">
             <div className="card-h"><h3>Fit</h3></div>
             <div className="card-b">
               <Field label="Why they fit" value={o.why_fit} />

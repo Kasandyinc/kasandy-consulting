@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { isOperator } from '@/lib/engine/operators'
-import { checkSend, deliver, type TemplateRow, type SettingsRow } from '@/lib/engine/send'
+import { checkSend, deliver, type TemplateRow, type SettingsRow, type DraftRow } from '@/lib/engine/send'
 import { optOutUrl } from '@/lib/engine/optout'
 import type { Org, Contact, ConsentRow } from '@/lib/engine/types'
 import { FOUNDER_OUTREACH_V1, stepDueDate } from '@/lib/engine/sequence'
@@ -55,7 +55,12 @@ export async function approveSignOff(orgId: string) {
  * never trusted. Refusals are returned with their reason and written to the audit
  * log, because a refusal is as much a record as a send.
  */
-export async function sendOutreach(args: { orgId: string; templateId: string; contactId: string }) {
+export async function sendOutreach(args: {
+  orgId: string
+  templateId: string
+  contactId: string
+  subjectIndex?: number
+}) {
   const supabase = createClient()
   const {
     data: { user },
@@ -74,6 +79,14 @@ export async function sendOutreach(args: { orgId: string; templateId: string; co
 
   if (!org) return { ok: false, error: 'Organisation not found.' }
 
+  const STEP_FOR: Record<string, string> = { 'O-01': 'E1', 'O-03': 'E2', 'O-05': 'E3' }
+  const { data: draftRows } = await supabase
+    .from('outreach_drafts')
+    .select('*')
+    .eq('org_id', args.orgId)
+    .eq('step', STEP_FOR[args.templateId] ?? '')
+  const draft = ((draftRows ?? []) as DraftRow[])[0] ?? null
+
   const contactList = (contacts ?? []) as Contact[]
   const contact = contactList.find((c) => c.id === args.contactId) ?? null
 
@@ -84,6 +97,8 @@ export async function sendOutreach(args: { orgId: string; templateId: string; co
     consent: (consent ?? []) as ConsentRow[],
     template: (template ?? null) as TemplateRow | null,
     settings: (settings ?? null) as SettingsRow | null,
+    draft,
+    subjectIndex: args.subjectIndex ?? 0,
   })
 
   const logRefusal = async (reason: string) => {
