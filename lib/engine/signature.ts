@@ -51,8 +51,16 @@ export function signatureHtml(f: SignatureFields): string {
   const rows: string[] = []
 
   if (f.logoUrl) {
+    // The mark is a 500×500 square. Both width and height are set as HTML attributes
+    // because Outlook renders through Word, which ignores `height:auto` and will happily
+    // draw the image at its native 500px. The inline styles then constrain it everywhere
+    // else. It is also a transparent PNG, so it sits on whatever the client's background
+    // is rather than carrying a white box into dark mode.
     rows.push(
-      `<div style="margin:0 0 14px"><img src="${esc(f.logoUrl)}" alt="${esc(f.org)}" width="150" style="display:block;border:0;max-width:150px;height:auto"></div>`,
+      `<div style="margin:0 0 14px">` +
+        `<img src="${esc(f.logoUrl)}" alt="${esc(f.org)}" width="140" height="140" ` +
+        `style="display:block;border:0;width:140px;height:140px;max-width:140px">` +
+        `</div>`,
     )
   }
 

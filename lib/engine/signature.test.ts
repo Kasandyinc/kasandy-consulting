@@ -21,6 +21,13 @@ test('the HTML signature carries name, role, phone, email, site and logo', () =>
   assert.match(html, /<img src="[^"]*kc-logo\.png"/)
 })
 
+test('the logo carries explicit width and height, because Outlook ignores height:auto', () => {
+  const html = signatureHtml(sig)
+  assert.match(html, /<img[^>]*\swidth="140"/)
+  assert.match(html, /<img[^>]*\sheight="140"/)
+  assert.equal(/height:\s*auto/.test(html), false)
+})
+
 test('the signature never carries the retired kasandy.com domain', () => {
   const html = signatureHtml(sig)
   assert.equal(/[^y]kasandy\.com/.test(html), false)
