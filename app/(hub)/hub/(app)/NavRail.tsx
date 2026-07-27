@@ -19,7 +19,7 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
   },
   {
     group: 'Money',
-    items: [{ href: '/financials', icon: '$', label: 'Financials', soon: true }],
+    items: [{ href: '/financials', icon: '$', label: 'Financials' }],
   },
   {
     group: 'Reach',

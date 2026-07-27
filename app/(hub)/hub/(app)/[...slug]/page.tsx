@@ -13,12 +13,6 @@ const PHASES: Record<string, { title: string; phase: string; blurb: string }> = 
     blurb:
       'Engagement workspaces, phase briefs, the client portal, and the Verified-live → invoice chain. Currently there are 0 clients — the real state is 29 prospects.',
   },
-  financials: {
-    title: 'Financials',
-    phase: 'Phase 2',
-    blurb:
-      'Square (Kasandy Consulting account only, location-locked) plus QuickBooks Online reconciliation, deposits on signature, milestone-on-verification, and dunning.',
-  },
   marketing: {
     title: 'Marketing & Comms',
     phase: 'Phase 5',
