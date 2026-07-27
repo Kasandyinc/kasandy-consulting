@@ -42,6 +42,7 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
   {
     group: 'System',
     items: [
+      { href: '/audit', icon: '▤', label: 'Audit log' },
       { href: '/admin', icon: '⚙', label: 'Admin', soon: true },
       { href: '/cms', icon: '◱', label: 'Website CMS', soon: true },
     ],

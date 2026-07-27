@@ -12,6 +12,7 @@ import {
 import { SystemStrip, Provenance, OrgFlags } from '../../../../_components/ui'
 import SignOffButton from './SignOffButton'
 import SequenceTab from './SequenceTab'
+import StagePicker from './StagePicker'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,7 +77,7 @@ export default async function OrgRecord({
         <div style={{ textAlign: 'right' }}>
           <div className="row" style={{ gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <OrgFlags org={o} />
-            <span className="tag">{STAGE_LABEL[o.stage as Stage] ?? o.stage}</span>
+            <StagePicker orgId={o.id} stage={o.stage as Stage} />
           </div>
           <Link
             href={`/outreach/${o.id}/compose`}

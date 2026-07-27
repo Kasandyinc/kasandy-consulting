@@ -63,7 +63,9 @@ export type MergeResult = {
   ready: boolean
 }
 
-const TOKEN_RE = /\[([^\][\n]+)\]/g
+// A merge token is [Field]. A markdown link is [text](url) — the trailing "(" is
+// what tells them apart, so link text is never mistaken for an unresolved field.
+const TOKEN_RE = /\[([^\][\n]+)\](?!\()/g
 
 function firstName(full?: string | null): string | null {
   if (!full) return null

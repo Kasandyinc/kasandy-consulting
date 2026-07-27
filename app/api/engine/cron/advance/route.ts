@@ -12,11 +12,13 @@ import { todayInTimezone } from '@/lib/engine/sequence'
 export const dynamic = 'force-dynamic'
 
 function authorized(req: NextRequest): boolean {
+  // The x-vercel-cron header is not a credential — any caller can set it — so the
+  // shared secret is required. Vercel Cron sends it as a bearer token when
+  // CRON_SECRET is configured on the project.
   const secret = process.env.CRON_SECRET
-  // Vercel Cron signs its calls with this header; a manual run can pass a bearer token.
-  if (req.headers.get('x-vercel-cron')) return true
   if (!secret) return false
-  return req.headers.get('authorization') === `Bearer ${secret}`
+  const auth = req.headers.get('authorization')
+  return auth === `Bearer ${secret}`
 }
 
 export async function GET(req: NextRequest) {

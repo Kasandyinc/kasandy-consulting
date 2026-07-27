@@ -74,6 +74,12 @@ export function checkSend(args: {
   if (!bodySource) {
     reasons.push(`No approved copy for ${template.id} yet — load the outreach drafts first`)
   }
+  // An email with an empty subject line would still deliver, so block it here. The
+  // E3 re-touch drafts carry no subject of their own (they read as a reply), so this
+  // surfaces that rather than sending a blank-subject email.
+  if (!subjectSource.trim()) {
+    reasons.push(`No subject line in the approved copy for ${template.id} — add one before sending`)
+  }
   if (!settings?.mailing_address?.trim()) {
     reasons.push('settings.mailing_address is not set (CASL requires a physical address)')
   }

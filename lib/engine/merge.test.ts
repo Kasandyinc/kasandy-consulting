@@ -110,3 +110,11 @@ test('[Phone] resolves from settings and blocks when unset', () => {
   const without = renderTemplate('Call [Phone]', ctx)
   assert.deepEqual(without.unresolved, ['Phone'])
 })
+
+test('a markdown link is not treated as an unresolved merge token', () => {
+  const r = renderTemplate('See [our demo](https://kc.com/demo) — for [Org].', ctx)
+  assert.deepEqual(r.unresolved, [])
+  assert.ok(r.ready)
+  assert.match(r.rendered, /\[our demo\]\(https:\/\/kc\.com\/demo\)/)
+  assert.match(r.rendered, /Roots Of Empathy/)
+})
