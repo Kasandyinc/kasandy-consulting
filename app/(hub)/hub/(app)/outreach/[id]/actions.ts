@@ -146,6 +146,7 @@ export async function sendOutreach(args: {
     from: (settings as SettingsRow).sending_address!,
     subject: check.subject,
     text: check.full,
+    html: check.html,
     optOutHref: optOutUrl(args.orgId, contact!.id),
   })
 
@@ -250,6 +251,262 @@ export async function stageSequence(orgId: string) {
   })
 
   revalidatePath(`/outreach/${orgId}`)
+  return { ok: true }
+}
+
+/**
+ * Re-render the preview for copy that is being edited but not yet saved.
+ *
+ * It runs the same checkSend the send path runs, so the preview cannot drift from the
+ * real email. Rendering client-side would have meant a second copy of the merge rules,
+ * and the one thing worse than no preview is a preview that lies.
+ */
+export async function previewOutreach(args: {
+  orgId: string
+  templateId: string
+  contactId: string | null
+  subject: string
+  bodyMd: string
+}) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false as const, error: 'Not authorized.' }
+
+  const [{ data: org }, { data: contacts }, { data: consent }, { data: template }, { data: settings }] =
+    await Promise.all([
+      supabase.from('orgs').select('*').eq('id', args.orgId).maybeSingle(),
+      supabase.from('contacts').select('*').eq('org_id', args.orgId),
+      supabase.from('consent_ledger').select('*').eq('org_id', args.orgId),
+      supabase.from('templates').select('*').eq('id', args.templateId).maybeSingle(),
+      supabase.from('settings').select('*').maybeSingle(),
+    ])
+
+  if (!org) return { ok: false as const, error: 'Organisation not found.' }
+
+  const contactList = (contacts ?? []) as Contact[]
+  const check = checkSend({
+    org: org as Org,
+    contact: contactList.find((c) => c.id === args.contactId) ?? null,
+    contacts: contactList,
+    consent: (consent ?? []) as ConsentRow[],
+    template: (template ?? null) as TemplateRow | null,
+    settings: (settings ?? null) as SettingsRow | null,
+    // The unsaved edit stands in for the stored draft, so what is on screen is priced.
+    draft: { id: 'unsaved', step: '', subjects: [args.subject], body_md: args.bodyMd },
+    subjectIndex: 0,
+  })
+
+  return {
+    ok: true as const,
+    ready: check.ready,
+    reasons: check.reasons,
+    subject: check.subject,
+    html: check.html,
+    text: check.full,
+  }
+}
+
+/**
+ * Save edited copy for one step of one org's outreach.
+ *
+ * The drafts arrive approved; this is how they are revised in place. Saving writes a
+ * new version of the row and records the change in the audit log, because the copy
+ * that went out has to remain reconstructable after it is edited.
+ */
+export async function saveDraft(args: {
+  orgId: string
+  step: string
+  subjects: string[]
+  bodyMd: string
+}) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+  if (!['E1', 'E2', 'E3', 'PHONE', 'LINKEDIN'].includes(args.step)) {
+    return { ok: false, error: 'Unknown step.' }
+  }
+
+  const subjects = args.subjects.map((s) => s.trim()).filter(Boolean)
+  const body = args.bodyMd.trim()
+  if (!body) return { ok: false, error: 'The body cannot be empty — delete the draft instead.' }
+
+  const { data: existing } = await supabase
+    .from('outreach_drafts')
+    .select('id, subjects, body_md')
+    .eq('org_id', args.orgId)
+    .eq('step', args.step)
+    .maybeSingle()
+
+  const payload = { org_id: args.orgId, step: args.step, subjects, body_md: body }
+  const { error } = existing
+    ? await supabase.from('outreach_drafts').update(payload).eq('id', existing.id)
+    : await supabase.from('outreach_drafts').insert(payload)
+
+  if (error) return { ok: false, error: error.message }
+
+  await supabase.from('audit_log').insert({
+    actor: user!.email,
+    action: 'draft.saved',
+    entity: 'outreach_drafts',
+    entity_id: args.orgId,
+    meta: {
+      step: args.step,
+      was_new: !existing,
+      // Keep what it replaced, so an edit never silently loses the approved wording.
+      previous_body: existing?.body_md ?? null,
+      previous_subjects: existing?.subjects ?? null,
+    },
+  })
+
+  revalidatePath(`/outreach/${args.orgId}/compose`)
+  return { ok: true }
+}
+
+/**
+ * The operator's own switches on a prospect: whether the ladder is approved to run,
+ * whether the org is excluded from automation, and whether steps advance on their own.
+ *
+ * These sit on top of the send-gate rather than replacing it — an approved org with no
+ * consent basis is still refused.
+ */
+export async function setOutreachFlags(args: {
+  orgId: string
+  outreach_approved?: boolean
+  excluded_from_automation?: boolean
+  auto_sequence?: boolean
+}) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+
+  const patch: Record<string, boolean> = {}
+  for (const k of ['outreach_approved', 'excluded_from_automation', 'auto_sequence'] as const) {
+    if (typeof args[k] === 'boolean') patch[k] = args[k]!
+  }
+  if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to change.' }
+
+  const { error } = await supabase.from('orgs').update(patch).eq('id', args.orgId)
+  if (error) return { ok: false, error: error.message }
+
+  await supabase.from('audit_log').insert({
+    actor: user!.email,
+    action: 'outreach.flags_changed',
+    entity: 'orgs',
+    entity_id: args.orgId,
+    meta: patch,
+  })
+
+  revalidatePath(`/outreach/${args.orgId}/compose`)
+  revalidatePath(`/outreach/${args.orgId}`)
+  return { ok: true }
+}
+
+/**
+ * Record that a human answered (§ reply-stop). This is the one action that ends
+ * automated outreach: a database trigger halts any running sequence and refuses every
+ * subsequent send for the org, so nothing can talk over the reply.
+ */
+export async function markReplied(args: { orgId: string; note?: string; undo?: boolean }) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+
+  const { error } = await supabase
+    .from('orgs')
+    .update(
+      args.undo
+        ? { replied_at: null, reply_note: null }
+        : { replied_at: new Date().toISOString(), reply_note: args.note?.trim() || null },
+    )
+    .eq('id', args.orgId)
+
+  if (error) return { ok: false, error: error.message }
+
+  await supabase.from('audit_log').insert({
+    actor: user!.email,
+    action: args.undo ? 'reply.cleared' : 'reply.recorded',
+    entity: 'orgs',
+    entity_id: args.orgId,
+    meta: { note: args.note ?? null },
+  })
+
+  revalidatePath(`/outreach/${args.orgId}/compose`)
+  revalidatePath(`/outreach/${args.orgId}`)
+  revalidatePath('/outreach')
+  return { ok: true }
+}
+
+/**
+ * LinkedIn is a manual touch — the note is copied and sent by hand, so the platform
+ * only records that it happened. Nothing is ever posted on the operator's behalf.
+ */
+export async function markLinkedInMessaged(args: { orgId: string; undo?: boolean }) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+
+  const { error } = await supabase
+    .from('orgs')
+    .update({ linkedin_messaged_at: args.undo ? null : new Date().toISOString() })
+    .eq('id', args.orgId)
+
+  if (error) return { ok: false, error: error.message }
+
+  await supabase.from('audit_log').insert({
+    actor: user!.email,
+    action: args.undo ? 'linkedin.cleared' : 'linkedin.messaged',
+    entity: 'orgs',
+    entity_id: args.orgId,
+    meta: {},
+  })
+
+  revalidatePath(`/outreach/${args.orgId}/compose`)
+  return { ok: true }
+}
+
+/**
+ * A dated, attributed note on the prospect. Notes go to the audit log rather than a
+ * mutable text field, so the timeline reads as a history instead of a last-write-wins
+ * scratchpad.
+ */
+export async function addNote(args: { orgId: string; note: string }) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+
+  const note = args.note.trim()
+  if (!note) return { ok: false, error: 'Write something first.' }
+
+  const { error } = await supabase.from('audit_log').insert({
+    actor: user!.email,
+    action: 'note.added',
+    entity: 'orgs',
+    entity_id: args.orgId,
+    meta: { note },
+  })
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/outreach/${args.orgId}/compose`)
+  revalidatePath(`/outreach/${args.orgId}`)
   return { ok: true }
 }
 

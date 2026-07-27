@@ -69,6 +69,15 @@ export type Org = {
   trigger_status: 'verified' | 'cohort' | 'refresh' | null
   angle_13: string | null
   pain_hypothesis: string | null
+  /** Operator controls (migration 6). Approval gates the automated ladder, not the
+   *  one-click send — clicking Send is itself the approval for that one email. */
+  outreach_approved: boolean
+  excluded_from_automation: boolean
+  auto_sequence: boolean
+  replied_at: string | null
+  reply_note: string | null
+  linkedin_messaged_at: string | null
+  sender: string | null
   updated_at: string
 }
 
@@ -104,6 +113,9 @@ export type ConsentRow = {
 export function sendBlockers(org: Org, contacts: Contact[], consent: ConsentRow[]): string[] {
   const reasons: string[] = []
   if (org.hold) reasons.push(`On HOLD — ${org.hold_reason ?? 'no reason recorded'}`)
+  if (org.replied_at)
+    reasons.push(`They replied on ${org.replied_at.slice(0, 10)} — the sequence stops when a person answers`)
+  if (org.excluded_from_automation) reasons.push('Excluded from automation')
   if (org.black_led && org.signoff_status === 'pending')
     reasons.push('Black-led / Indigenous-serving — Owner sign-off required')
   if (consent.some((c) => c.optout_at)) reasons.push('Suppressed — contact opted out')

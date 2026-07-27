@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MapPin, Clock, Linkedin, Instagram } from 'lucide-react'
 import ContactForm from './ContactForm'
+import { getFormConfig } from '@/lib/forms/load'
 import BookingCalendar from './BookingCalendar'
 
 
@@ -11,7 +12,9 @@ export const metadata: Metadata = {
   openGraph: { images: [{ url: '/images/hero-contact.jpg', width: 1200, height: 630 }] },
 }
 
-export default function Contact() {
+export default async function Contact() {
+  const formConfig = await getFormConfig('contact')
+
   return (
     <div className="pt-16">
 
@@ -68,7 +71,7 @@ export default function Contact() {
             </p>
           </div>
           <div className="md:col-span-2">
-            <ContactForm />
+            <ContactForm config={formConfig} />
           </div>
         </div>
       </section>

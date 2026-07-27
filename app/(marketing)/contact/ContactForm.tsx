@@ -2,28 +2,14 @@
 
 import { useState } from 'react'
 import Turnstile from '@/components/Turnstile'
+import { FORM_DEFAULTS, labelFor, optionsFor, isRequired, type FormConfig } from '@/lib/forms/config'
 
-const audienceTypes = [
-  { value: 'entrepreneur', label: 'Entrepreneur / Founder' },
-  { value: 'government', label: 'Government / Public Sector' },
-  { value: 'nonprofit', label: 'Non-Profit Organization' },
-  { value: 'international', label: 'International Business' },
-  { value: 'other', label: 'Other' },
-]
-
-const referralOptions = [
-  'Google / Search',
-  'LinkedIn',
-  'Instagram',
-  'Referral from a colleague',
-  'BEBC Society',
-  'Procurement Assistance Canada',
-  'Event / Conference',
-  'Media / Press',
-  'Other',
-]
-
-export default function ContactForm() {
+/**
+ * The wording, options and required flags come from the hub CMS; the layout and the
+ * spam controls stay here. `config` defaults to the compiled definition so this still
+ * renders if the CMS row is missing.
+ */
+export default function ContactForm({ config = FORM_DEFAULTS.contact }: { config?: FormConfig }) {
   const [form, setForm] = useState({
     name: '',
     organisation: '',
@@ -64,9 +50,9 @@ export default function ContactForm() {
   if (status === 'success') {
     return (
       <div className="border border-kc-gray-border bg-kc-gray-light p-12 text-center">
-        <p className="font-display text-3xl font-light text-kc-black mb-4">Message received.</p>
+        <p className="font-display text-3xl font-light text-kc-black mb-4">Thank you.</p>
         <p className="font-sans text-sm text-kc-gray-mid leading-relaxed max-w-sm mx-auto">
-          Thank you for reaching out. We'll be in touch within 2 business days.
+          {config.successMessage}
         </p>
       </div>
     )
@@ -76,40 +62,40 @@ export default function ContactForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Full Name *</label>
-          <input required value={form.name} onChange={set('name')} className="input-field" placeholder="Your full name" />
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'name')}{isRequired(config, 'name') ? ' *' : ''}</label>
+          <input required={isRequired(config, 'name')} value={form.name} onChange={set('name')} className="input-field" placeholder="Your full name" />
         </div>
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Organisation</label>
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'organisation')}{isRequired(config, 'organisation') ? ' *' : ''}</label>
           <input value={form.organisation} onChange={set('organisation')} className="input-field" placeholder="Company / organisation" />
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Email *</label>
-          <input required type="email" value={form.email} onChange={set('email')} className="input-field" placeholder="your@email.com" />
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'email')}{isRequired(config, 'email') ? ' *' : ''}</label>
+          <input required={isRequired(config, 'email')} type="email" value={form.email} onChange={set('email')} className="input-field" placeholder="your@email.com" />
         </div>
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Phone (optional)</label>
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'phone')}{isRequired(config, 'phone') ? ' *' : ''}</label>
           <input type="tel" value={form.phone} onChange={set('phone')} className="input-field" placeholder="+1 (604) 000-0000" />
         </div>
       </div>
       <div>
-        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">I am a... *</label>
-        <select required value={form.audienceType} onChange={set('audienceType')} className="input-field">
+        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'audienceType')}{isRequired(config, 'audienceType') ? ' *' : ''}</label>
+        <select required={isRequired(config, 'audienceType')} value={form.audienceType} onChange={set('audienceType')} className="input-field">
           <option value="">Select your context</option>
-          {audienceTypes.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+          {optionsFor(config, 'audienceType').map(a => <option key={a} value={a}>{a}</option>)}
         </select>
       </div>
       <div>
-        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Message *</label>
-        <textarea required value={form.message} onChange={set('message')} rows={5} className="input-field resize-none" placeholder="Tell us about your goals, your organisation, and what you're looking for help with." />
+        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'message')}{isRequired(config, 'message') ? ' *' : ''}</label>
+        <textarea required={isRequired(config, 'message')} value={form.message} onChange={set('message')} rows={5} className="input-field resize-none" placeholder="Tell us about your goals, your organisation, and what you're looking for help with." />
       </div>
       <div>
-        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">How did you hear about us?</label>
+        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'referral')}{isRequired(config, 'referral') ? ' *' : ''}</label>
         <select value={form.referral} onChange={set('referral')} className="input-field">
           <option value="">Select an option</option>
-          {referralOptions.map(r => <option key={r} value={r}>{r}</option>)}
+          {optionsFor(config, 'referral').map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>
       {/* Honeypot — hidden from real users; bots that fill it are silently dropped */}
@@ -132,7 +118,7 @@ export default function ContactForm() {
         <p className="font-sans text-xs text-kc-red">{errorMsg}</p>
       )}
       <button type="submit" disabled={status === 'loading'} className="btn-brown w-full justify-center">
-        {status === 'loading' ? 'Sending...' : 'Send Message'}
+        {status === 'loading' ? 'Sending...' : config.submitLabel}
       </button>
     </form>
   )
