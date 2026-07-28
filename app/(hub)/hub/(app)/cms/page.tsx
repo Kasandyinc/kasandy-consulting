@@ -121,6 +121,11 @@ export default async function CmsPage() {
           body="Per-page titles and descriptions, and the tracking the public site loads."
         />
         <Panel
+          href="/cms/spam"
+          title="Spam controls"
+          body="Which guards are actually running on the public forms, and what they have held."
+        />
+        <Panel
           href="/cms/import"
           title="Import from legacy CMS"
           body="Bring submissions, subscribers, testimonials and articles across from the old /admin."

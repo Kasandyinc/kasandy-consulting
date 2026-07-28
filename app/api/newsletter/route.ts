@@ -3,7 +3,7 @@ import { Resend } from 'resend'
 import { kvGet, kv, KEYS } from '@/lib/kv'
 import { recordSubmission, recordSubscriber } from '@/lib/forms/record'
 import { noreply } from '@/lib/email'
-import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
+import { missingFormStamp, getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import type { Download } from '@/types/downloads'
 import { DEFAULT_DOWNLOADS } from '@/data/downloads'
 
@@ -23,6 +23,10 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Timing check ────────────────────────────────────────────────────────
+    // Nothing on this site posts without a form stamp. A script does.
+    if (missingFormStamp(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please submit the form from the website.' }, { status: 400 })
+    }
     if (tooFast(formLoadedAt)) {
       return NextResponse.json({ error: 'Please take a moment before submitting.' }, { status: 400 })
     }

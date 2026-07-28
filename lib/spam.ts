@@ -51,6 +51,65 @@ export function tooFast(formLoadedAt: unknown): boolean {
 }
 
 /**
+ * True when the submission did not come from one of our forms.
+ *
+ * Every form on the site stamps `formLoadedAt` when it mounts, so a real
+ * submission always carries a sane one. A script POSTing straight at the endpoint
+ * carries none — and that was the hole: `tooFast` deliberately let a missing
+ * timestamp through on the reasoning that the other controls still applied, but
+ * Turnstile fails open when unconfigured, so in that state a bare POST passed
+ * every check in turn.
+ *
+ * Rejecting a missing timestamp costs nothing (our own forms always send one) and
+ * closes that path regardless of how Turnstile is configured.
+ */
+export function missingFormStamp(formLoadedAt: unknown): boolean {
+  const t = typeof formLoadedAt === 'number' ? formLoadedAt : Number(formLoadedAt)
+  if (!Number.isFinite(t) || t <= 0) return true
+  // Absurd values are as telling as absent ones: more than a day old, or ahead of
+  // this server's clock by more than a few minutes.
+  const age = Date.now() - t
+  return age > 86_400_000 || age < -300_000
+}
+
+/**
+ * Which controls are actually active in this environment.
+ *
+ * Every control here fails open when unconfigured, which keeps the site working
+ * but means a missing key silently disables protection with no signal. This makes
+ * the state visible so "why is spam getting through" is answerable rather than
+ * guessed at.
+ */
+export function spamControlStatus(): { control: string; active: boolean; note: string }[] {
+  return [
+    {
+      control: 'Turnstile (server)',
+      active: Boolean(process.env.TURNSTILE_SECRET_KEY),
+      note: process.env.TURNSTILE_SECRET_KEY
+        ? 'Tokens are verified with Cloudflare.'
+        : 'TURNSTILE_SECRET_KEY is not set — every submission passes this check.',
+    },
+    {
+      control: 'Turnstile (widget)',
+      active: Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY),
+      note: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+        ? 'The challenge renders on the public forms.'
+        : 'NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set — no challenge is shown. This is inlined at build time, so it needs a redeploy after being added.',
+    },
+    {
+      control: 'Rate limiting',
+      active: Boolean(process.env.KV_REST_API_URL),
+      note: process.env.KV_REST_API_URL
+        ? 'Per-email and per-IP limits are enforced.'
+        : 'KV is not configured — rate limits pass silently.',
+    },
+    { control: 'Honeypot', active: true, note: 'Always on; needs no configuration.' },
+    { control: 'Form timestamp', active: true, note: 'A submission with no form stamp is refused.' },
+    { control: 'Content scoring', active: true, note: 'Random-looking submissions are quarantined, not deleted.' },
+  ]
+}
+
+/**
  * Verify a Cloudflare Turnstile token server-side.
  * Fails OPEN (returns true) when TURNSTILE_SECRET_KEY is not configured.
  * When configured, a missing token or a failed/verification error → false.

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
+import { missingFormStamp, getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import { Resend } from 'resend'
 import { kv, KEYS } from '@/lib/kv'
 import { recordSubmission } from '@/lib/forms/record'
@@ -24,6 +24,10 @@ export async function POST(req: NextRequest) {
     // ── Spam protection (same controls as contact/newsletter) ───────────────
     if (website) {
       return NextResponse.json({ success: true })   // honeypot: pretend success
+    }
+    // Nothing on this site posts without a form stamp. A script does.
+    if (missingFormStamp(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please submit the form from the website.' }, { status: 400 })
     }
     if (tooFast(formLoadedAt)) {
       return NextResponse.json({ error: 'Please take a moment before submitting.' }, { status: 400 })
