@@ -5,8 +5,6 @@
 //    before Jackee finishes setting up Turnstile / while KV hiccups.
 //  - Keep every check cheap and side-effect-free except the rate limiter.
 
-import { kv } from '@/lib/kv'
-
 /** Minimum time a human plausibly takes to fill a form, in ms. */
 export const MIN_FORM_FILL_MS = 3000
 
@@ -73,6 +71,35 @@ export function missingFormStamp(formLoadedAt: unknown): boolean {
 }
 
 /**
+ * Cloudflare's published dummy keypairs, for local development.
+ *
+ * These matter because the "always passes" pair is indistinguishable from a working
+ * setup unless you look: Turnstile is configured, the widget renders, siteverify
+ * returns success — for every request, including one no human ever solved. A form
+ * protected by that key has no protection at all, and nothing anywhere says so.
+ *
+ * https://developers.cloudflare.com/turnstile/troubleshooting/testing/
+ */
+const TURNSTILE_TEST_KEYS: Record<string, string> = {
+  '1x00000000000000000000AA': 'visible, always passes',
+  '2x00000000000000000000AB': 'visible, always blocks',
+  '3x00000000000000000000FF': 'forces an interactive challenge',
+  '1x00000000000000000000BB': 'invisible, always passes',
+  '2x00000000000000000000BB': 'invisible, always blocks',
+  '1x0000000000000000000000000000000AA': 'always passes',
+  '2x0000000000000000000000000000000AA': 'always fails',
+  '3x0000000000000000000000000000000AA': 'yields a token-already-spent error',
+}
+
+export function isTurnstileTestKey(key: string | undefined): boolean {
+  return Boolean(key && key in TURNSTILE_TEST_KEYS)
+}
+
+function describeTestKey(key: string): string {
+  return TURNSTILE_TEST_KEYS[key] ?? 'dummy key'
+}
+
+/**
  * Which controls are actually active in this environment.
  *
  * Every control here fails open when unconfigured, which keeps the site working
@@ -81,20 +108,29 @@ export function missingFormStamp(formLoadedAt: unknown): boolean {
  * guessed at.
  */
 export function spamControlStatus(): { control: string; active: boolean; note: string }[] {
+  const secret = process.env.TURNSTILE_SECRET_KEY
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+
   return [
     {
       control: 'Turnstile (server)',
-      active: Boolean(process.env.TURNSTILE_SECRET_KEY),
-      note: process.env.TURNSTILE_SECRET_KEY
-        ? 'Tokens are verified with Cloudflare.'
-        : 'TURNSTILE_SECRET_KEY is not set — every submission passes this check.',
+      // A dummy key is worse than no key: the check appears to run, reports success,
+      // and stops nothing — so it is reported as inactive rather than as configured.
+      active: Boolean(secret) && !isTurnstileTestKey(secret),
+      note: !secret
+        ? 'TURNSTILE_SECRET_KEY is not set — every submission passes this check.'
+        : isTurnstileTestKey(secret)
+          ? `This is one of Cloudflare's dummy development keys (${describeTestKey(secret)}). It is not protecting anything. Replace it with the real secret from your Turnstile dashboard.`
+          : 'Tokens are verified with Cloudflare.',
     },
     {
       control: 'Turnstile (widget)',
-      active: Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY),
-      note: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
-        ? 'The challenge renders on the public forms.'
-        : 'NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set — no challenge is shown. This is inlined at build time, so it needs a redeploy after being added.',
+      active: Boolean(siteKey) && !isTurnstileTestKey(siteKey),
+      note: !siteKey
+        ? 'NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set — no challenge is shown. This is inlined at build time, so it needs a redeploy after being added.'
+        : isTurnstileTestKey(siteKey)
+          ? `This is one of Cloudflare's dummy development site keys (${describeTestKey(siteKey)}). Replace it with the real one and redeploy — this value is inlined at build time.`
+          : 'The challenge renders on the public forms.',
     },
     {
       control: 'Rate limiting',
@@ -140,6 +176,10 @@ export async function verifyTurnstile(token: string | undefined, ip?: string): P
  */
 export async function rateLimit(key: string, limit: number, windowSecs: number): Promise<boolean> {
   try {
+    // Imported here rather than at the top so the rest of this module — the pure
+    // checks — can be loaded and tested without pulling in the KV client and its
+    // build-time path alias.
+    const { kv } = await import('@/lib/kv')
     const count = await kv.incr(key)
     if (count === 1) await kv.expire(key, windowSecs)
     return count <= limit
