@@ -166,7 +166,13 @@ export async function deliver(args: {
   subject: string
   text: string
   html?: string
-  optOutHref: string
+  /**
+   * One-click unsubscribe target. Omit for transactional mail — a proposal to sign
+   * or a request to verify a phase is not something a recipient should be able to
+   * "unsubscribe" from, and RFC 8058 lets a provider POST to this URL unprompted,
+   * so pointing it at a document page invites an automated hit on that page.
+   */
+  optOutHref?: string
   replyTo?: string
 }) {
   const apiKey = process.env.RESEND_API_KEY
@@ -180,11 +186,15 @@ export async function deliver(args: {
     text: args.text,
     ...(args.html ? { html: args.html } : {}),
     ...(args.replyTo ? { replyTo: args.replyTo } : {}),
-    headers: {
-      // RFC 8058: one-click unsubscribe honoured by the major mailbox providers.
-      'List-Unsubscribe': `<${args.optOutHref}>`,
-      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-    },
+    ...(args.optOutHref
+      ? {
+          headers: {
+            // RFC 8058: one-click unsubscribe honoured by the major mailbox providers.
+            'List-Unsubscribe': `<${args.optOutHref}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
+        }
+      : {}),
   })
 
   if (error) return { ok: false as const, error: error.message }

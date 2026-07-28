@@ -319,7 +319,6 @@ export async function sendProposal(args: { orgId: string; proposalId: string; co
       `<p style="margin:22px 0 0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:15px;color:#1a1a1a">${SIGN_OFF}</p>`,
       signatureHtml(sig),
     ].join(''),
-    optOutHref: link,
     replyTo: sig.email,
   })
 

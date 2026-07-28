@@ -196,7 +196,6 @@ export async function requestVerification(args: { clientId: string; phaseId: str
         `<p style="margin:22px 0 0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:15px;color:#1a1a1a">${SIGN_OFF}</p>`,
         signatureHtml(sig),
       ].join(''),
-      optOutHref: `${site}/portal`,
       replyTo: sig.email,
     })
 

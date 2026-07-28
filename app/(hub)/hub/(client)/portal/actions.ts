@@ -36,7 +36,12 @@ export async function verifyPhase(args: { phaseId: string; note: string }) {
     return { ok: false, error: 'That phase is not part of your engagement.' }
   }
 
-  await supabase.from('audit_log').insert({
+  // §7.5 — this is the event that releases an invoice, so it must be on the record.
+  // It used to fail silently: audit_log's only INSERT policy was operator-only, and
+  // nothing checked the error. Migration 12 grants clients an append-only path; if
+  // it is ever refused again, the verification still stands but the operator is told
+  // rather than the gap going unnoticed.
+  const { error: auditError } = await supabase.from('audit_log').insert({
     actor: user.email,
     action: 'phase.verified',
     entity: 'engagement_phases',
@@ -45,5 +50,11 @@ export async function verifyPhase(args: { phaseId: string; note: string }) {
   })
 
   revalidatePath('/portal')
+  if (auditError) {
+    return {
+      ok: true,
+      warning: `Recorded, but the activity log entry failed: ${auditError.message}`,
+    }
+  }
   return { ok: true }
 }

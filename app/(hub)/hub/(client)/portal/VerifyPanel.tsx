@@ -65,6 +65,9 @@ export default function VerifyPanel({ phaseId, phaseName }: { phaseId: string; p
             start(async () => {
               const res = await verifyPhase({ phaseId, note })
               if (res.ok) {
+                // A warning means the verification stands but something alongside it
+                // did not — say so rather than showing an unqualified success.
+                if (res.warning) setError(res.warning)
                 router.refresh()
               } else {
                 setError(res.error ?? 'Something went wrong.')

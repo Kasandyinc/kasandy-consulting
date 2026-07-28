@@ -121,6 +121,9 @@ export async function linkSubmissionToProspect(args: {
       .maybeSingle()
 
     let orgId = existing?.id as string | undefined
+    // Whether this submission is what brought the organisation into existence.
+    // It decides whether the enquiry may record a consent basis — see below.
+    const orgIsNew = !orgId
 
     if (!orgId) {
       const { data: created, error } = await supabase
@@ -140,42 +143,53 @@ export async function linkSubmissionToProspect(args: {
     // Record the person, with the website as the source. Inbound contact is a
     // published, role-relevant route by definition: they wrote to us.
     if (args.email) {
-      const normalized = normalizeEmail(args.email)
+      const address = args.email.trim().toLowerCase()
       const { data: contact } = await supabase
         .from('contacts')
         .select('id')
         .eq('org_id', orgId)
-        .ilike('email', args.email.trim())
+        .ilike('email', address)
         .maybeSingle()
 
-      if (!contact) {
-        await supabase.from('contacts').insert({
-          org_id: orgId,
-          name: args.name?.trim() || null,
-          email: args.email.trim().toLowerCase(),
-          email_status: 'confirmed',
-          source: 'website enquiry',
-          verified_on: new Date().toISOString().slice(0, 10),
-        })
+      let contactId = contact?.id as string | undefined
+
+      if (!contactId) {
+        const { data: madeContact } = await supabase
+          .from('contacts')
+          .insert({
+            org_id: orgId,
+            name: args.name?.trim() || null,
+            email: address,
+            // "They typed it into our form" is not the same as confirmed. The email
+            // has not been round-tripped, so it is claimed, not verified.
+            email_status: 'inferred',
+            source: 'website enquiry (self-submitted, unverified)',
+            verified_on: new Date().toISOString().slice(0, 10),
+          })
+          .select('id')
+          .single()
+        contactId = madeContact?.id
       }
 
-      // They contacted us, which is an express basis — record it so the send-gate
-      // has something lawful to work from rather than refusing a warm inbound lead.
-      const { data: consent } = await supabase
-        .from('consent_ledger')
-        .select('id')
-        .eq('org_id', orgId)
-        .maybeSingle()
-
-      if (!consent) {
+      // CASL. An inbound enquiry is an express basis for replying to the person who
+      // sent it — but the send-gate reads consent at the ORGANISATION level, so
+      // writing a row here for an org that already exists in the pipeline would let
+      // anyone who can pass the form's spam checks unlock outreach to every contact
+      // at a researched prospect by naming it in a submission. That is consent
+      // forgery, and it is exactly what the ledger exists to prevent.
+      //
+      // So a basis is recorded only when this submission is what created the
+      // organisation — a brand-new org has no other contacts, so the scope is the
+      // one address that was typed in. For an existing prospect the enquiry is
+      // recorded and shown in the CMS, and an operator decides.
+      if (orgIsNew && contactId) {
         await supabase.from('consent_ledger').insert({
           org_id: orgId,
-          basis: 'express_inbound',
+          contact_id: contactId,
+          basis: 'express_inbound_unverified',
           source_url: 'kasandyconsulting.com contact form',
         })
       }
-
-      void normalized
     }
 
     await supabase.from('submissions').update({ org_id: orgId }).eq('id', args.submissionId)
