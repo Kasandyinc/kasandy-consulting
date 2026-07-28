@@ -115,6 +115,16 @@ export default async function CmsPage() {
           title="Blog & whitepapers"
           body="Articles and gated whitepapers, with their own SEO fields."
         />
+        <Panel
+          href="/cms/seo"
+          title="SEO & ad pixels"
+          body="Per-page titles and descriptions, and the tracking the public site loads."
+        />
+        <Panel
+          href="/cms/import"
+          title="Import from legacy CMS"
+          body="Bring submissions, subscribers, testimonials and articles across from the old /admin."
+        />
       </div>
 
       <SystemStrip>
