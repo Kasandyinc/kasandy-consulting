@@ -59,6 +59,22 @@ test('a word with no vowels at all is random', () => {
   assert.equal(fieldLooksRandom('Wwdls').random, true)
 })
 
+test('the 29 July wave is caught too, including the non-Gmail senders', () => {
+  // This batch switched to itw-dahti.com and e-dialog.group addresses, so email
+  // normalisation is no help. The content is what gives them away.
+  const wave = [
+    { name: 'Ympe Fshdvq', country: 'jgZVYBWGWLPtHXqlhZKytAZV', business: 'Ayfyo LLC', goals: 'EPnAOhnCuDKmeeWmbPcl' },
+    { name: 'Mklyz Doxmq', country: 'xghOKkmdLzMfCannGSmQjd', business: 'Peoijs LLC', goals: 'AeycWebqZtAKGyrhtEBB' },
+    { name: 'Hfdkb Ujvctbgcz', country: 'YokZjRCnCBatDMkqaauoRKn', business: 'Sncqbbc LLC', goals: 'WvSHfDAdAkkUGEViWaWXsG' },
+    { name: 'Gxmnz Giuvpy', country: 'IKRHGMkQKrCjgrPmgkvV', business: 'Vjjamuutd LLC', goals: 'joaVuYpjXOMNfEuTshtQG' },
+  ]
+  for (const s of wave) {
+    const a = assessSubmission(s)
+    assert.equal(a.quarantine, true, `missed: ${s.name}`)
+    assert.ok(a.randomFields >= 2)
+  }
+})
+
 // ── The quarantine rule ──────────────────────────────────────────────────────
 
 test('the first real spam submission is quarantined', () => {
