@@ -1,31 +1,16 @@
 'use client'
 
 import { useState } from 'react'
+import Turnstile from '@/components/Turnstile'
+import { FORM_DEFAULTS, labelFor, optionsFor, isRequired, type FormConfig } from '@/lib/forms/config'
 
-const formats = [
-  'Keynote (45–60 min)',
-  'Panel',
-  'Workshop / Masterclass (2–4 hr)',
-  'Corporate Lunch & Learn',
-  'Conference Breakout',
-  'University / Academic Lecture',
-  'Emcee / Host',
-  'Other',
-]
-
-const topicOptions = [
-  'The Procurement Opportunity Nobody Talks About',
-  'Supplier Diversity as Economic Strategy',
-  'From Founder to Procurement-Ready — What They Don\'t Teach You',
-  'Building for Belonging — Equity-Centred Leadership in Practice',
-  'The Global Opportunity — African Businesses and the Canadian Market',
-  'The Non-Profit Trap — Why Good Missions Fail and How to Break the Cycle',
-  'Custom / Open to suggestions',
-]
-
-export default function SpeakingInquiryForm() {
+/** Wording and options come from the hub CMS; layout and spam controls stay here. */
+export default function SpeakingInquiryForm({
+  config = FORM_DEFAULTS['speaking-inquiry'],
+}: { config?: FormConfig }) {
   const [form, setForm] = useState({
     name: '',
+    email: '',
     organisation: '',
     eventName: '',
     eventDate: '',
@@ -36,6 +21,9 @@ export default function SpeakingInquiryForm() {
     budget: '',
     notes: '',
   })
+  const [website, setWebsite] = useState('') // honeypot
+  const [formLoadedAt] = useState(() => Date.now())
+  const [turnstileToken, setTurnstileToken] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -50,7 +38,7 @@ export default function SpeakingInquiryForm() {
       const res = await fetch('/api/speaking-inquiry', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, website, formLoadedAt, turnstileToken }),
       })
       const data = await res.json()
       if (!res.ok || data.error) throw new Error(data.error || 'Submission failed')
@@ -76,61 +64,72 @@ export default function SpeakingInquiryForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Your Name *</label>
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'name')}{isRequired(config, 'name') ? ' *' : ''}</label>
           <input required value={form.name} onChange={set('name')} className="input-field" placeholder="Full name" />
         </div>
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Organisation *</label>
-          <input required value={form.organisation} onChange={set('organisation')} className="input-field" placeholder="Company / organisation" />
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'email')}{isRequired(config, 'email') ? ' *' : ''}</label>
+          <input required={isRequired(config, 'email')} type="email" value={form.email} onChange={set('email')} className="input-field" placeholder="your@email.com" />
         </div>
+      </div>
+      <div>
+        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'organisation')}{isRequired(config, 'organisation') ? ' *' : ''}</label>
+        <input required value={form.organisation} onChange={set('organisation')} className="input-field" placeholder="Company / organisation" />
       </div>
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Event Name *</label>
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'eventName')}{isRequired(config, 'eventName') ? ' *' : ''}</label>
           <input required value={form.eventName} onChange={set('eventName')} className="input-field" placeholder="Name of event or conference" />
         </div>
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Event Date</label>
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'eventDate')}{isRequired(config, 'eventDate') ? ' *' : ''}</label>
           <input type="date" value={form.eventDate} onChange={set('eventDate')} className="input-field" />
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Location</label>
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'location')}{isRequired(config, 'location') ? ' *' : ''}</label>
           <input value={form.location} onChange={set('location')} className="input-field" placeholder="City, Province / Virtual" />
         </div>
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Audience Size</label>
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'audienceSize')}{isRequired(config, 'audienceSize') ? ' *' : ''}</label>
           <input value={form.audienceSize} onChange={set('audienceSize')} className="input-field" placeholder="e.g. 200 attendees" />
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-6">
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Format *</label>
-          <select required value={form.format} onChange={set('format')} className="input-field">
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'format')}{isRequired(config, 'format') ? ' *' : ''}</label>
+          <select required={isRequired(config, 'format')} value={form.format} onChange={set('format')} className="input-field">
             <option value="">Select format</option>
-            {formats.map(f => <option key={f} value={f}>{f}</option>)}
+            {optionsFor(config, 'format').map(f => <option key={f} value={f}>{f}</option>)}
           </select>
         </div>
         <div>
-          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Topic Interest</label>
+          <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'topicInterest')}{isRequired(config, 'topicInterest') ? ' *' : ''}</label>
           <select value={form.topicInterest} onChange={set('topicInterest')} className="input-field">
             <option value="">Select a topic</option>
-            {topicOptions.map(t => <option key={t} value={t}>{t}</option>)}
+            {optionsFor(config, 'topicInterest').map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
       </div>
       <div>
-        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Budget / Honorarium Range</label>
+        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'budget')}{isRequired(config, 'budget') ? ' *' : ''}</label>
         <input value={form.budget} onChange={set('budget')} className="input-field" placeholder="e.g. $3,000–$5,000, or TBD" />
       </div>
       <div>
-        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">Additional Notes</label>
+        <label className="font-sans text-xs tracking-wide uppercase text-kc-gray-mid block mb-2">{labelFor(config, 'notes')}{isRequired(config, 'notes') ? ' *' : ''}</label>
         <textarea value={form.notes} onChange={set('notes')} rows={4} className="input-field resize-none" placeholder="Event context, audience profile, specific session goals, logistics, etc." />
       </div>
       {status === 'error' && (
         <p className="font-sans text-xs text-kc-red">{errorMsg}</p>
       )}
+      {/* Honeypot — hidden from real users; bots that fill it are silently dropped */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+        <input type="text" tabIndex={-1} autoComplete="off"
+          value={website} onChange={e => setWebsite(e.target.value)} />
+      </div>
+      <Turnstile onVerify={setTurnstileToken} />
+
       <button type="submit" disabled={status === 'loading'} className="btn-brown w-full justify-center">
         {status === 'loading' ? 'Submitting...' : 'Submit Speaking Inquiry'}
       </button>

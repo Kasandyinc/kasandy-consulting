@@ -14,12 +14,12 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
     group: 'Grow',
     items: [
       { href: '/outreach', icon: '↗', label: 'Outreach' },
-      { href: '/clients', icon: '◆', label: 'Clients', soon: true },
+      { href: '/clients', icon: '◆', label: 'Clients' },
     ],
   },
   {
     group: 'Money',
-    items: [{ href: '/financials', icon: '$', label: 'Financials', soon: true }],
+    items: [{ href: '/financials', icon: '$', label: 'Financials' }],
   },
   {
     group: 'Reach',
@@ -28,15 +28,15 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
   {
     group: 'Operate',
     items: [
-      { href: '/calendar', icon: '▦', label: 'Calendar & Meetings', soon: true },
+      { href: '/calendar', icon: '▦', label: 'Calendar & Meetings' },
       { href: '/comms', icon: '✦', label: 'Comms Hub', soon: true },
     ],
   },
   {
     group: 'Measure',
     items: [
-      { href: '/analytics', icon: '▲', label: 'Analytics', soon: true },
-      { href: '/reports', icon: '▤', label: 'Report Studio', soon: true },
+      { href: '/analytics', icon: '▲', label: 'Analytics' },
+      { href: '/reports', icon: '▤', label: 'Report Studio' },
     ],
   },
   {
@@ -44,7 +44,7 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
     items: [
       { href: '/audit', icon: '▤', label: 'Audit log' },
       { href: '/admin', icon: '⚙', label: 'Admin', soon: true },
-      { href: '/cms', icon: '◱', label: 'Website CMS', soon: true },
+      { href: '/cms', icon: '◱', label: 'Website CMS' },
     ],
   },
 ]

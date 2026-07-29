@@ -5,6 +5,7 @@ import { articles } from '@/data/articles'
 import LeadMagnetCard from './LeadMagnetCard'
 import PaidProductCard from './PaidProductCard'
 import NewsletterSignup from './NewsletterSignup'
+import { getFormConfig } from '@/lib/forms/load'
 import { kvGet, KEYS } from '@/lib/kv'
 import type { Download } from '@/types/downloads'
 import { DEFAULT_DOWNLOADS } from '@/data/downloads'
@@ -25,6 +26,8 @@ const categoryColors: Record<string, string> = {
 }
 
 export default async function Resources() {
+  const formConfig = await getFormConfig('newsletter')
+
   // Fetch downloads from KV (merged with defaults)
   const kvData = await kvGet<Download[]>(KEYS.downloads, DEFAULT_DOWNLOADS)
   // Always merge with defaults so new products appear even before first admin save
@@ -191,7 +194,7 @@ export default async function Resources() {
             </p>
           </div>
           <div>
-            <NewsletterSignup />
+            <NewsletterSignup config={formConfig} />
           </div>
         </div>
       </section>

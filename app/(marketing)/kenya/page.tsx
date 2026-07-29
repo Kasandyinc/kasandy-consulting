@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import KenyaWaitlistForm from './KenyaWaitlistForm'
+import { getFormConfig } from '@/lib/forms/load'
 import { kv } from '@vercel/kv'
 
 export const metadata: Metadata = {
@@ -59,6 +60,8 @@ const faqs = [
 ]
 
 export default async function Kenya() {
+  const formConfig = await getFormConfig('kenya-waitlist')
+
   const seminar = await kv.get<SeminarInfo>('kenya:seminar')
 
   return (
@@ -509,7 +512,7 @@ export default async function Kenya() {
           {/* Right: form */}
           <div className="bg-white/5 border border-white/10 p-8">
             <p className="font-sans text-[11px] tracking-widest uppercase text-kc-gold mb-6">Register Your Interest</p>
-            <KenyaWaitlistForm />
+            <KenyaWaitlistForm config={formConfig} />
           </div>
         </div>
       </section>

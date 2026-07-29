@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { missingFormStamp, getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 import { Resend } from 'resend'
 import { kv } from '@/lib/kv'
+import { recordSubmission } from '@/lib/forms/record'
+import { assessSubmission } from '@/lib/spam-score'
 import { noreply as FROM } from '@/lib/email'
 
 const JACKEE_EMAIL = process.env.CONTACT_TO_EMAIL || 'ea@kasandyconsulting.com'
@@ -16,19 +19,61 @@ export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
 
   try {
-    const { name, email, phone, country, business, program, goals } = await req.json() as {
+    const { name, email, phone, country, business, program, goals, website, formLoadedAt, turnstileToken } = await req.json() as {
       name: string; email: string; phone: string; country: string
       business: string; program: string; goals: string
+      website?: string; formLoadedAt?: number; turnstileToken?: string
     }
 
     if (!name || !email || !phone || !country || !business) {
       return NextResponse.json({ error: 'Please fill in all required fields.' }, { status: 400 })
     }
 
+    // ── Spam protection (same controls as contact/newsletter) ───────────────
+    if (website) {
+      return NextResponse.json({ success: true })   // honeypot: pretend success
+    }
+    // Nothing on this site posts without a form stamp. A script does.
+    if (missingFormStamp(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please submit the form from the website.' }, { status: 400 })
+    }
+    if (tooFast(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please take a moment before submitting.' }, { status: 400 })
+    }
+    const ip = getClientIp(req)
+    if (!(await verifyTurnstile(turnstileToken, ip))) {
+      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
+    }
+
+    const emailOk = await rateLimit(`rl:kenya:email:${normalizeEmail(email)}`, 3, 3600)
+    const ipOk = await rateLimit(`rl:kenya:ip:${ip}`, 5, 3600)
+    if (!emailOk || !ipOk) {
+      return NextResponse.json({ error: 'Too many submissions. Please try again later.' }, { status: 429 })
+    }
+
     const entry = { name, email, phone, country, business, program, goals, createdAt: new Date().toISOString() }
 
-    // Store in KV
-    await kv.lpush('kenya:waitlist', JSON.stringify(entry))
+    // Content scoring. `program` is excluded deliberately — it comes from a dropdown,
+    // so it can never look random and would only dilute the count.
+    const assessment = assessSubmission({ name, country, business, goals })
+    const stored = assessment.quarantine ? { ...entry, _quarantined: assessment.reasons } : entry
+
+    // Store in KV. A quarantined submission is still kept, in both stores — it is
+    // visible in the CMS for review. Only the emails are suppressed, because being
+    // wrong here should cost a click rather than a lead.
+    await kv.lpush('kenya:waitlist', JSON.stringify(stored))
+
+    // E7: the enquiry also becomes a platform record.
+    await recordSubmission({
+      formSlug: 'kenya-waitlist',
+      name,
+      email,
+      organisation: business,
+      message: goals || null,
+      payload: assessment.quarantine ? { ...entry, _quarantined: assessment.reasons } : entry,
+      sourcePath: '/kenya',
+      ip,
+    })
     await kv.incr('kenya:waitlist:count')
 
     const programLabel = PROGRAM_LABELS[program] || program || '—'
@@ -105,6 +150,16 @@ export async function POST(req: NextRequest) {
   <p style="font-size:12px; color:#999;">Registered ${new Date().toLocaleString('en-CA', { timeZone: 'America/Vancouver' })} PST</p>
 </body>
 </html>`
+
+    // A quarantined submission sends nothing. Not to the registrant — the address is
+    // very likely someone else's, and a confirmation they never asked for is the part
+    // that actually harms a person. Not to Jackee either; the record is in the CMS.
+    if (assessment.quarantine) {
+      console.warn('Kenya waitlist quarantined:', assessment.reasons.join('; '))
+      // The response is indistinguishable from success, so a bot learns nothing about
+      // which of its fields gave it away.
+      return NextResponse.json({ success: true })
+    }
 
     await Promise.all([
       resend.emails.send({

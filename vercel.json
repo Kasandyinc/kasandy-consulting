@@ -6,6 +6,10 @@
     {
       "path": "/api/engine/cron/advance",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/engine/cron/reports",
+      "schedule": "0 15 * * *"
     }
   ]
 }

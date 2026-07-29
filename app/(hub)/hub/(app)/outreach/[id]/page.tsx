@@ -79,13 +79,20 @@ export default async function OrgRecord({
             <OrgFlags org={o} />
             <StagePicker orgId={o.id} stage={o.stage as Stage} />
           </div>
-          <Link
-            href={`/outreach/${o.id}/compose`}
-            className={`btn sm ${blockers.length === 0 ? 'ox' : ''}`}
-            style={{ marginTop: 10 }}
-          >
-            ✉ Compose
-          </Link>
+          <div className="row" style={{ gap: 6, marginTop: 10, justifyContent: 'flex-end' }}>
+            <Link href={`/outreach/${o.id}/discovery`} className="btn sm">
+              ◎ Discovery
+            </Link>
+            <Link href={`/outreach/${o.id}/proposal`} className="btn sm">
+              ▤ Proposal
+            </Link>
+            <Link
+              href={`/outreach/${o.id}/compose`}
+              className={`btn sm ${blockers.length === 0 ? 'ox' : ''}`}
+            >
+              ✉ Compose
+            </Link>
+          </div>
         </div>
       </div>
 

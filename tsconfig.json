@@ -6,6 +6,10 @@
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
+    // The test files and the KV migration script import with explicit .ts
+    // extensions so Node's --experimental-strip-types can run them directly. Safe
+    // with noEmit: it affects type resolution only, and no app code imports this way.
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",

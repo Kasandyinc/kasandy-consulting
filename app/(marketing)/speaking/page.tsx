@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowRight, Download } from 'lucide-react'
 import SpeakingInquiryForm from './SpeakingInquiryForm'
+import { getFormConfig } from '@/lib/forms/load'
 import SpeakingMedia from './SpeakingMedia'
 
 
@@ -61,7 +62,9 @@ const formats = [
   { name: 'Emcee / Host', detail: 'Half or full day' },
 ]
 
-export default function Speaking() {
+export default async function Speaking() {
+  const formConfig = await getFormConfig('speaking-inquiry')
+
   return (
     <div className="pt-16">
 
@@ -237,7 +240,7 @@ export default function Speaking() {
             </a>
           </div>
           <div className="md:col-span-2">
-            <SpeakingInquiryForm />
+            <SpeakingInquiryForm config={formConfig} />
           </div>
         </div>
       </section>

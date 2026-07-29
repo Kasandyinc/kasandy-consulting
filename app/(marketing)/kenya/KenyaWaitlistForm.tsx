@@ -1,12 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import Turnstile from '@/components/Turnstile'
 import { CheckCircle } from 'lucide-react'
+import { FORM_DEFAULTS, labelFor, optionsFor, isRequired, type FormConfig } from '@/lib/forms/config'
 
-export default function KenyaWaitlistForm() {
+/** Wording and options come from the hub CMS; layout and spam controls stay here. */
+export default function KenyaWaitlistForm({
+  config = FORM_DEFAULTS['kenya-waitlist'],
+}: { config?: FormConfig }) {
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', country: '', business: '', program: '', goals: '',
   })
+  const [website, setWebsite] = useState('') // honeypot
+  const [formLoadedAt] = useState(() => Date.now())
+  const [turnstileToken, setTurnstileToken] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -22,7 +30,7 @@ export default function KenyaWaitlistForm() {
       const res = await fetch('/api/kenya-waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, website, formLoadedAt, turnstileToken }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Submission failed.')
@@ -39,9 +47,7 @@ export default function KenyaWaitlistForm() {
       <div className="text-center py-10">
         <CheckCircle size={36} className="mx-auto mb-4 text-kc-gold" />
         <h3 className="font-display text-2xl font-light text-white mb-3">You&apos;re on the list.</h3>
-        <p className="font-sans text-sm text-white/70 max-w-sm mx-auto">
-          Check your inbox for a confirmation. You&apos;ll be among the first to hear when the next bootcamp is confirmed — with priority registration access.
-        </p>
+        <p className="font-sans text-sm text-white/70 max-w-sm mx-auto">{config.successMessage}</p>
       </div>
     )
   }
@@ -53,12 +59,12 @@ export default function KenyaWaitlistForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label className={labelClass}>Full Name <span className="text-kc-gold">*</span></label>
+          <label className={labelClass}>{labelFor(config, 'name')} {isRequired(config, 'name') && <span className="text-kc-gold">*</span>}</label>
           <input type="text" required value={formData.name} onChange={set('name')}
             className={inputClass} placeholder="Your name" />
         </div>
         <div>
-          <label className={labelClass}>Email Address <span className="text-kc-gold">*</span></label>
+          <label className={labelClass}>{labelFor(config, 'email')} {isRequired(config, 'email') && <span className="text-kc-gold">*</span>}</label>
           <input type="email" required value={formData.email} onChange={set('email')}
             className={inputClass} placeholder="you@example.com" />
         </div>
@@ -66,42 +72,46 @@ export default function KenyaWaitlistForm() {
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <label className={labelClass}>Phone / WhatsApp <span className="text-kc-gold">*</span></label>
+          <label className={labelClass}>{labelFor(config, 'phone')} {isRequired(config, 'phone') && <span className="text-kc-gold">*</span>}</label>
           <input type="tel" required value={formData.phone} onChange={set('phone')}
             className={inputClass} placeholder="+254 7XX XXX XXX" />
         </div>
         <div>
-          <label className={labelClass}>Country / City <span className="text-kc-gold">*</span></label>
+          <label className={labelClass}>{labelFor(config, 'country')} {isRequired(config, 'country') && <span className="text-kc-gold">*</span>}</label>
           <input type="text" required value={formData.country} onChange={set('country')}
             className={inputClass} placeholder="e.g. Nairobi, Kenya" />
         </div>
       </div>
 
       <div>
-        <label className={labelClass}>Business / Organisation <span className="text-kc-gold">*</span></label>
+        <label className={labelClass}>{labelFor(config, 'business')} {isRequired(config, 'business') && <span className="text-kc-gold">*</span>}</label>
         <input type="text" required value={formData.business} onChange={set('business')}
           className={inputClass} placeholder="Your business name & sector" />
       </div>
 
       <div>
-        <label className={labelClass}>Which program interests you?</label>
+        <label className={labelClass}>{labelFor(config, 'program')}</label>
         <select value={formData.program} onChange={set('program')} className={inputClass + " cursor-pointer"}>
           <option value="" disabled>Select a program…</option>
-          <option value="bootcamp">2-Day Bootcamp (Nairobi or virtual)</option>
-          <option value="accelerate">Accelerate — 90-Day Coaching</option>
-          <option value="market-entry">Market Entry — 6-Month Program</option>
-          <option value="unsure">Not sure yet</option>
+          {optionsFor(config, 'program').map(o => <option key={o} value={o}>{o}</option>)}
         </select>
       </div>
 
       <div>
-        <label className={labelClass}>What are you hoping to achieve? <span className="text-white/30">(optional)</span></label>
+        <label className={labelClass}>{labelFor(config, 'goals')} {!isRequired(config, 'goals') && <span className="text-white/30">(optional)</span>}</label>
         <textarea rows={2} value={formData.goals} onChange={set('goals')}
           className={inputClass + " resize-none"}
           placeholder="Brief description of your goals for the Canadian market…" />
       </div>
 
       {error && <p className="text-sm text-red-400 font-sans">{error}</p>}
+      {/* Honeypot — hidden from real users; bots that fill it are silently dropped */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-5000px' }}>
+        <input type="text" tabIndex={-1} autoComplete="off"
+          value={website} onChange={e => setWebsite(e.target.value)} />
+      </div>
+      <Turnstile onVerify={setTurnstileToken} />
+
 
       <button type="submit" disabled={submitting}
         className="w-full py-3.5 font-sans text-xs tracking-widest uppercase font-bold text-kc-black transition-colors disabled:opacity-60 disabled:cursor-not-allowed"

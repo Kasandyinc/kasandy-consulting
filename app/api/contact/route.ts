@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { kv, KEYS } from '@/lib/kv'
+import { recordSubmission, linkSubmissionToProspect } from '@/lib/forms/record'
+import { assessSubmission } from '@/lib/spam-score'
 import { noreply } from '@/lib/email'
-import { getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
+import { missingFormStamp, getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
 
 export async function POST(req: NextRequest) {
   const resend = new Resend(process.env.RESEND_API_KEY)
@@ -25,6 +27,10 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Timing check ────────────────────────────────────────────────────────
+    // Nothing on this site posts without a form stamp. A script does.
+    if (missingFormStamp(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please submit the form from the website.' }, { status: 400 })
+    }
     if (tooFast(formLoadedAt)) {
       return NextResponse.json({ error: 'Please take a moment before submitting.' }, { status: 400 })
     }
@@ -58,7 +64,37 @@ export async function POST(req: NextRequest) {
       message, referral: referral || '',
       createdAt: new Date().toISOString(),
     }
-    await kv.lpush(KEYS.contactSubmissions, JSON.stringify(entry))
+    // Content scoring — audienceType and referral come from dropdowns, so only the
+    // free-text fields are assessed.
+    const assessment = assessSubmission({ name, organisation, message })
+    const stored = assessment.quarantine ? { ...entry, _quarantined: assessment.reasons } : entry
+
+    await kv.lpush(KEYS.contactSubmissions, JSON.stringify(stored))
+
+    // E7: the enquiry also becomes a platform record, and — when they named an
+    // organisation — a prospect with an express inbound consent basis. Wrapped so a
+    // Supabase problem can never break the form; KV already holds the submission.
+    const recorded = await recordSubmission({
+      formSlug: 'contact',
+      name, email, organisation, message,
+      payload: stored,
+      sourcePath: '/contact',
+      ip: getClientIp(req),
+    })
+    if (recorded.ok && recorded.id && !assessment.quarantine) {
+      await linkSubmissionToProspect({
+        submissionId: recorded.id,
+        organisation: organisation || null,
+        email,
+        name,
+      })
+    }
+
+    if (assessment.quarantine) {
+      console.warn('Contact enquiry quarantined:', assessment.reasons.join('; '))
+      // Indistinguishable from success, so a bot learns nothing from the response.
+      return NextResponse.json({ success: true })
+    }
 
     await resend.emails.send({
       from: noreply,
