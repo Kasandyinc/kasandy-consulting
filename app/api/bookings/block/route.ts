@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 import { blockSlot, unblockSlot, blockEntireDay, unblockEntireDay } from '@/lib/bookings'
-
-function isAuthenticated(): boolean {
-  const cookieStore = cookies()
-  return cookieStore.get('admin_session')?.value === 'authenticated'
-}
+import { requireAdmin } from '@/lib/admin-guard'
 
 /**
  * POST /api/bookings/block
  * Body: { action: 'block'|'unblock'|'blockDay'|'unblockDay', date, time? }
  * Admin-only.
+ *
+ * This compared the session cookie to the literal 'authenticated'. It is not under
+ * /api/admin, so middleware never gated it either — the route's own check was the
+ * only one, and a fixed string is not a check. Now shares the signed-session guard.
  */
 export async function POST(req: NextRequest) {
-  if (!isAuthenticated()) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const denied = await requireAdmin()
+  if (denied) return denied
 
   const { action, date, time } = await req.json() as {
     action: 'block' | 'unblock' | 'blockDay' | 'unblockDay'

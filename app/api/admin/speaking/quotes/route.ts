@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kvGet, kvSet, KEYS } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 type Quote = {
   id: string
@@ -10,11 +11,17 @@ type Quote = {
 }
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   const quotes = await kvGet<Quote[]>(KEYS.speakingQuotes, [])
   return NextResponse.json(quotes)
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { quote, name, title, organisation } = await req.json()
 
@@ -39,6 +46,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })

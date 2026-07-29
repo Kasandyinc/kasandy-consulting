@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { isOperator } from '@/lib/engine/operators'
+import { verifyAdminSession, ADMIN_COOKIE } from '@/lib/admin-session'
+import { downloadTokenState, refusalRef } from '@/lib/download-token'
 
 const HUB_HOST = 'hub.kasandyconsulting.com'
 
@@ -12,12 +14,6 @@ const FREE_FILES = new Set([
   'free-nonprofit-scorecard.html',
   'free-kenya-canada-highlights.html',
 ])
-
-function hasValidPurchaseCookie(req: NextRequest): boolean {
-  const token = req.cookies.get('kc_token')?.value
-  if (!token) return false
-  return UUID_RE.test(token)
-}
 
 /**
  * Documents a client opens with a token instead of an account: the intake form and
@@ -109,40 +105,59 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/', req.url))
   }
 
-  // Admin API protection. The legacy CMS routes under /api/admin read and write
-  // submissions, subscribers and site settings, but only login/logout check the
-  // session themselves — and the original matcher ('/admin/:path*') never covered
-  // '/api/admin'. So they were reachable unauthenticated. Gate them here.
-  if (
-    pathname.startsWith('/api/admin') &&
-    !pathname.startsWith('/api/admin/login') &&
-    !pathname.startsWith('/api/admin/logout')
-  ) {
-    const session = req.cookies.get('admin_session')
-    if (!session?.value) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
+  // ─── Legacy /admin ─────────────────────────────────────────────────────────
+  // The routes under /api/admin read and write submissions, subscribers and site
+  // settings, and only login/logout check anything themselves — the original matcher
+  // ('/admin/:path*') never covered '/api/admin', so they were reachable with no
+  // session at all. That was gated here.
+  //
+  // The gate itself was then the bug: `if (!session?.value)` tested that a cookie was
+  // present, not that it was ours, and the value it looked for was the fixed string
+  // 'authenticated'. `Cookie: admin_session=x` was a full admin session. The cookie is
+  // now HMAC-signed with its own expiry inside the signature (lib/admin-session.ts),
+  // and it is verified rather than counted.
+  const needsAdmin =
+    (pathname.startsWith('/api/admin') &&
+      !pathname.startsWith('/api/admin/login') &&
+      !pathname.startsWith('/api/admin/logout')) ||
+    (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login'))
 
-  // Admin protection (existing)
-  if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
-    const session = req.cookies.get('admin_session')
-    if (!session?.value) {
+  if (needsAdmin) {
+    const ok = await verifyAdminSession(req.cookies.get(ADMIN_COOKIE)?.value)
+    if (!ok) {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
       const loginUrl = new URL('/admin/login', req.url)
       loginUrl.searchParams.set('from', pathname)
-      return NextResponse.redirect(loginUrl)
+      const res = NextResponse.redirect(loginUrl)
+      // Clear a stale or forged cookie so the browser stops presenting it.
+      res.cookies.set(ADMIN_COOKIE, '', { maxAge: 0, path: '/' })
+      return res
     }
   }
 
-  // Paid downloads protection (existing)
+  // ─── Paid downloads ────────────────────────────────────────────────────────
+  // This checked that kc_token *looked like* a UUID, which any browser console can
+  // produce, so every paid file was free to anyone who knew a filename. Ask the token
+  // store — the same authority /api/serve uses — whether the token was ever issued.
   if (pathname.startsWith('/downloads/')) {
     const filename = pathname.split('/').pop() ?? ''
     if (FREE_FILES.has(filename)) {
       return NextResponse.next() // free files pass through
     }
-    if (!hasValidPurchaseCookie(req)) {
+
+    const token = req.cookies.get('kc_token')?.value
+    if (!token || !UUID_RE.test(token)) {
       const dest = new URL('/resources', req.url)
       dest.searchParams.set('ref', 'purchase-required')
+      return NextResponse.redirect(dest)
+    }
+
+    const state = await downloadTokenState(token)
+    if (state !== 'valid' && state !== 'unavailable') {
+      const dest = new URL('/resources', req.url)
+      dest.searchParams.set('ref', refusalRef(state))
       return NextResponse.redirect(dest)
     }
   }

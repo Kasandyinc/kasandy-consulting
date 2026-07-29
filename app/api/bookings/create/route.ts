@@ -3,6 +3,15 @@ import { Resend } from 'resend'
 import { createBooking, isDateBookable, slotToUTC, getDayOfWeek, getDaySlots } from '@/lib/bookings'
 import { generateICS } from '@/lib/ics'
 import { bookings as FROM } from '@/lib/email'
+import {
+  missingFormStamp,
+  getClientIp,
+  normalizeEmail,
+  rateLimit,
+  tooFast,
+  verifyTurnstile,
+} from '@/lib/spam'
+import { assessSubmission } from '@/lib/spam-score'
 
 const JACKEE_EMAILS = ['Jackee.Kasandy@bebcsociety.org', 'jackee@kasandyconsulting.com']
 const MEETING_LINK = process.env.MEETING_LINK || ''
@@ -37,9 +46,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    const { date, time, name, email, topic, timezone } = body as {
+    const { date, time, name, email, topic, timezone, website, formLoadedAt, turnstileToken } = body as {
       date: string; time: string; name: string
       email: string; topic: string; timezone: string
+      website?: string; formLoadedAt?: number; turnstileToken?: string
     }
 
     // ── Validate ──────────────────────────────────────────────────────────────
@@ -48,6 +58,45 @@ export async function POST(req: NextRequest) {
     }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(time)) {
       return NextResponse.json({ error: 'Invalid date or time format.' }, { status: 400 })
+    }
+
+    // ── Spam protection ───────────────────────────────────────────────────────
+    // This endpoint had none. It writes a slot into the real calendar and sends two
+    // emails per POST, one of them to Jackee — the same shape as the endpoints the
+    // bots found, and worse, because a booked slot has to be cleaned up by hand.
+    if (website) {
+      return NextResponse.json({ success: true })   // honeypot: pretend success
+    }
+    if (missingFormStamp(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please book from the website.' }, { status: 400 })
+    }
+    if (tooFast(formLoadedAt)) {
+      return NextResponse.json({ error: 'Please take a moment before submitting.' }, { status: 400 })
+    }
+    const ip = getClientIp(req)
+    if (!(await verifyTurnstile(turnstileToken, ip))) {
+      return NextResponse.json({ error: 'Verification failed. Please try again.' }, { status: 400 })
+    }
+
+    // A booking is a slot in a real calendar, so the limits are tighter than a form:
+    // three a day per address, five an hour per address block.
+    const emailOk = await rateLimit(`rl:booking:email:${normalizeEmail(email)}`, 3, 86400)
+    const ipOk = await rateLimit(`rl:booking:ip:${ip}`, 5, 3600)
+    if (!emailOk || !ipOk) {
+      return NextResponse.json(
+        { error: 'Too many booking attempts. Please email us instead.' },
+        { status: 429 },
+      )
+    }
+
+    // Content scoring. A quarantined booking is refused rather than stored, because
+    // unlike a form submission it would occupy a slot a real client wanted.
+    const assessment = assessSubmission({ name, topic })
+    if (assessment.quarantine) {
+      return NextResponse.json(
+        { error: 'We could not process this booking. Please email us and we will arrange a time.' },
+        { status: 400 },
+      )
     }
     if (!isDateBookable(date)) {
       return NextResponse.json({ error: 'This date is not available for booking.' }, { status: 400 })

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight, Clock, Globe, CheckCircle, AlertTriangle } from 'lucide-react'
+import Turnstile from '@/components/Turnstile'
 
 // ─── Timezone & time helpers (client-safe, no Node imports) ──────────────────
 
@@ -125,6 +126,12 @@ export default function BookingCalendar() {
   const [formData, setFormData] = useState({ name: '', email: '', topic: '' })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Spam controls, matching every other public form on the site. This one had none:
+  // an unauthenticated POST here booked a slot in the real calendar and sent two
+  // emails, which is exactly the shape of endpoint the bots found last week.
+  const [turnstileToken, setTurnstileToken] = useState('')
+  const [website, setWebsite] = useState('')
+  const [formLoadedAt] = useState(() => Date.now())
 
   useEffect(() => {
     setUserTz(Intl.DateTimeFormat().resolvedOptions().timeZone)
@@ -184,6 +191,9 @@ export default function BookingCalendar() {
           email: formData.email,
           topic: formData.topic,
           timezone: userTz,
+          website,
+          formLoadedAt,
+          turnstileToken,
         }),
       })
       const data = await res.json()
@@ -376,7 +386,7 @@ export default function BookingCalendar() {
       : null
 
     return (
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="relative">
         <button
           type="button"
           onClick={() => setStep('slots')}
@@ -450,6 +460,24 @@ export default function BookingCalendar() {
               placeholder="Briefly describe your situation or question…"
             />
           </div>
+        </div>
+
+        {/* Honeypot — off-screen rather than display:none, which some bots skip. */}
+        <div aria-hidden="true" className="absolute left-[-9999px] top-auto w-px h-px overflow-hidden">
+          <label htmlFor="booking-website">Website</label>
+          <input
+            id="booking-website"
+            name="website"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={website}
+            onChange={e => setWebsite(e.target.value)}
+          />
+        </div>
+
+        <div className="mt-5">
+          <Turnstile onVerify={setTurnstileToken} />
         </div>
 
         {error && (

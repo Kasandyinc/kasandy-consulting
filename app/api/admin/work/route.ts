@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 type WorkStat = { value: string; label: string }
 type CaseStudy = {
@@ -19,6 +20,9 @@ const PARTNERS_KEY = 'work:partners'
 const CASE_STUDIES_KEY = 'work:casestudies'
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const [stats, partners, caseStudies] = await Promise.all([
       kv.get<WorkStat[]>(STATS_KEY),
@@ -37,6 +41,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const caseStudies = (await kv.get<CaseStudy[]>(CASE_STUDIES_KEY)) ?? []
@@ -54,6 +61,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const { type, data } = body
@@ -83,6 +93,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const { type, id } = body

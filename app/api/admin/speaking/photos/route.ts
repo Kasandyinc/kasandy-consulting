@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kvGet, kvSet, KEYS } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 type Photo = {
   id: string
@@ -10,11 +11,17 @@ type Photo = {
 }
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   const photos = await kvGet<Photo[]>(KEYS.speakingPhotos, [])
   return NextResponse.json(photos)
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const { src, alt, caption, event } = body
@@ -40,6 +47,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })

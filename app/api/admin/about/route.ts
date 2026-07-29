@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 type Credential = { label: string; value: string }
 type AboutContent = {
@@ -11,6 +12,9 @@ type AboutContent = {
 const KEY = 'about:content'
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const data = await kv.get<AboutContent>(KEY)
     return NextResponse.json(data ?? null)
@@ -21,6 +25,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json() as AboutContent
     await kv.set(KEY, body)

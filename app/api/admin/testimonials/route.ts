@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kvGet, kvSet, KEYS } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 type Review = {
   id: string
@@ -14,11 +15,17 @@ type Review = {
 }
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   const reviews = await kvGet<Review[]>(KEYS.testimonials, [])
   return NextResponse.json(reviews)
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const { name, title, organisation, quote, audience, featured, approved } = body
@@ -48,6 +55,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { id, ...updates } = await req.json()
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
@@ -65,6 +75,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })

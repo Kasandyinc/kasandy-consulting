@@ -32,6 +32,13 @@ export default async function AdminPage() {
     { key: 'KV_REST_API_URL', set: Boolean(process.env.KV_REST_API_URL), why: 'Rate limiting, and the legacy CMS store.' },
     { key: 'ENGINE_OPERATOR_EMAILS', set: Boolean(process.env.ENGINE_OPERATOR_EMAILS), why: 'The app-side operator allow-list.' },
     { key: 'NEXT_PUBLIC_HUB_URL', set: Boolean(process.env.NEXT_PUBLIC_HUB_URL), why: 'Links in proposals and portal emails.' },
+    { key: 'TURNSTILE_SECRET_KEY', set: Boolean(process.env.TURNSTILE_SECRET_KEY), why: 'Without it every public form loses its bot check.' },
+    { key: 'ADMIN_PASSWORD', set: Boolean(process.env.ADMIN_PASSWORD), why: 'The legacy /admin CMS. Retired once E7 finishes absorbing it.' },
+    {
+      key: 'ADMIN_SESSION_SECRET',
+      set: Boolean(process.env.ADMIN_SESSION_SECRET),
+      why: 'Signs the legacy /admin cookie. Falls back to ADMIN_PASSWORD if unset, so this is optional.',
+    },
   ]
 
   return (

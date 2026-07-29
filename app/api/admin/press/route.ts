@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 type PressItem = {
   id: string
@@ -16,6 +17,9 @@ type PressItem = {
 const KEY = 'press:coverage'
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const items = await kv.get<PressItem[]>(KEY)
     return NextResponse.json(items ?? [])
@@ -26,6 +30,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const items = (await kv.get<PressItem[]>(KEY)) ?? []
@@ -44,6 +51,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const { id, ...updates } = body
@@ -65,6 +75,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const { id } = body

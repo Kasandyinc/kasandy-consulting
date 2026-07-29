@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 type ProgramCardData = {
   tier: string
@@ -20,6 +21,9 @@ type ProgramsData = { [audience: string]: ProgramCardData[] }
 const KEY = 'programs:all'
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const data = await kv.get<ProgramsData>(KEY)
     if (!data) {
@@ -37,6 +41,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json()
     const { audience, programs } = body
