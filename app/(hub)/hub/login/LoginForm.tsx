@@ -136,20 +136,20 @@ export default function LoginForm() {
     return (
       <div style={{ display: 'grid', gap: 16 }}>
         <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--ink)', margin: 0 }}>
-          Sent to <strong>{email}</strong>. Use either the link or the six-digit code in
-          that email.
+          Sent to <strong>{email}</strong>. Use either the link or the code in that
+          email.
         </p>
 
         <form onSubmit={onVerify} style={{ display: 'grid', gap: 10 }}>
           <label style={{ fontSize: 13, color: 'var(--muted)' }}>
-            Six-digit code
+            Sign-in code
           </label>
           <input
             inputMode="numeric"
             autoComplete="one-time-code"
             pattern="[0-9]*"
-            maxLength={8}
-            placeholder="123456"
+            maxLength={10}
+            placeholder="24211237"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             style={{
