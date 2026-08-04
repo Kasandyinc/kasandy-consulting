@@ -109,11 +109,20 @@ export default function LoginForm() {
     setVerifying(true)
     setError('')
     const supabase = createClient()
-    const { error: err } = await supabase.auth.verifyOtp({
-      email: email.trim().toLowerCase(),
-      token: code.trim(),
-      type: 'email',
-    })
+    const address = email.trim().toLowerCase()
+    const token = code.trim()
+
+    // Supabase types the same six digits differently depending on how the message was
+    // generated — 'email' for an OTP sign-in, 'magiclink' when the template carries
+    // both a link and a code. Which one applies here cannot be checked from the build
+    // environment, and being wrong would read to the person typing as a bad code. So
+    // try the likely one and fall back rather than making them guess on our behalf.
+    let err = (await supabase.auth.verifyOtp({ email: address, token, type: 'email' })).error
+    if (err) {
+      const second = await supabase.auth.verifyOtp({ email: address, token, type: 'magiclink' })
+      if (!second.error) err = null
+    }
+
     setVerifying(false)
     if (err) {
       setState('error')
