@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { kvGet, kvSet, KEYS } from '@/lib/kv'
 import type { Download } from '@/types/downloads'
 import { DEFAULT_DOWNLOADS } from '@/data/downloads'
+import { requireAdmin } from '@/lib/admin-guard'
 
 export type { Download }
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   const kvData = await kvGet<Download[]>(KEYS.downloads, DEFAULT_DOWNLOADS)
   // Merge: KV values take precedence, but always include all default products
   const kvMap = new Map(kvData.map(d => [d.id, d]))
@@ -14,6 +18,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const patch = await req.json()
     const { id, ...fields } = patch

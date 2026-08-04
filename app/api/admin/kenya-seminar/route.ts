@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kv } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 type SeminarInfo = {
   nextDates: string
@@ -14,6 +15,9 @@ type SeminarInfo = {
 const KEY = 'kenya:seminar'
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const data = await kv.get<SeminarInfo>(KEY)
     return NextResponse.json(data ?? null)
@@ -24,6 +28,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const body = await req.json() as SeminarInfo
     await kv.set(KEY, body)

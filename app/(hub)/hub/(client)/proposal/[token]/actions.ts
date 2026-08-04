@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { rateLimit } from '@/lib/spam'
 import { documentHash } from '@/lib/engine/delivery'
 
 /**
@@ -28,6 +29,17 @@ export async function signProposal(args: {
   if (name.length < 2) return { ok: false, error: 'Please type your full name.' }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, error: 'That email does not look right.' }
 
+  const h = headers()
+  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || null
+
+  // Signing is unauthenticated and irreversible. The database already refuses a second
+  // signature, so the limit is not what protects the record — it stops someone with a
+  // forwarded link from hammering the endpoint that creates a client and moves an
+  // organisation to won.
+  if (!(await rateLimit(`sign:${ip ?? 'unknown'}`, 20, 3600))) {
+    return { ok: false, error: 'Too many attempts. Please wait a few minutes, or reply to our email.' }
+  }
+
   const supabase = createAdminClient()
   const { data: proposal } = await supabase
     .from('proposals')
@@ -41,9 +53,6 @@ export async function signProposal(args: {
   }
 
   const hash = await documentHash(proposal.blueprint_md, proposal.terms_md, proposal.total_cents)
-
-  const h = headers()
-  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || null
 
   const { error } = await supabase.from('proposal_signatures').insert({
     proposal_id: proposal.id,

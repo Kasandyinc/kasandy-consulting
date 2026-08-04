@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { kv, KEYS } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 async function readList(key: string) {
   try {
@@ -13,6 +14,9 @@ async function readList(key: string) {
 }
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   const [contact, speaking, kenya] = await Promise.all([
     readList(KEYS.contactSubmissions),
     readList(KEYS.speakingSubmissions),

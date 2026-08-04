@@ -1,7 +1,9 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { rateLimit } from '@/lib/spam'
 import type { IntakeQuestion } from '@/lib/engine/delivery'
 
 /**
@@ -17,6 +19,14 @@ export async function saveIntake(args: {
   submit: boolean
 }) {
   if (!/^[0-9a-f]{32,64}$/i.test(args.token)) return { ok: false, error: 'Invalid link.' }
+
+  // Unauthenticated, and it runs on the service role. The token is 192 bits, so this
+  // is not about guessing it — it is about anyone holding a forwarded link not being
+  // able to write to a jsonb column as fast as they can send requests.
+  const ip = (headers().get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown'
+  if (!(await rateLimit(`intake:${ip}`, 60, 3600))) {
+    return { ok: false, error: 'Too many saves. Please wait a few minutes and try again.' }
+  }
 
   const supabase = createAdminClient()
   const { data: intake } = await supabase

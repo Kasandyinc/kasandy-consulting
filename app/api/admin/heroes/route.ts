@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kvGet, kvSet, KEYS } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 export type PageHeroConfig = {
   page: string
@@ -25,6 +26,9 @@ const DEFAULTS: PageHeroConfig[] = [
 ]
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   const stored = await kvGet<PageHeroConfig[]>(KEYS.pageHeroes, DEFAULTS)
   // Merge with defaults to ensure all pages are represented
   const map = new Map(stored.map(h => [h.page, h]))
@@ -33,6 +37,9 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const { page, ...updates } = await req.json()
     if (!page) return NextResponse.json({ error: 'page is required' }, { status: 400 })

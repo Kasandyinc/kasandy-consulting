@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { kvGet, kvSet, KEYS } from '@/lib/kv'
+import { requireAdmin } from '@/lib/admin-guard'
 
 export type SiteSettings = {
   heroTagline: string
@@ -28,11 +29,17 @@ const DEFAULTS: SiteSettings = {
 }
 
 export async function GET() {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   const settings = await kvGet<SiteSettings>(KEYS.siteSettings, DEFAULTS)
   return NextResponse.json(settings)
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireAdmin()
+  if (denied) return denied
+
   try {
     const updates = await req.json()
 
