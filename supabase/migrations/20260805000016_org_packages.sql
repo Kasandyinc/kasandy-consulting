@@ -98,3 +98,31 @@ alter table demo_views enable row level security;
 
 create policy demo_views_operator on demo_views for all to authenticated
   using (is_engine_operator()) with check (is_engine_operator());
+
+-- ─── Storage ────────────────────────────────────────────────────────────────
+/**
+ * The bucket the packages live in. Private, and it stays private.
+ *
+ * A public bucket would put a tailored pitch for a named organisation — with their
+ * decision-maker, their suspected systems and an estimate of what their disorder
+ * costs them — on a guessable URL. The prospect reaches it through the signed
+ * package route instead, which checks the token, records the opening, and never
+ * exposes the storage path.
+ */
+insert into storage.buckets (id, name, public)
+values ('org-packages', 'org-packages', false)
+on conflict (id) do update set public = false;
+
+-- Operators manage the bucket from the hub. Everyone else reaches it only through
+-- the package route, which reads with the service key after checking a token.
+create policy org_packages_operator_read on storage.objects for select to authenticated
+  using (bucket_id = 'org-packages' and is_engine_operator());
+
+create policy org_packages_operator_write on storage.objects for insert to authenticated
+  with check (bucket_id = 'org-packages' and is_engine_operator());
+
+create policy org_packages_operator_update on storage.objects for update to authenticated
+  using (bucket_id = 'org-packages' and is_engine_operator());
+
+create policy org_packages_operator_delete on storage.objects for delete to authenticated
+  using (bucket_id = 'org-packages' and is_engine_operator());
