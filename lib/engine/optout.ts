@@ -43,3 +43,40 @@ export function optOutUrl(orgId: string, contactId?: string | null): string {
   const base = process.env.NEXT_PUBLIC_URL ?? 'https://kasandyconsulting.com'
   return `${base}/api/engine/optout?t=${makeOptOutToken(orgId, contactId)}`
 }
+
+/**
+ * The same guarantee for the newsletter list.
+ *
+ * A subscriber has no org, so the outreach token does not describe them. Rather than
+ * put a raw email address in an unsubscribe URL — which would let anyone unsubscribe
+ * anyone by typing a different address — the payload is signed the same way.
+ *
+ * Prefixed `s:` so a subscriber token can never be read as an org token, or the
+ * reverse: two token kinds sharing one signing key must not be interchangeable.
+ */
+export function makeSubscriberToken(email: string): string {
+  const payload = b64url(Buffer.from(`s:${email.trim().toLowerCase()}`))
+  const sig = b64url(crypto.createHmac('sha256', secret()).update(payload).digest()).slice(0, 32)
+  return `${payload}.${sig}`
+}
+
+export function readSubscriberToken(token: string): { email: string } | null {
+  const [payload, sig] = (token ?? '').split('.')
+  if (!payload || !sig) return null
+
+  const expected = b64url(crypto.createHmac('sha256', secret()).update(payload).digest()).slice(0, 32)
+  const a = Buffer.from(sig)
+  const b = Buffer.from(expected)
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null
+
+  const decoded = Buffer.from(payload, 'base64url').toString()
+  if (!decoded.startsWith('s:')) return null
+  const email = decoded.slice(2)
+  return email ? { email } : null
+}
+
+/** Absolute unsubscribe URL for a newsletter recipient. */
+export function subscriberOptOutUrl(email: string): string {
+  const base = process.env.NEXT_PUBLIC_URL ?? 'https://kasandyconsulting.com'
+  return `${base}/api/engine/optout?s=${makeSubscriberToken(email)}`
+}

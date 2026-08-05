@@ -13,20 +13,10 @@ const PHASES: Record<string, { title: string; phase: string; blurb: string }> = 
     blurb:
       'Engagement workspaces, phase briefs, the client portal, and the Verified-live → invoice chain. Currently there are 0 clients — the real state is 29 prospects.',
   },
-  marketing: {
-    title: 'Marketing & Comms',
-    phase: 'Phase 5',
-    blurb: 'Campaigns, LinkedIn, and the monthly practice report.',
-  },
   calendar: {
     title: 'Calendar & Meetings',
     phase: 'Phase 3',
     blurb: 'Booking → intake → discovery workspace, with two-way calendar sync.',
-  },
-  comms: {
-    title: 'Comms Hub',
-    phase: 'Phase 3',
-    blurb: 'Threads, reply routing, and the notification feed.',
   },
   analytics: {
     title: 'Analytics',

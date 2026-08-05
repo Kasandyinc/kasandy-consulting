@@ -23,13 +23,13 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
   },
   {
     group: 'Reach',
-    items: [{ href: '/marketing', icon: '✎', label: 'Marketing & Comms', soon: true }],
+    items: [{ href: '/marketing', icon: '✎', label: 'Marketing & Comms' }],
   },
   {
     group: 'Operate',
     items: [
       { href: '/calendar', icon: '▦', label: 'Calendar & Meetings' },
-      { href: '/comms', icon: '✦', label: 'Comms Hub', soon: true },
+      { href: '/comms', icon: '✦', label: 'Comms Hub' },
     ],
   },
   {
