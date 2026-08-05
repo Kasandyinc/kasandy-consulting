@@ -27,6 +27,11 @@ export type MergeContext = {
     angle_13?: string | null
     /** Sourced tailoring detail. Only ever set alongside its source + date (Addendum 1). */
     detail_hook?: string | null
+    /** The unguessable path a prospect opens their tailored package at. */
+    package_token?: string | null
+    /** Whether a demo and a proposal have actually been uploaded for this org. */
+    demo_object?: string | null
+    proposal_object?: string | null
   }
   contact?: {
     name?: string | null
@@ -117,9 +122,59 @@ function resolveAuto(name: string, ctx: MergeContext): string | null {
       return s.signature_md ?? null
     case 'mailing address':
       return s.mailing_address ?? null
+
+    // The tailored package. Resolves only when a file has actually been uploaded
+    // for this organisation — an org with a token but no demo yields null, which
+    // blocks the send rather than mailing a link to a 404. A dead link in a first
+    // approach costs more than the email was worth.
+    case 'demo link':
+    case 'demo':
+      return org.package_token && org.demo_object ? packageUrl(org.package_token) : null
+    case 'proposal link':
+    case 'proposal':
+      return org.package_token && org.proposal_object
+        ? `${packageUrl(org.package_token)}/proposal`
+        : null
     default:
       return null
   }
+}
+
+/** Where a prospect opens their package. Public host — friendlier than a subdomain. */
+export function packageUrl(token: string): string {
+  const base = process.env.NEXT_PUBLIC_URL ?? 'https://kasandyconsulting.com'
+  return `${base}/demo/${token}`
+}
+
+/**
+ * Is the copy greeting somebody other than the person it is addressed to?
+ *
+ * The per-org drafts were written with a real name typed into the greeting rather
+ * than a token, so changing the recipient in the composer leaves "Hi Delvin," at the
+ * top of a message going to Blake. No token is unresolved, so the send-gate saw
+ * nothing wrong — the check that exists cannot catch a mistake made in plain prose.
+ *
+ * Returns the name found in the greeting when it does not match the recipient, and
+ * null when it matches, when the greeting is already a token, or when there is no
+ * greeting to judge.
+ */
+export function greetingMismatch(body: string, recipientName?: string | null): string | null {
+  const firstLine = body.split('\n').find((l) => l.trim().length > 0)
+  if (!firstLine) return null
+
+  const m = firstLine
+    .trim()
+    .match(/^(?:hi|hello|hey|dear|good morning|good afternoon)[\s,]+([A-Za-z\u00C0-\u024F][A-Za-z\u00C0-\u024F'’-]{1,30})/i)
+  if (!m) return null
+
+  const greeted = m[1]
+  // Already tokenised, or a generic greeting: nothing to compare.
+  if (/^(there|team|all|everyone|folks)$/i.test(greeted)) return null
+
+  const expected = firstName(recipientName)
+  if (!expected) return greeted
+
+  return greeted.toLowerCase() === expected.toLowerCase() ? null : greeted
 }
 
 function isManual(name: string): boolean {
