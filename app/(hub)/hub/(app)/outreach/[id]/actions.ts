@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { isStepKey, STEPS } from '@/lib/engine/steps'
 import { isOperator } from '@/lib/engine/operators'
 import { checkSend, deliver, type TemplateRow, type SettingsRow, type DraftRow } from '@/lib/engine/send'
 import { optOutUrl } from '@/lib/engine/optout'
@@ -79,12 +80,14 @@ export async function sendOutreach(args: {
 
   if (!org) return { ok: false, error: 'Organisation not found.' }
 
-  const STEP_FOR: Record<string, string> = { 'O-01': 'E1', 'O-03': 'E2', 'O-05': 'E3' }
+  // Which step this template belongs to, derived rather than restated. A fourth
+  // copy of the cadence is a fourth thing to forget to update.
+  const step = STEPS.find((s) => s.templateId === args.templateId && s.channel === 'email')?.key ?? ''
   const { data: draftRows } = await supabase
     .from('outreach_drafts')
     .select('*')
     .eq('org_id', args.orgId)
-    .eq('step', STEP_FOR[args.templateId] ?? '')
+    .eq('step', step)
   const draft = ((draftRows ?? []) as DraftRow[])[0] ?? null
 
   const contactList = (contacts ?? []) as Contact[]
@@ -332,7 +335,7 @@ export async function saveDraft(args: {
   // E1/E2/E3/PHONE/LINKEDIN while the table only accepted E1/E2/E3 — so saving a
   // phone script passed this check and was refused by the database, and the cadence's
   // three calls had one tab between them. Both now follow the source document.
-  if (!['E1', 'E2', 'E3', 'C1', 'C2', 'C3', 'NURTURE', 'LINKEDIN'].includes(args.step)) {
+  if (!isStepKey(args.step)) {
     return { ok: false, error: 'Unknown step.' }
   }
 

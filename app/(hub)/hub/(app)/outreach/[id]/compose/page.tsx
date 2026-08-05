@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { STEPS } from '@/lib/engine/steps'
 import { checkSend, type TemplateRow, type SettingsRow, type DraftRow } from '@/lib/engine/send'
 import { tailoringSuggestions } from '@/lib/engine/tailor'
 import { FOUNDER_OUTREACH_V1 } from '@/lib/engine/sequence'
@@ -15,16 +16,6 @@ export const dynamic = 'force-dynamic'
  * LinkedIn steps are scripts the operator uses by hand — the platform holds the words
  * and records that the touch happened, it never places a call or posts a message.
  */
-const STEPS = [
-  { key: 'E1', templateId: 'O-01', label: 'E1 · Tailored hook', channel: 'email' as const },
-  { key: 'C1', templateId: 'O-02', label: 'C1 · Warm follow', channel: 'manual' as const },
-  { key: 'E2', templateId: 'O-03', label: 'E2 · Value reframe', channel: 'email' as const },
-  { key: 'C2', templateId: 'O-02', label: 'C2 · Meeting ask', channel: 'manual' as const },
-  { key: 'E3', templateId: 'O-05', label: 'E3 · Closeout', channel: 'email' as const },
-  { key: 'C3', templateId: 'O-02', label: 'C3 · Final touch', channel: 'manual' as const },
-  { key: 'LINKEDIN', templateId: 'O-02', label: 'LinkedIn note', channel: 'manual' as const },
-  { key: 'NURTURE', templateId: 'O-05', label: 'Nurture', channel: 'manual' as const },
-]
 
 export default async function ComposePage({
   params,
