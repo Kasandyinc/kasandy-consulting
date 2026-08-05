@@ -1,5 +1,5 @@
 import { Resend } from 'resend'
-import { renderTemplate, withCaslFooter, type MergeContext } from './merge'
+import { renderTemplate, withCaslFooter, greetingMismatch, type MergeContext } from './merge'
 import { optOutUrl } from './optout'
 import { sendBlockers, type Org, type Contact, type ConsentRow } from './types'
 import { signatureFrom, signatureHtml, signatureText, bodyToHtml, stripSignOff, SIGN_OFF } from './signature'
@@ -118,6 +118,18 @@ export function checkSend(args: {
   const missingManual = Array.from(new Set([...bodyResult.unfilled, ...subjResult.unfilled]))
 
   if (missingAuto.length) reasons.push(`Unresolved fields: ${missingAuto.join(', ')}`)
+
+  // A name typed into the greeting instead of a token. No token is unresolved, so
+  // every other check here passes happily while the email opens by addressing
+  // somebody who is not the recipient. This came within one click of going out.
+  const greeted = greetingMismatch(bodySource, contact?.name)
+  if (greeted) {
+    reasons.push(
+      contact?.name
+        ? `The copy opens "Hi ${greeted}," but this is addressed to ${contact.name}. Use [First name] so it follows the recipient.`
+        : `The copy opens "Hi ${greeted}," with a name typed in rather than [First name].`,
+    )
+  }
   if (missingManual.length) {
     reasons.push(`Awaiting your input: ${missingManual.join(', ')} — these are never auto-filled`)
   }

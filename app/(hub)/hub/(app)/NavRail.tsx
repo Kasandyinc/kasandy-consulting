@@ -14,6 +14,7 @@ const GROUPS: { group: string; items: { href: string; icon: string; label: strin
     group: 'Grow',
     items: [
       { href: '/outreach', icon: '↗', label: 'Outreach' },
+      { href: '/outreach/packages', icon: '❐', label: 'Org packages' },
       { href: '/clients', icon: '◆', label: 'Clients' },
     ],
   },

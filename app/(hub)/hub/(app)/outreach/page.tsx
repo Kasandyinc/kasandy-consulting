@@ -43,6 +43,9 @@ export default async function Outreach({ searchParams }: { searchParams: Search 
           </p>
         </div>
         <div className="row" style={{ gap: 8 }}>
+          <Link href="/outreach/packages" className="btn sm">
+            ❐ Org packages
+          </Link>
           <Link href={asTable ? '/outreach' : '/outreach?view=table'} className="btn sm">
             {asTable ? '▤ Board view' : '▤ Table view'}
           </Link>
