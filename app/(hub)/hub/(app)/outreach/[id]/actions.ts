@@ -328,7 +328,11 @@ export async function saveDraft(args: {
   } = await supabase.auth.getUser()
 
   if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
-  if (!['E1', 'E2', 'E3', 'PHONE', 'LINKEDIN'].includes(args.step)) {
+  // Must stay in step with the database constraint on outreach_drafts. These were
+  // E1/E2/E3/PHONE/LINKEDIN while the table only accepted E1/E2/E3 — so saving a
+  // phone script passed this check and was refused by the database, and the cadence's
+  // three calls had one tab between them. Both now follow the source document.
+  if (!['E1', 'E2', 'E3', 'C1', 'C2', 'C3', 'NURTURE', 'LINKEDIN'].includes(args.step)) {
     return { ok: false, error: 'Unknown step.' }
   }
 
