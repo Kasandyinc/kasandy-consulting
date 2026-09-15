@@ -341,6 +341,26 @@ test('a booking can still be attached to an organisation', () => {
   assert.match(actions, /ilike\('name', claimed\)/, 'linking no longer matches before it creates')
 })
 
+test('both inbound routes record consent the same way, and only when safe', () => {
+  // A contact form and a booking form are the same situation: someone came to us.
+  // Both may record an express basis, and both may do it ONLY when the submission is
+  // what created the organisation — otherwise anyone who can pass the spam checks
+  // unlocks outreach to every contact at a researched prospect by naming it.
+  const routes = [
+    'lib/forms/record.ts',
+    'app/(hub)/hub/(app)/calendar/actions.ts',
+  ]
+  for (const route of routes) {
+    const src = read(join(ROOT, route))
+    assert.match(src, /express_inbound_unverified/, `${route} no longer records a consent basis`)
+    assert.match(
+      src,
+      /orgIsNew && contactId/,
+      `${route} records consent for an org it did not create — that is consent forgery`,
+    )
+  }
+})
+
 test('an unlinked booking is visible as a problem, not just absent', () => {
   const page = read(join(ROOT, 'app/(hub)/hub/(app)/calendar/page.tsx'))
   assert.match(page, /const unlinked = rows\.filter/, 'unlinked bookings are no longer counted')

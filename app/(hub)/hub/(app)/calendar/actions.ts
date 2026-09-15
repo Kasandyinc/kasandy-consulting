@@ -125,6 +125,9 @@ export async function linkBookingToOrg(args: { bookingId: string; orgId?: string
   if (booking.org_id) return { ok: false, error: 'This booking is already linked.' }
 
   let orgId = args.orgId
+  // Whether this booking is what brought the organisation into existence. It decides
+  // whether a consent basis may be recorded below — see the note there.
+  let orgIsNew = false
 
   if (!orgId) {
     const claimed = booking.organisation?.trim()
@@ -158,6 +161,7 @@ export async function linkBookingToOrg(args: { bookingId: string; orgId?: string
 
       if (error) return { ok: false, error: error.message }
       orgId = created.id
+      orgIsNew = true
     }
   }
 
@@ -186,6 +190,28 @@ export async function linkBookingToOrg(args: { bookingId: string; orgId?: string
       .select('id')
       .single()
     contactId = made?.id
+  }
+
+  // CASL. Booking a call is inbound contact — an express basis for replying to the
+  // person who did it. But the send-gate reads consent at the ORGANISATION level, so
+  // recording a basis against an org that already exists in the pipeline would let
+  // anyone who can get through the booking form unlock outreach to every contact at a
+  // researched prospect by naming it. That is consent forgery, and it is what the
+  // ledger exists to stop.
+  //
+  // So a basis is recorded only when this booking is what created the organisation —
+  // a brand-new org has no other contacts, so the scope is the one address that was
+  // typed in. Linking to an existing prospect records nothing and an operator decides.
+  //
+  // Without this the org sits at "No consent basis recorded" and every send refuses,
+  // which is the same state the contact form already avoids for the identical case.
+  if (orgIsNew && contactId) {
+    await supabase.from('consent_ledger').insert({
+      org_id: orgId,
+      contact_id: contactId,
+      basis: 'express_inbound_unverified',
+      source_url: 'kasandyconsulting.com booking form',
+    })
   }
 
   const { error: linkError } = await supabase
