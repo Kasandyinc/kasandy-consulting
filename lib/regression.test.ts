@@ -377,7 +377,46 @@ test('a signature still creates the client, the thing Clients promises', () => {
   assert.match(fn, /ALREADY SIGNED/, 'a proposal can be signed twice again')
 })
 
-// ─── 8 · Migrations are append-only ─────────────────────────────────────────
+// ─── 8 · AI proposes; a person decides ──────────────────────────────────────
+// §8 of the brief: AI drafts only, must respect provenance and the no-fabrication
+// rule, and a drafted detail still needs human confirmation before it counts. The
+// failure mode here is not a crash — it is a plausible invented fact reaching a
+// real person by name, with nothing in the build to catch it.
+
+test('research never writes to orgs on its own', () => {
+  // The only path from a proposal into the record is an operator accepting one.
+  const route = read(join(ROOT, 'app/api/engine/research/route.ts'))
+  assert.doesNotMatch(route, /from\('orgs'\)[\s\S]{0,80}\.update\(/, 'research now edits orgs directly')
+  assert.doesNotMatch(route, /stage:/, 'research now advances the stage by itself')
+  assert.match(route, /isOperator\(/, 'the research endpoint lost its operator check')
+})
+
+test('accepting a claim carries its receipt into the row', () => {
+  // orgs_leader_provenance and orgs_detail_provenance refuse these fields without a
+  // source and a date. Accepting is where those come from, and they come from the
+  // claim's own citation rather than being invented at that moment.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/outreach/[id]/actions.ts'))
+  const fn = actions.slice(actions.indexOf('export async function acceptResearchClaim'))
+  assert.match(fn, /leader_source = claim\.source_url/, 'a leader name can be accepted without its source')
+  assert.match(fn, /detail_source = claim\.source_url/, 'a detail can be accepted without its source')
+  assert.match(fn, /owner\.org_id !== args\.orgId/, 'a claim can be written onto another organisation')
+})
+
+test('a proposed claim cannot exist without a source', () => {
+  // The same rule orgs enforces for a stored fact, enforced for a proposed one — so
+  // an uncited claim cannot even be offered to a person for acceptance.
+  const sql = read(join(ROOT, 'supabase/migrations/20260915000019_org_research.sql'))
+  assert.match(sql, /source_url {3}text not null/, 'a claim may now be stored with no source')
+  assert.match(sql, /claims_people_are_sourced/, 'a leader name may now be inferred rather than read')
+})
+
+test('the model is told its own memory is not a source', () => {
+  const research = read(join(ROOT, 'lib/engine/research.ts'))
+  assert.match(research, /web_search/, 'research no longer searches, so it answers from recall')
+  assert.match(research, /memory is not a source/, 'the no-fabrication instruction has been removed')
+})
+
+// ─── 9 · Migrations are append-only ─────────────────────────────────────────
 // An applied migration must never be edited: the database has already run the old
 // text, so a change to it silently means the file and the live schema disagree.
 

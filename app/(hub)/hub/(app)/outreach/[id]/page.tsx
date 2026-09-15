@@ -13,6 +13,7 @@ import { SystemStrip, Provenance, OrgFlags } from '../../../../_components/ui'
 import SignOffButton from './SignOffButton'
 import SequenceTab from './SequenceTab'
 import StagePicker from './StagePicker'
+import ResearchPanel, { type ClaimRow, type RunRow } from './ResearchPanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,6 +50,25 @@ export default async function OrgRecord({
       supabase.from('consent_ledger').select('*').eq('org_id', params.id),
       supabase.from('sequences').select('*, sequence_steps(*)').eq('org_id', params.id),
     ])
+
+  // The most recent research run, and the proposals it made. Only the latest run is
+  // shown: an older one's proposals were already decided, and stacking them would
+  // ask the same question twice.
+  const { data: latestRun } = await supabase
+    .from('org_research')
+    .select('*')
+    .eq('org_id', params.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const { data: claimRows } = latestRun
+    ? await supabase
+        .from('org_research_claims')
+        .select('*')
+        .eq('research_id', latestRun.id)
+        .order('created_at')
+    : { data: [] }
 
   if (!org) notFound()
 
@@ -132,6 +152,13 @@ export default async function OrgRecord({
 
       {tab === 'overview' && (
         <div className="grid g2">
+          <ResearchPanel
+            orgId={o.id}
+            orgName={o.name}
+            run={(latestRun ?? null) as RunRow | null}
+            claims={(claimRows ?? []) as ClaimRow[]}
+          />
+
           <div className="card">
             <div className="card-h"><h3>Leader</h3></div>
             <div className="card-b">

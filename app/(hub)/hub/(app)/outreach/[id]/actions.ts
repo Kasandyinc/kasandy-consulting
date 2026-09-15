@@ -548,3 +548,93 @@ export async function changeStage(orgId: string, to: string) {
   revalidatePath('/outreach')
   return { ok: true }
 }
+
+/**
+ * Accept one researched claim into the record.
+ *
+ * This is the only path from research into `orgs`, and it is deliberately one claim
+ * at a time with a person's click behind each. §8 of the brief: a drafted detail
+ * still needs human confirmation before it counts as filled.
+ *
+ * Accepting is also what satisfies the provenance constraints. A leader name or a
+ * tailoring detail is refused by the database unless its source and verified date
+ * are written in the same statement, so those are taken from the claim's own
+ * citation rather than invented at the point of acceptance — which is the whole
+ * reason the claims table refuses to hold a claim without a source_url.
+ */
+export async function acceptResearchClaim(args: { orgId: string; claimId: string }) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+
+  const { data: claim } = await supabase
+    .from('org_research_claims')
+    .select('id, field, value, source_url, kind, accepted_at, rejected_at, org_research!inner(org_id)')
+    .eq('id', args.claimId)
+    .maybeSingle()
+
+  if (!claim) return { ok: false, error: 'That proposal no longer exists.' }
+  if (claim.accepted_at) return { ok: false, error: 'Already accepted.' }
+  if (claim.rejected_at) return { ok: false, error: 'That proposal was rejected.' }
+
+  // The claim must belong to the organisation being edited. Without this the id
+  // alone would let a claim researched for one org be written onto another.
+  const owner = claim.org_research as unknown as { org_id: string }
+  if (owner.org_id !== args.orgId) return { ok: false, error: 'That proposal belongs to another organisation.' }
+
+  const today = new Date().toISOString().slice(0, 10)
+  const patch: Record<string, string> = { [claim.field]: claim.value }
+
+  // The two fields the hard rule protects carry their receipt into the row with them.
+  if (claim.field === 'leader_name') {
+    patch.leader_source = claim.source_url
+    patch.leader_verified_on = today
+  }
+  if (claim.field === 'detail_hook') {
+    patch.detail_source = claim.source_url
+    patch.detail_verified_on = today
+  }
+
+  const { error } = await supabase.from('orgs').update(patch).eq('id', args.orgId)
+  if (error) return { ok: false, error: error.message }
+
+  await supabase
+    .from('org_research_claims')
+    .update({ accepted_at: new Date().toISOString(), accepted_by: user!.email })
+    .eq('id', args.claimId)
+
+  await supabase.from('audit_log').insert({
+    actor: user!.email,
+    action: 'research.claim_accepted',
+    entity: 'orgs',
+    entity_id: args.orgId,
+    meta: { field: claim.field, value: claim.value, source: claim.source_url, kind: claim.kind },
+  })
+
+  revalidatePath(`/outreach/${args.orgId}`)
+  return { ok: true }
+}
+
+/** Turn a proposal down. Kept rather than deleted, so a rerun can be compared to it. */
+export async function rejectResearchClaim(args: { orgId: string; claimId: string }) {
+  const supabase = createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
+
+  const { error } = await supabase
+    .from('org_research_claims')
+    .update({ rejected_at: new Date().toISOString(), rejected_by: user!.email })
+    .eq('id', args.claimId)
+    .is('accepted_at', null)
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/outreach/${args.orgId}`)
+  return { ok: true }
+}
