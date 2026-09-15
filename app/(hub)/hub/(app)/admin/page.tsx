@@ -64,6 +64,7 @@ export default async function AdminPage() {
             signature_tagline: null,
             signature_logo_url: null,
             booking_url: null,
+            default_meeting_link: null,
           }) as never
         }
         operators={(operators ?? []) as never}

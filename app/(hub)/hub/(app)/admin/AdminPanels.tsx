@@ -27,6 +27,7 @@ type Settings = {
   signature_tagline: string | null
   signature_logo_url: string | null
   booking_url: string | null
+  default_meeting_link: string | null
 }
 
 type Operator = { email: string; role: string; added_at: string }
@@ -63,6 +64,7 @@ export default function AdminPanels({
     signatureTagline: settings.signature_tagline ?? '',
     signatureLogoUrl: settings.signature_logo_url ?? '',
     bookingUrl: settings.booking_url ?? '',
+    defaultMeetingLink: settings.default_meeting_link ?? '',
   })
 
   const [newOperator, setNewOperator] = useState('')
@@ -133,6 +135,12 @@ export default function AdminPanels({
                 </Row>
               </div>
             </div>
+            <Row
+              label="Standing meeting room"
+              hint="Used by every booking that has no link of its own, and shown on Calendar so you can forward it."
+            >
+              <input value={s.defaultMeetingLink} onChange={set('defaultMeetingLink')} style={field} />
+            </Row>
             <Row label="CASL footer" hint="Appended to every outreach email, above the unsubscribe link.">
               <textarea rows={3} value={s.caslFooterMd} onChange={set('caslFooterMd')} style={{ ...field, resize: 'vertical' }} />
             </Row>

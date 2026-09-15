@@ -296,7 +296,68 @@ test('the booking emails lay their rows out in a table, not flexbox', () => {
   assert.match(src, /role="presentation"/, 'the email rows are no longer a table')
 })
 
-// ─── 7 · Migrations are append-only ─────────────────────────────────────────
+// ─── 7 · The call is joined to the rest of the engine ───────────────────────
+// What broke: bookings.meeting_link had been written by the website since day one
+// and rendered nowhere, and a website booking arrives with org_id null — which
+// startIntakeFromBooking refuses, with no way to supply one. The call happened and
+// the platform stopped there.
+
+test('the calendar shows the meeting link rather than only storing it', () => {
+  const row = read(join(ROOT, 'app/(hub)/hub/(app)/calendar/BookingRow.tsx'))
+  assert.match(row, /href=\{resolvedLink\}/, 'the Join link is no longer rendered')
+  assert.match(row, /clipboard\.writeText\(value\)/, 'the link can no longer be copied to forward')
+})
+
+test('a meeting link falls back before it gives up', () => {
+  // booking → settings → env. The last is why the two backfilled calls have a
+  // working Join button without anyone having typed anything in.
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/calendar/page.tsx'))
+  assert.match(
+    page,
+    /default_meeting_link[\s\S]{0,120}process\.env\.MEETING_LINK/,
+    'the meeting-link fallback chain has been shortened',
+  )
+})
+
+test('meeting notes stay out of the provenance column', () => {
+  // bookings.notes says where the booking came from. One column holding both a fact
+  // about the client and a fact about our own plumbing loses one of them.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/calendar/actions.ts'))
+  const body = actions.slice(actions.indexOf('export async function saveMeetingNotes'))
+  const payload = body.slice(body.indexOf('.update('), body.indexOf('.eq('))
+  assert.match(payload, /meeting_notes:/, 'meeting notes are no longer saved')
+  assert.doesNotMatch(
+    payload,
+    /(^|[{,\s])notes:/,
+    'meeting notes are being written into the provenance column',
+  )
+})
+
+test('a booking can still be attached to an organisation', () => {
+  // The single weld between the call and everything that pays for it.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/calendar/actions.ts'))
+  assert.match(actions, /export async function linkBookingToOrg/, 'the booking→org weld is gone')
+  assert.match(actions, /'0_unverified'/, 'a booking-created org no longer starts unverified')
+  assert.match(actions, /ilike\('name', claimed\)/, 'linking no longer matches before it creates')
+})
+
+test('an unlinked booking is visible as a problem, not just absent', () => {
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/calendar/page.tsx'))
+  assert.match(page, /const unlinked = rows\.filter/, 'unlinked bookings are no longer counted')
+})
+
+test('a signature still creates the client, the thing Clients promises', () => {
+  // /clients states in prose that a client record is created by acceptance of a
+  // proposal and never by hand. That guarantee is a database trigger; if it were
+  // removed the page would keep making the claim with nothing behind it.
+  const sql = read(join(ROOT, 'supabase/migrations/20260727000007_intake_discovery_proposal.sql'))
+  const fn = sql.slice(sql.indexOf('function accept_on_signature'))
+  assert.match(fn, /insert into clients/, 'signing a proposal no longer creates the client')
+  assert.match(fn, /update orgs set stage = '8_won'/, 'signing no longer moves the org to won')
+  assert.match(fn, /ALREADY SIGNED/, 'a proposal can be signed twice again')
+})
+
+// ─── 8 · Migrations are append-only ─────────────────────────────────────────
 // An applied migration must never be edited: the database has already run the old
 // text, so a change to it silently means the file and the live schema disagree.
 

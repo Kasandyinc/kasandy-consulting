@@ -1,19 +1,10 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { BOOKING_STATUS_LABEL, type Booking, type BookingStatus } from '@/lib/engine/delivery'
 import { SystemStrip } from '../../../_components/ui'
-import BookingRow from './BookingRow'
+import BookingRow, { type BookingWithOrg } from './BookingRow'
+import StandingRoom from './StandingRoom'
 
 export const dynamic = 'force-dynamic'
-
-const TAG_FOR: Record<BookingStatus, string> = {
-  requested: 'warn',
-  confirmed: 'good',
-  held: 'info',
-  done: 'good',
-  no_show: 'bad',
-  cancelled: 'hold',
-}
 
 function when(iso: string, tz: string) {
   return new Intl.DateTimeFormat('en-CA', {
@@ -34,18 +25,33 @@ export default async function CalendarPage({
   const supabase = createClient()
   const showPast = searchParams.show === 'past'
 
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*, orgs(id, name)')
-    .order('starts_at', { ascending: !showPast })
+  const [{ data, error }, { data: settings }, { data: orgRows }] = await Promise.all([
+    supabase.from('bookings').select('*, orgs(id, name)').order('starts_at', { ascending: !showPast }),
+    supabase.from('settings').select('default_meeting_link').maybeSingle(),
+    supabase.from('orgs').select('id, name').order('name'),
+  ])
 
-  const rows = (data ?? []) as (Booking & { orgs: { id: string; name: string } | null })[]
+  // The standing room, in the order of who has the better claim to be right: the
+  // booking's own link, then the one Jackee can edit in Settings, then the
+  // environment variable the website has been using all along. The last is the
+  // reason the two backfilled calls have a working Join button without anyone
+  // having to type anything in.
+  const fallbackLink =
+    settings?.default_meeting_link?.trim() || process.env.MEETING_LINK?.trim() || null
+
+  const orgs = (orgRows ?? []) as { id: string; name: string }[]
+  const rows = (data ?? []) as BookingWithOrg[]
   const now = Date.now()
   const upcoming = rows.filter((b) => new Date(b.starts_at).getTime() >= now)
   const past = rows.filter((b) => new Date(b.starts_at).getTime() < now)
   const shown = showPast ? past : upcoming
 
   const needsAction = rows.filter((b) => b.status === 'requested').length
+  // A booking with no organisation cannot become an intake, and so cannot become a
+  // discovery, a proposal, or an invoice. It is the one break in the chain.
+  const unlinked = rows.filter(
+    (b) => !b.orgs && b.status !== 'cancelled' && b.status !== 'no_show',
+  ).length
 
   return (
     <>
@@ -74,11 +80,24 @@ export default async function CalendarPage({
         </div>
       )}
 
+      <StandingRoom link={fallbackLink} />
+
       {needsAction > 0 && !showPast && (
         <div className="card" style={{ marginTop: 18, borderLeft: '3px solid var(--warn)' }}>
           <div className="card-b">
             <strong>{needsAction}</strong> booking{needsAction === 1 ? '' : 's'} still marked
             requested — confirm or cancel so the slot is not held by accident.
+          </div>
+        </div>
+      )}
+
+      {unlinked > 0 && (
+        <div className="card" style={{ marginTop: 18, borderLeft: '3px solid var(--warn)' }}>
+          <div className="card-b">
+            <strong>{unlinked}</strong> booking{unlinked === 1 ? ' is' : 's are'} not attached
+            to an organisation. Nothing after the call — intake, discovery, proposal,
+            invoice — can start until they are. Open <b>Notes &amp; link</b> on the row to
+            attach one.
           </div>
         </div>
       )}
@@ -116,44 +135,21 @@ export default async function CalendarPage({
               <th>Who</th>
               <th>Organisation</th>
               <th>Topic</th>
-              <th>Source</th>
+              <th>Meeting</th>
               <th>Status</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
             {shown.map((b) => (
-              <tr key={b.id}>
-                <td style={{ whiteSpace: 'nowrap' }}>
-                  <div style={{ fontWeight: 600 }}>{when(b.starts_at, b.timezone)}</div>
-                  <div className="mono" style={{ fontSize: 10.5, color: 'var(--muted)' }}>
-                    {b.duration_mins} min · {b.timezone.split('/')[1]?.replace('_', ' ')}
-                  </div>
-                </td>
-                <td>
-                  <div style={{ fontWeight: 600 }}>{b.name}</div>
-                  <div className="mono" style={{ fontSize: 10.5, color: 'var(--muted)' }}>
-                    {b.email}
-                  </div>
-                </td>
-                <td>
-                  {b.orgs ? (
-                    <Link href={`/outreach/${b.orgs.id}`}>{b.orgs.name}</Link>
-                  ) : (
-                    <span style={{ color: 'var(--muted)' }}>{b.organisation ?? '—'}</span>
-                  )}
-                </td>
-                <td style={{ maxWidth: 220 }}>{b.topic ?? '—'}</td>
-                <td>
-                  <span className="tag">{b.source}</span>
-                </td>
-                <td>
-                  <span className={`tag ${TAG_FOR[b.status]}`}>{BOOKING_STATUS_LABEL[b.status]}</span>
-                </td>
-                <td>
-                  <BookingRow booking={b} />
-                </td>
-              </tr>
+              <BookingRow
+                key={b.id}
+                booking={b}
+                when={when(b.starts_at, b.timezone)}
+                resolvedLink={b.meeting_link?.trim() || fallbackLink}
+                linkIsFallback={!b.meeting_link?.trim()}
+                orgs={orgs}
+              />
             ))}
             {shown.length === 0 && (
               <tr>
@@ -169,6 +165,10 @@ export default async function CalendarPage({
       <SystemStrip>
         The database refuses two bookings in the same slot, so the website and this
         screen cannot double-book between them. Cancelling a booking releases the slot.
+        Attaching a booking to an organisation is what lets the rest of the engine run:
+        call → intake → discovery → proposal → signature, and a signature creates the
+        client, the engagement and the invoice by itself.{' '}
+        <Link href="/clients">Clients →</Link>
       </SystemStrip>
     </>
   )

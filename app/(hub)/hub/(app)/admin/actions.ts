@@ -36,6 +36,7 @@ export async function saveSettings(args: {
   signatureTagline: string
   signatureLogoUrl: string
   bookingUrl: string
+  defaultMeetingLink: string
 }) {
   const { supabase, email, ok } = await operator()
   if (!ok) return { ok: false, error: 'Not authorized.' }
@@ -71,6 +72,10 @@ export async function saveSettings(args: {
     }
   }
 
+  if (args.defaultMeetingLink.trim() && !/^https:\/\/\S+$/i.test(args.defaultMeetingLink.trim())) {
+    return { ok: false, error: 'The standing meeting room has to be an https:// URL.' }
+  }
+
   const { error } = await supabase
     .from('settings')
     .update({
@@ -85,6 +90,7 @@ export async function saveSettings(args: {
       signature_tagline: args.signatureTagline.trim() || null,
       signature_logo_url: args.signatureLogoUrl.trim() || null,
       booking_url: args.bookingUrl.trim() || null,
+      default_meeting_link: args.defaultMeetingLink.trim() || null,
     })
     .eq('id', true)
 
