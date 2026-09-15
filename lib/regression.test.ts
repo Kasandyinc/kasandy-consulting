@@ -206,7 +206,97 @@ test('public form endpoints still require a form stamp', () => {
   }
 })
 
-// ─── 5 · Migrations are append-only ─────────────────────────────────────────
+// ─── 5 · A website booking reaches the hub before anyone is told it exists ──
+// What broke: bookings were written to Vercel KV only. The hub reads Supabase, so
+// Calendar showed "Nothing booked" while real calls were being confirmed by email.
+// Nothing errored, because no Supabase write was ever attempted — the most expensive
+// class of defect in this build, and the one a green suite is least able to see.
+
+test('the booking route writes to the hub before it sends anything', () => {
+  const src = read(join(ROOT, 'app/api/bookings/create/route.ts'))
+  const write = src.indexOf('createHubBooking(')
+  const send = src.indexOf('resend.emails.send(')
+  assert.ok(write !== -1, 'the booking route no longer writes to the hub at all')
+  assert.ok(send !== -1, 'the booking route no longer sends confirmations')
+  assert.ok(write < send, 'a confirmation can now be sent for a booking that never saved')
+})
+
+test('a taken slot and a failed write both return before the emails', () => {
+  const src = read(join(ROOT, 'app/api/bookings/create/route.ts'))
+  const send = src.indexOf('resend.emails.send(')
+  const taken = src.indexOf("hub.kind === 'slot_taken'")
+  const failed = src.indexOf('[bookings/create] hub write failed')
+  assert.ok(taken !== -1 && taken < send, 'a slot conflict no longer stops the confirmation')
+  assert.ok(failed !== -1 && failed < send, 'a failed hub write is swallowed instead of surfaced')
+  assert.match(src, /status: 409/, 'a taken slot no longer answers 409')
+})
+
+test('the KV write is a fallback and can no longer refuse a booking', () => {
+  // KV's slot check is advisory now: the partial unique index on bookings.starts_at
+  // is the authority. A KV failure returning an error would refuse a slot the
+  // database has already granted.
+  const src = read(join(ROOT, 'app/api/bookings/create/route.ts'))
+  assert.match(src, /KV fallback not written/, 'the KV fallback no longer logs its own failure')
+  assert.doesNotMatch(
+    src,
+    /kvResult\.success[\s\S]{0,120}NextResponse\.json\([\s\S]{0,80}status: 4/,
+    'a KV failure can refuse a booking the hub accepted',
+  )
+})
+
+test('a website booking is marked as one, explicitly', () => {
+  const src = read(join(ROOT, 'lib/bookings-hub.ts'))
+  assert.match(src, /source: 'website'/, "bookings no longer record where they came from")
+})
+
+test('both website alerts still fire', () => {
+  // M-02 and A-02. They are audit_log lines rather than a notifications table, so
+  // nothing but this checks that the call is still made.
+  assert.match(
+    read(join(ROOT, 'app/api/bookings/create/route.ts')),
+    /notifyBookingCreated\(/,
+    'M-02 no longer fires on a new booking',
+  )
+  assert.match(
+    read(join(ROOT, 'app/api/contact/route.ts')),
+    /notifySubmissionCreated\(/,
+    'A-02 no longer fires on a new enquiry',
+  )
+  for (const f of ['lib/bookings-hub.ts', 'lib/forms/record.ts']) {
+    assert.match(read(join(ROOT, f)), /action: 'booking\.created'|action: 'submission\.created'/)
+  }
+})
+
+test('the dashboard still surfaces the two things the alerts point at', () => {
+  // An alert nobody can see is not an alert. "Do next" is where both land.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/page.tsx'))
+  assert.match(src, /from\('bookings'\)[\s\S]{0,200}'requested'/, 'new bookings dropped off Do next')
+  assert.match(src, /from\('submissions'\)[\s\S]{0,200}'new'/, 'new enquiries dropped off Do next')
+})
+
+// ─── 6 · Time and layout are derived, not assumed ───────────────────────────
+
+test('the Pacific abbreviation is derived from the date, never hardcoded', () => {
+  // Every booking label said "PST". Both real bookings are in September, which is
+  // PDT — an hour's difference, in the one line the client acts on.
+  const src = read(join(ROOT, 'app/api/bookings/create/route.ts'))
+  assert.match(src, /pacificLabel\(/, 'the zone label is no longer derived from the date')
+  assert.doesNotMatch(src, /\$\{time\} PST|at \$\{timeStr\} PST/, 'a hardcoded PST label is back')
+})
+
+test('the booking emails lay their rows out in a table, not flexbox', () => {
+  // Outlook renders HTML through Word, which ignores display:flex and gap entirely:
+  // every label ran into its value ("WhenFriday", "TopicTesting") in the mailbox
+  // that actually reads these.
+  const src = read(join(ROOT, 'app/api/bookings/create/route.ts'))
+  const styleBlocks = Array.from(src.matchAll(/<style>([\s\S]*?)<\/style>/g)).map((m) => m[1])
+  for (const block of styleBlocks) {
+    assert.doesNotMatch(block, /display:\s*flex/, 'an email row is laid out with flexbox again')
+  }
+  assert.match(src, /role="presentation"/, 'the email rows are no longer a table')
+})
+
+// ─── 7 · Migrations are append-only ─────────────────────────────────────────
 // An applied migration must never be edited: the database has already run the old
 // text, so a change to it silently means the file and the live schema disagree.
 

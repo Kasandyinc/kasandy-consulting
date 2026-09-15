@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export default async function Dashboard() {
   const supabase = createClient()
 
-  const [orgs, contacts, verified, flagged] = await Promise.all([
+  const [orgs, contacts, verified, flagged, awaiting, enquiries] = await Promise.all([
     supabase.from('orgs').select('*', { count: 'exact', head: true }),
     supabase.from('contacts').select('*', { count: 'exact', head: true }),
     supabase.from('orgs').select('*', { count: 'exact', head: true }).not('leader_name', 'is', null),
@@ -15,10 +15,35 @@ export default async function Dashboard() {
       .from('orgs')
       .select('id,name,black_led,signoff_status,hold,hold_reason')
       .or('hold.eq.true,and(black_led.eq.true,signoff_status.eq.pending)'),
+    // M-02 · a booking taken on the website arrives as `requested` and stays there
+    // until someone confirms it. That status is the alert; this is where it is read.
+    supabase
+      .from('bookings')
+      .select('id,name,organisation,starts_at,timezone')
+      .eq('status', 'requested')
+      .order('starts_at'),
+    // A-02 · the same idea for the contact form: `new` until an operator handles it.
+    supabase
+      .from('submissions')
+      .select('id,name,organisation,submitted_at')
+      .eq('status', 'new')
+      .order('submitted_at', { ascending: false })
+      .limit(10),
   ])
 
   const needsAttention = flagged.data ?? []
+  const newBookings = awaiting.data ?? []
+  const newEnquiries = enquiries.data ?? []
+  const nothingToDo =
+    needsAttention.length === 0 && newBookings.length === 0 && newEnquiries.length === 0
   const failed = orgs.error || contacts.error || flagged.error
+
+  const when = (iso: string, tz: string | null) =>
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz || 'America/Vancouver',
+      weekday: 'short', month: 'short', day: 'numeric',
+      hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+    }).format(new Date(iso))
 
   return (
     <>
@@ -62,10 +87,27 @@ export default async function Dashboard() {
           </Link>
         </div>
         <div className="card-b">
-          {needsAttention.length === 0 ? (
+          {nothingToDo ? (
             <p className="empty">Nothing is blocked. The pipeline is clear.</p>
           ) : (
             <ul style={{ listStyle: 'none', display: 'grid', gap: 12 }}>
+              {newBookings.map((b) => (
+                <li key={b.id} className="row between center">
+                  <Link href="/calendar" style={{ fontWeight: 600 }}>
+                    Meeting booked with {b.organisation || b.name} — {when(b.starts_at, b.timezone)}
+                  </Link>
+                  <span className="tag warn">⚑ Confirm</span>
+                </li>
+              ))}
+              {newEnquiries.map((s) => (
+                <li key={s.id} className="row between center">
+                  <Link href="/cms/submissions" style={{ fontWeight: 600 }}>
+                    New enquiry from {s.name || 'someone'}
+                    {s.organisation ? ` (${s.organisation})` : ''}
+                  </Link>
+                  <span className="tag warn">⚑ Unread</span>
+                </li>
+              ))}
               {needsAttention.map((o) => (
                 <li key={o.id} className="row between center">
                   <Link href={`/outreach/${o.id}`} style={{ fontWeight: 600 }}>

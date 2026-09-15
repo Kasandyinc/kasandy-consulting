@@ -1,4 +1,24 @@
 import { kv } from './kv'
+import {
+  parseDateStr,
+  getDayOfWeek,
+  isPDT,
+  getPTOffsetMins,
+  slotToUTC,
+  SLOT_DURATION_MINS,
+  SLOT_SPACING_MINS,
+} from './pacific-time'
+
+// Re-exported so existing importers of lib/bookings are unaffected by the move.
+export {
+  parseDateStr,
+  getDayOfWeek,
+  isPDT,
+  getPTOffsetMins,
+  slotToUTC,
+  SLOT_DURATION_MINS,
+  SLOT_SPACING_MINS,
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,25 +40,12 @@ export const AVAILABILITY: Record<number, { start: number; end: number }> = {
   5: { start: 10, end: 13 }, // Friday  10:00 AM – 1:00 PM PST
 }
 
-/** Length of the call itself, in minutes. */
-export const SLOT_DURATION_MINS = 20
-/** Spacing between slot start times: 20-min call + 5-min break. */
-export const SLOT_SPACING_MINS = 25
 export const BOOKING_HORIZON_MONTHS = 2
 export const MIN_NOTICE_HOURS = 24
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Parse YYYY-MM-DD safely (avoids UTC-shift bugs from new Date('YYYY-MM-DD')) */
-export function parseDateStr(dateStr: string): Date {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d)
-}
 
-/** Day-of-week for a YYYY-MM-DD string (0=Sun … 6=Sat) */
-export function getDayOfWeek(dateStr: string): number {
-  return parseDateStr(dateStr).getDay()
-}
 
 /**
  * Generate all PST time strings (HH:MM) for a given day-of-week.
@@ -60,41 +67,8 @@ export function getDaySlots(dayOfWeek: number): string[] {
   return slots
 }
 
-/**
- * Whether DST (PDT, UTC-7) is in effect in America/Vancouver on a given date.
- * DST runs from the 2nd Sunday in March to the 1st Sunday in November.
- */
-export function isPDT(dateStr: string): boolean {
-  const date = parseDateStr(dateStr)
-  const y = date.getFullYear()
 
-  const nthSunday = (month: number, n: number): Date => {
-    const first = new Date(y, month - 1, 1)
-    const firstSun = new Date(y, month - 1, 1 + ((7 - first.getDay()) % 7))
-    return new Date(firstSun.getTime() + (n - 1) * 7 * 24 * 60 * 60 * 1000)
-  }
 
-  const dstStart = nthSunday(3, 2)   // 2nd Sunday of March
-  const dstEnd   = nthSunday(11, 1)  // 1st Sunday of November
-  return date >= dstStart && date < dstEnd
-}
-
-/** Pacific Time UTC offset in minutes (negative = behind UTC) */
-export function getPTOffsetMins(dateStr: string): number {
-  return isPDT(dateStr) ? -7 * 60 : -8 * 60
-}
-
-/**
- * Convert a PST slot (YYYY-MM-DD, HH:MM) to a UTC Date object.
- * Safe to use server-side or client-side.
- */
-export function slotToUTC(dateStr: string, timeStr: string): Date {
-  const [y, mo, d] = dateStr.split('-').map(Number)
-  const [h, m] = timeStr.split(':').map(Number)
-  const offsetMins = getPTOffsetMins(dateStr)
-  // UTC = local − offset  (offset is negative so we subtract a negative = add)
-  return new Date(Date.UTC(y, mo - 1, d, h, m) - offsetMins * 60 * 1000)
-}
 
 /** True if a date is a Monday or Friday within the bookable window */
 export function isDateBookable(dateStr: string): boolean {

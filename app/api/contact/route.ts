@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { kv, KEYS } from '@/lib/kv'
-import { recordSubmission, linkSubmissionToProspect } from '@/lib/forms/record'
+import { recordSubmission, linkSubmissionToProspect, notifySubmissionCreated } from '@/lib/forms/record'
 import { assessSubmission } from '@/lib/spam-score'
 import { noreply } from '@/lib/email'
 import { missingFormStamp, getClientIp, normalizeEmail, rateLimit, tooFast, verifyTurnstile } from '@/lib/spam'
@@ -87,6 +87,15 @@ export async function POST(req: NextRequest) {
         organisation: organisation || null,
         email,
         name,
+      })
+      // A-02. Only for enquiries that survived scoring — an alert for a quarantined
+      // submission would put spam in front of Jackee, which is what the score is for.
+      await notifySubmissionCreated({
+        submissionId: recorded.id,
+        formSlug: 'contact',
+        name,
+        email,
+        organisation: organisation || null,
       })
     }
 

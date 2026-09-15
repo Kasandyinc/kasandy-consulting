@@ -53,6 +53,49 @@ export async function recordSubmission(args: RecordArgs): Promise<{ ok: boolean;
 }
 
 /**
+ * A-02 — "New enquiry from [name] ([org])".
+ *
+ * The same shape as M-02 for bookings: an audit_log line rather than a notifications
+ * table, because the enquiry itself is already the record — `submissions.status`
+ * starts at 'new' and the dashboard reads that. A second alert store would be a
+ * second place for the same fact to go stale.
+ *
+ * Best-effort, like everything else in this file: the visitor's message reaching
+ * Jackee matters more than this row existing.
+ */
+export async function notifySubmissionCreated(args: {
+  submissionId: string
+  formSlug: string
+  name?: string | null
+  email?: string | null
+  organisation?: string | null
+}): Promise<void> {
+  try {
+    const supabase = createAdminClient()
+    const who = args.organisation?.trim()
+      ? `${args.name?.trim() || args.email || 'Someone'} (${args.organisation.trim()})`
+      : args.name?.trim() || args.email || 'Someone'
+
+    await supabase.from('audit_log').insert({
+      actor: 'website',
+      action: 'submission.created',
+      entity: 'submissions',
+      entity_id: args.submissionId,
+      meta: {
+        message: `New enquiry from ${who}`,
+        form: args.formSlug,
+        name: args.name ?? null,
+        email: args.email ?? null,
+        organisation: args.organisation ?? null,
+        source: 'website',
+      },
+    })
+  } catch (err) {
+    console.error('[contact] A-02 alert not recorded:', err)
+  }
+}
+
+/**
  * Add a newsletter subscriber with its lawful basis.
  *
  * Someone who has previously opted out is left alone: the database refuses to clear an
