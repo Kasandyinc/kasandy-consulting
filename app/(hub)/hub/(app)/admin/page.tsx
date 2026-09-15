@@ -31,7 +31,16 @@ export default async function AdminPage() {
     { key: 'CRON_SECRET', set: Boolean(process.env.CRON_SECRET), why: 'Both crons return 401 without it.' },
     { key: 'KV_REST_API_URL', set: Boolean(process.env.KV_REST_API_URL), why: 'Rate limiting, and the legacy CMS store.' },
     { key: 'ENGINE_OPERATOR_EMAILS', set: Boolean(process.env.ENGINE_OPERATOR_EMAILS), why: 'The app-side operator allow-list.' },
-    { key: 'NEXT_PUBLIC_HUB_URL', set: Boolean(process.env.NEXT_PUBLIC_HUB_URL), why: 'Links in proposals and portal emails.' },
+    {
+      key: 'NEXT_PUBLIC_HUB_URL',
+      // Every caller falls back to the real production URL, so unset is not broken.
+      // Flagging it red said otherwise, which is a false alarm on a page whose whole
+      // job is telling the operator what genuinely needs attention.
+      set: true,
+      why: process.env.NEXT_PUBLIC_HUB_URL
+        ? `Links in proposals and portal emails. Set to ${process.env.NEXT_PUBLIC_HUB_URL}.`
+        : 'Links in proposals and portal emails. Unset, but every caller falls back to https://hub.kasandyconsulting.com, which is correct — so this is optional.',
+    },
     { key: 'TURNSTILE_SECRET_KEY', set: Boolean(process.env.TURNSTILE_SECRET_KEY), why: 'Without it every public form loses its bot check.' },
     { key: 'ADMIN_PASSWORD', set: Boolean(process.env.ADMIN_PASSWORD), why: 'The legacy /admin CMS. Retired once E7 finishes absorbing it.' },
     { key: 'ANTHROPIC_API_KEY', set: Boolean(process.env.ANTHROPIC_API_KEY), why: 'Prospect research. Without it the ✨ Research button fails.' },
