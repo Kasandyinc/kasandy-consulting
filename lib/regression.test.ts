@@ -416,6 +416,27 @@ test('the model is told its own memory is not a source', () => {
   assert.match(research, /memory is not a source/, 'the no-fabrication instruction has been removed')
 })
 
+test('research reads what the organisation has told us, as data', () => {
+  // A first email names the funder, the headcount and the real problem — better than
+  // anything a small organisation publishes. It is also written by someone outside
+  // the company, so it is fenced and labelled evidence rather than instruction.
+  const route = read(join(ROOT, 'app/api/engine/research/route.ts'))
+  assert.match(route, /from\('messages'\)/, 'research no longer reads their emails')
+  assert.match(route, /meeting_notes/, 'research no longer reads the notes from the call')
+  const research = read(join(ROOT, 'lib/engine/research.ts'))
+  assert.match(research, /NOT instruction/, 'correspondence is no longer fenced off as data')
+})
+
+test('the research brief is still asked for the things a consultant needs', () => {
+  // "Flat" research was the model correctly refusing to pad a thin web presence.
+  // The fix was telling it where to look, not letting it guess.
+  const research = read(join(ROOT, 'lib/engine/research.ts'))
+  for (const heading of ['How they are funded', 'How they are run', 'What to ask on the call']) {
+    assert.ok(research.includes(heading), `the brief no longer asks for "${heading}"`)
+  }
+  assert.match(research, /namesake/, 'the wrong-organisation guard has been removed')
+})
+
 // ─── 9 · The two halves of the Square config must agree ─────────────────────
 // What broke: lib/square.ts read SQUARE_ENVIRONMENT while the brief and
 // settings.square_env both say SQUARE_ENV. Setting it exactly as documented left

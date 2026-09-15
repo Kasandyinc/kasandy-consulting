@@ -39,10 +39,51 @@ export async function POST(req: NextRequest) {
 
   // Known addresses are the strongest signal for "is this even the right
   // organisation" — a domain match beats a name match every time.
-  const [{ data: contacts }, { data: booking }] = await Promise.all([
-    supabase.from('contacts').select('email').eq('org_id', orgId).not('email', 'is', null).limit(5),
-    supabase.from('bookings').select('topic').eq('org_id', orgId).order('starts_at', { ascending: false }).limit(1).maybeSingle(),
-  ])
+  const [{ data: contacts }, { data: bookings }, { data: messages }, { data: submissions }] =
+    await Promise.all([
+      supabase.from('contacts').select('email').eq('org_id', orgId).not('email', 'is', null).limit(5),
+      supabase
+        .from('bookings')
+        .select('topic, meeting_notes, starts_at')
+        .eq('org_id', orgId)
+        .order('starts_at', { ascending: false })
+        .limit(3),
+      // What they have written to us. Usually the best source in the run: a first
+      // email names the funder, the headcount and the actual problem, none of which
+      // a small organisation publishes anywhere.
+      supabase
+        .from('messages')
+        .select('subject, body, direction, occurred_at')
+        .eq('org_id', orgId)
+        .eq('direction', 'inbound')
+        .order('occurred_at', { ascending: false })
+        .limit(5),
+      supabase
+        .from('submissions')
+        .select('message, submitted_at')
+        .eq('org_id', orgId)
+        .order('submitted_at', { ascending: false })
+        .limit(3),
+    ])
+
+  const day = (iso: string | null) => (iso ? iso.slice(0, 10) : 'undated')
+
+  const ownWords = [
+    ...(messages ?? []).map((m: { subject: string | null; body: string; occurred_at: string }) => ({
+      label: `Email from them, ${day(m.occurred_at)}${m.subject ? ` — "${m.subject}"` : ''}`,
+      text: m.body,
+    })),
+    ...(submissions ?? []).map((s: { message: string | null; submitted_at: string }) => ({
+      label: `Website enquiry, ${day(s.submitted_at)}`,
+      text: s.message ?? '',
+    })),
+    ...(bookings ?? [])
+      .filter((b: { meeting_notes: string | null }) => b.meeting_notes)
+      .map((b: { meeting_notes: string | null; starts_at: string }) => ({
+        label: `Our notes from the call on ${day(b.starts_at)}`,
+        text: b.meeting_notes ?? '',
+      })),
+  ]
 
   const { data: run, error: runError } = await supabase
     .from('org_research')
@@ -60,7 +101,8 @@ export async function POST(req: NextRequest) {
       province: org.province,
       segment: org.segment,
       contactEmails: (contacts ?? []).map((c: { email: string }) => c.email),
-      topic: booking?.topic ?? null,
+      topic: bookings?.[0]?.topic ?? null,
+      ownWords,
     })
 
     await supabase

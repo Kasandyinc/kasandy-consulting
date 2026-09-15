@@ -295,16 +295,30 @@ export default function ResearchPanel({
               </>
             )}
 
-            {/* ── What it actually read ─────────────────────────────────── */}
+            {/* ── What it actually read ─────────────────────────────────────
+                Folded away by default. A thorough run reads ninety-odd pages, and
+                most of them are namesakes it correctly declined to cite — worth
+                keeping so a claim can be checked, not worth a screen of scrolling
+                between the operator and the briefing. */}
             {run.sources.length > 0 && (
-              <>
-                <div
+              <details style={{ marginTop: 18 }}>
+                <summary
                   className="mono"
-                  style={{ fontSize: 11, color: 'var(--muted)', margin: '18px 0 6px' }}
+                  style={{ fontSize: 11, color: 'var(--muted)', cursor: 'pointer' }}
                 >
-                  READ {run.sources.length} SOURCE{run.sources.length === 1 ? '' : 'S'}
-                </div>
-                <ul style={{ listStyle: 'none', display: 'grid', gap: 4, margin: 0, padding: 0 }}>
+                  READ {run.sources.length} SOURCE{run.sources.length === 1 ? '' : 'S'} — SHOW
+                </summary>
+                <ul
+                  style={{
+                    listStyle: 'none',
+                    display: 'grid',
+                    gap: 4,
+                    margin: '8px 0 0',
+                    padding: 0,
+                    maxHeight: 260,
+                    overflowY: 'auto',
+                  }}
+                >
                   {run.sources.map((s) => (
                     <li key={s.url}>
                       <a
@@ -319,7 +333,7 @@ export default function ResearchPanel({
                     </li>
                   ))}
                 </ul>
-              </>
+              </details>
             )}
 
             <p
