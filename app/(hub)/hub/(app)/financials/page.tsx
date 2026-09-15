@@ -10,6 +10,7 @@ import {
   type Invoice,
   type Payment,
 } from '@/lib/engine/money'
+import { squareEnvName } from '@/lib/square'
 import { SystemStrip } from '../../../_components/ui'
 import MoneyForms, { IssueButton } from './MoneyForms'
 
@@ -19,6 +20,11 @@ type QboRow = { entity: string; entity_id: string; status: string; note: string 
 
 export default async function Financials() {
   const supabase = createClient()
+
+  // Read once, compared against what Settings holds. These are the same fact written
+  // in two places, which is the shape every defect in this build has taken.
+  const envLocationId = process.env.SQUARE_LOCATION_ID?.trim() || ''
+  const envName = squareEnvName
 
   const [invoiceRes, paymentRes, qboRes, settingsRes, clientRes] = await Promise.all([
     supabase.from('invoices').select('*').order('issued_on', { ascending: false, nullsFirst: false }),
@@ -59,10 +65,37 @@ export default async function Financials() {
           keeps this ledger separate from BEBC. */}
       {!settings?.square_location_id && (
         <div className="err" style={{ marginTop: 18 }}>
-          <strong>Square is not connected yet.</strong> Until{' '}
-          <code>settings.square_location_id</code> holds the Kasandy Consulting
-          location, the database refuses to record any Square payment — a payment from
-          the wrong account cannot land here by accident.
+          <strong>Square is not connected yet.</strong> Until the Kasandy Consulting
+          location is set, the database refuses to record any Square payment — a
+          payment from the wrong account cannot land here by accident.{' '}
+          <Link href="/admin">Set it in Settings →</Link>
+        </div>
+      )}
+
+      {/* Two statements of one fact: the location links are created against, and the
+          location payments are checked against. If they disagree, every real payment
+          is refused by the trigger with a message about the wrong account — which
+          reads as a Square problem rather than a configuration one. */}
+      {settings?.square_location_id &&
+        envLocationId &&
+        settings.square_location_id !== envLocationId && (
+          <div className="err" style={{ marginTop: 18 }}>
+            <strong>The two Square locations disagree.</strong> Payment links are created
+            against <code>{envLocationId}</code> (the <code>SQUARE_LOCATION_ID</code>{' '}
+            variable in Vercel) but payments are only accepted from{' '}
+            <code>{settings.square_location_id}</code> (Settings). Every real payment
+            will be refused until these match.
+          </div>
+        )}
+
+      {settings?.square_location_id && settings.square_env !== envName && (
+        <div className="card" style={{ marginTop: 18, borderLeft: '3px solid var(--warn)' }}>
+          <div className="card-b">
+            <strong>Environment mismatch.</strong> This ledger is labelled{' '}
+            <b>{settings.square_env}</b> but the Square client is running in{' '}
+            <b>{envName}</b>. Set <code>SQUARE_ENV</code> in Vercel to match, or change
+            the environment in Settings.
+          </div>
         </div>
       )}
 
@@ -220,7 +253,7 @@ export default async function Financials() {
       </div>
 
       <SystemStrip>
-        Square environment: <b>{settings?.square_env ?? 'sandbox'}</b>. A payment is
+        Square environment: <b>{envName}</b>. A payment is
         refused at the database unless it comes from the configured Kasandy Consulting
         location, so the BEBC account cannot feed this ledger. An invoice that bills a
         milestone cannot be issued until the client marks the phase verified.{' '}

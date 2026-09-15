@@ -416,7 +416,36 @@ test('the model is told its own memory is not a source', () => {
   assert.match(research, /memory is not a source/, 'the no-fabrication instruction has been removed')
 })
 
-// ─── 9 · Migrations are append-only ─────────────────────────────────────────
+// ─── 9 · The two halves of the Square config must agree ─────────────────────
+// What broke: lib/square.ts read SQUARE_ENVIRONMENT while the brief and
+// settings.square_env both say SQUARE_ENV. Setting it exactly as documented left
+// the client on Sandbox with nothing on screen to say so — payment links against
+// test money while the ledger said production.
+
+test('the Square environment is read under the documented name', () => {
+  const src = read(join(ROOT, 'lib/square.ts'))
+  assert.match(src, /process\.env\.SQUARE_ENV\b/, 'SQUARE_ENV is no longer read, so the documented name does nothing')
+})
+
+test('a Square location mismatch is shown rather than discovered at payment time', () => {
+  // The env var decides where links are created; settings decides which payments the
+  // database accepts. Disagreement refuses every real payment with a message about
+  // the wrong account, which reads as a Square fault rather than a config one.
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/financials/page.tsx'))
+  assert.match(page, /square_location_id !== envLocationId/, 'the location mismatch check is gone')
+  assert.match(page, /square_env !== envName/, 'the environment mismatch check is gone')
+})
+
+test('the Square location can be set without opening a SQL editor', () => {
+  // Financials told the operator to set settings.square_location_id and gave no way
+  // to do it — the same "documented but unreachable" shape as the orphaned page.
+  const panels = read(join(ROOT, 'app/(hub)/hub/(app)/admin/AdminPanels.tsx'))
+  assert.match(panels, /squareLocationId/, 'the Square location field has been removed from Settings')
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/admin/actions.ts'))
+  assert.match(actions, /square_location_id: squareLocation/, 'saving no longer writes the Square location')
+})
+
+// ─── 10 · Migrations are append-only ────────────────────────────────────────
 // An applied migration must never be edited: the database has already run the old
 // text, so a change to it silently means the file and the live schema disagree.
 

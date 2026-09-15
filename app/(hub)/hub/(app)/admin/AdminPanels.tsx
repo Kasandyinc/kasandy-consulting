@@ -28,6 +28,8 @@ type Settings = {
   signature_logo_url: string | null
   booking_url: string | null
   default_meeting_link: string | null
+  square_location_id: string | null
+  square_env: string | null
 }
 
 type Operator = { email: string; role: string; added_at: string }
@@ -65,6 +67,8 @@ export default function AdminPanels({
     signatureLogoUrl: settings.signature_logo_url ?? '',
     bookingUrl: settings.booking_url ?? '',
     defaultMeetingLink: settings.default_meeting_link ?? '',
+    squareLocationId: settings.square_location_id ?? '',
+    squareEnv: settings.square_env ?? 'sandbox',
   })
 
   const [newOperator, setNewOperator] = useState('')
@@ -144,6 +148,37 @@ export default function AdminPanels({
             <Row label="CASL footer" hint="Appended to every outreach email, above the unsubscribe link.">
               <textarea rows={3} value={s.caslFooterMd} onChange={set('caslFooterMd')} style={{ ...field, resize: 'vertical' }} />
             </Row>
+
+            {/* The database compares every Square payment against this. Until now it
+                could only be set by running SQL, while Financials told you to set it. */}
+            <div className="row wrap" style={{ gap: 12 }}>
+              <div style={{ flex: '1 1 240px' }}>
+                <Row
+                  label="Square location ID"
+                  hint="Square Dashboard → Settings → Locations → the Kasandy Consulting location. A payment from any other location is refused by the database."
+                >
+                  <input
+                    value={s.squareLocationId}
+                    onChange={set('squareLocationId')}
+                    placeholder="LXXXXXXXXXXXX"
+                    style={field}
+                  />
+                </Row>
+              </div>
+              <div style={{ flex: '1 1 160px' }}>
+                <Row label="Square environment" hint="Must match SQUARE_ENV in Vercel.">
+                  <select
+                    value={s.squareEnv}
+                    onChange={(e) => setS({ ...s, squareEnv: e.target.value })}
+                    style={field}
+                  >
+                    <option value="sandbox">sandbox</option>
+                    <option value="production">production</option>
+                  </select>
+                </Row>
+              </div>
+            </div>
+
             <button className="btn ox" disabled={pending} onClick={save}>
               {pending ? 'Saving…' : 'Save settings'}
             </button>

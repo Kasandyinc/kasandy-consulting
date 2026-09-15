@@ -34,6 +34,14 @@ export default async function AdminPage() {
     { key: 'NEXT_PUBLIC_HUB_URL', set: Boolean(process.env.NEXT_PUBLIC_HUB_URL), why: 'Links in proposals and portal emails.' },
     { key: 'TURNSTILE_SECRET_KEY', set: Boolean(process.env.TURNSTILE_SECRET_KEY), why: 'Without it every public form loses its bot check.' },
     { key: 'ADMIN_PASSWORD', set: Boolean(process.env.ADMIN_PASSWORD), why: 'The legacy /admin CMS. Retired once E7 finishes absorbing it.' },
+    { key: 'ANTHROPIC_API_KEY', set: Boolean(process.env.ANTHROPIC_API_KEY), why: 'Prospect research. Without it the ✨ Research button fails.' },
+    { key: 'SQUARE_ACCESS_TOKEN', set: Boolean(process.env.SQUARE_ACCESS_TOKEN), why: 'Payment links. Kasandy Consulting account only — never BEBC.' },
+    { key: 'SQUARE_LOCATION_ID', set: Boolean(process.env.SQUARE_LOCATION_ID), why: 'The location payment links are created against. Must match the Square location ID in Settings.' },
+    {
+      key: 'SQUARE_ENV',
+      set: Boolean(process.env.SQUARE_ENV || process.env.SQUARE_ENVIRONMENT),
+      why: 'sandbox or production. Unset means sandbox — real cards will not work.',
+    },
     {
       key: 'ADMIN_SESSION_SECRET',
       set: Boolean(process.env.ADMIN_SESSION_SECRET),
@@ -65,6 +73,8 @@ export default async function AdminPage() {
             signature_logo_url: null,
             booking_url: null,
             default_meeting_link: null,
+            square_location_id: null,
+            square_env: 'sandbox',
           }) as never
         }
         operators={(operators ?? []) as never}

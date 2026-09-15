@@ -37,6 +37,8 @@ export async function saveSettings(args: {
   signatureLogoUrl: string
   bookingUrl: string
   defaultMeetingLink: string
+  squareLocationId: string
+  squareEnv: string
 }) {
   const { supabase, email, ok } = await operator()
   if (!ok) return { ok: false, error: 'Not authorized.' }
@@ -76,6 +78,22 @@ export async function saveSettings(args: {
     return { ok: false, error: 'The standing meeting room has to be an https:// URL.' }
   }
 
+  // The location id is what the payments trigger compares every Square payment
+  // against, so a typo here does not fail loudly — it refuses every real payment
+  // with a message about the wrong account. Square location ids are short opaque
+  // uppercase strings; anything with spaces or lowercase is almost certainly a
+  // location *name* pasted from the dashboard by mistake.
+  const squareLocation = args.squareLocationId.trim()
+  if (squareLocation && !/^[A-Z0-9]{8,32}$/.test(squareLocation)) {
+    return {
+      ok: false,
+      error: 'That does not look like a Square location ID — it should be a short code like LXXXXXXXXXXXX, not the location name.',
+    }
+  }
+  if (args.squareEnv && !['sandbox', 'production'].includes(args.squareEnv)) {
+    return { ok: false, error: 'Square environment must be sandbox or production.' }
+  }
+
   const { error } = await supabase
     .from('settings')
     .update({
@@ -91,6 +109,8 @@ export async function saveSettings(args: {
       signature_logo_url: args.signatureLogoUrl.trim() || null,
       booking_url: args.bookingUrl.trim() || null,
       default_meeting_link: args.defaultMeetingLink.trim() || null,
+      square_location_id: squareLocation || null,
+      square_env: args.squareEnv || 'sandbox',
     })
     .eq('id', true)
 
