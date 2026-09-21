@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createBooking, isDateBookable, slotToUTC, getDayOfWeek, getDaySlots } from '@/lib/bookings'
 import { generateICS } from '@/lib/ics'
-import { createHubBooking, notifyBookingCreated, pacificLabel } from '@/lib/bookings-hub'
+import { createHubBooking, notifyBookingCreated, icsUidFor } from '@/lib/bookings-hub'
 import { bookings as FROM } from '@/lib/email'
+import {
+  JACKEE_EMAILS,
+  REPLY_TO,
+  clientBookingHtml,
+  jackeeBookingHtml,
+  formatPacificDisplay,
+  subjects,
+} from '@/lib/booking-emails'
 import {
   missingFormStamp,
   getClientIp,
@@ -14,31 +22,12 @@ import {
 } from '@/lib/spam'
 import { assessSubmission } from '@/lib/spam-score'
 
-const JACKEE_EMAILS = ['Jackee.Kasandy@bebcsociety.org', 'jackee@kasandyconsulting.com']
 const MEETING_LINK = process.env.MEETING_LINK || ''
 
-function formatPacificDisplay(dateStr: string, timeStr: string): string {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  const displayDate = new Date(y, m - 1, d).toLocaleDateString('en-CA', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-  })
-  // Derived, not hardcoded: a September booking is PDT, and calling it PST invites
-  // the client to arrive an hour out.
-  return `${displayDate} at ${timeStr} ${pacificLabel(dateStr)}`
-}
-
-function formatLocalTime(dateStr: string, timeStr: string, timezone: string): string {
-  try {
-    const utc = slotToUTC(dateStr, timeStr)
-    return new Intl.DateTimeFormat('en-US', {
-      timeZone: timezone,
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-      hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
-    }).format(utc)
-  } catch {
-    return formatPacificDisplay(dateStr, timeStr)
-  }
-}
+// JACKEE_EMAILS, the two time formatters and both email bodies now live in
+// lib/booking-emails.ts. They are unchanged — the hub has to send the same mail
+// when it creates, moves or cancels a booking, and a second copy of these bodies
+// is exactly the drift the no-regression rule exists to catch.
 
 /**
  * POST /api/bookings/create
@@ -154,19 +143,29 @@ export async function POST(req: NextRequest) {
     }
 
     // ── Generate .ics invite ──────────────────────────────────────────────────
-    const uid = `${date}-${time.replace(':', '')}-${Date.now()}@kasandyconsulting.com`
+    // The UID is derived from the booking's own id and stored on the row, so a later
+    // reschedule or cancellation can send an UPDATE for this exact event. It used to
+    // contain Date.now() and was never persisted, which meant every subsequent invite
+    // would have arrived as a second event beside the first.
+    const uid = icsUidFor(hub.id)
     const icsContent = generateICS({
       dateStr: date, timeStr: time, clientName: name, clientEmail: email, topic, uid,
-      meetingLink: MEETING_LINK, durationMinutes: 20,
+      meetingLink: MEETING_LINK, durationMinutes: 20, method: 'REQUEST', sequence: 0,
     })
     const icsAttachment = {
       filename: 'strategy-call.ics',
       content: Buffer.from(icsContent).toString('base64'),
     }
 
-    const zone         = pacificLabel(date)
-    const pstDisplay   = formatPacificDisplay(date, time)
-    const localDisplay = timezone ? formatLocalTime(date, time, timezone) : pstDisplay
+    const pstDisplay = formatPacificDisplay(date, time)
+
+    const facts = {
+      name, email, topic,
+      date, time,
+      durationMins: 20,
+      meetingLink: MEETING_LINK,
+      timezone,
+    }
 
     // ── M-02 · "Meeting booked with [org] — [date]" ───────────────────────────
     // After the write, because an alert for a booking that did not save is a lie.
@@ -180,108 +179,22 @@ export async function POST(req: NextRequest) {
       whenLabel: pstDisplay,
     })
 
-    // Rows are a table, not flexbox. Outlook renders HTML through Word, which ignores
-    // `display:flex` and `gap` entirely — so every label ran straight into its value
-    // ("WhenFriday", "TopicTesting"). A two-cell table is the layout Word does lay out
-    // correctly: the label column is a <td> with real padding, not a span with a gap.
-    // Both emails carried the same defect, so both get the same fix.
-    const row = (label: string, value: string) => `
-  <tr>
-    <td style="padding:8px 14px 8px 0;border-bottom:1px solid #eee;color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.08em;vertical-align:top;white-space:nowrap;width:120px;">${label}</td>
-    <td style="padding:8px 0;border-bottom:1px solid #eee;vertical-align:top;">${value}</td>
-  </tr>`
-
-    // ── Email to client ───────────────────────────────────────────────────────
-    const clientHtml = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><style>
-  body { font-family: Georgia, serif; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 20px; }
-  .header { border-bottom: 2px solid #8B4513; padding-bottom: 16px; margin-bottom: 24px; }
-  .logo { font-family: Georgia, serif; font-size: 20px; font-weight: bold; color: #1a1a1a; letter-spacing: 0.05em; }
-  .logo span { color: #8B4513; }
-  .callout { background: #FFF8F0; border-left: 4px solid #8B4513; padding: 16px 20px; margin: 24px 0; }
-  .callout h2 { margin: 0 0 8px; font-size: 16px; color: #8B4513; }
-  .warning { background: #FFF3CD; border: 1px solid #FFC107; border-radius: 4px; padding: 14px 18px; margin: 24px 0; font-size: 14px; }
-  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e0dbd4; font-size: 12px; color: #999; }
-</style></head>
-<body>
-  <div class="header">
-    <div class="logo">KASANDY<span> CONSULTING</span></div>
-  </div>
-
-  <p>Hi ${name},</p>
-  <p>Your strategy call with Jackee Kasandy is confirmed. A calendar invite is attached to this email — please add it to your calendar.</p>
-
-  <div class="callout">
-    <h2>Your Booking Details</h2>
-    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;font-family:Georgia,serif;font-size:14px;color:#1a1a1a;">
-${row('Date &amp; Time', `<strong>${pstDisplay}</strong>`)}
-${row('Duration', '20 minutes')}
-${row('Format', MEETING_LINK ? `<a href="${MEETING_LINK}" style="color:#8B4513;font-weight:bold">Microsoft Teams — join link below</a>` : 'Virtual (link to follow)')}
-${row('Topic', topic)}
-    </table>
-  </div>
-
-  ${MEETING_LINK ? `<div style="text-align:center;margin:24px 0;">
-    <a href="${MEETING_LINK}" style="display:inline-block;background:#8B4513;color:#ffffff;text-decoration:none;padding:14px 32px;font-family:Arial,sans-serif;font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">Join the Microsoft Teams Meeting →</a>
-  </div>` : ''}
-
-  <div class="warning">
-    ⏰ <strong>Important — Pacific Time:</strong> This meeting is scheduled for <strong>${time} ${zone} (Pacific Time, Vancouver BC)</strong>.
-    ${timezone && timezone !== 'Unknown' ? `In your local timezone, that is: <strong>${localDisplay}</strong>.` : ''}
-    <br><br>If you're unsure, search "what time is ${time} ${zone} in [your city]" to double-check.
-  </div>
-
-  <p>If you need to reschedule or have any questions before the call, please reply to this email.</p>
-  <p>Looking forward to speaking with you.</p>
-  <p><strong>Jackee Kasandy</strong><br>Kasandy Consulting<br><a href="https://kasandyconsulting.com" style="color:#8B4513">kasandyconsulting.com</a></p>
-
-  <div class="footer">
-    Kasandy Consulting · Vancouver, BC, Canada<br>
-    This confirmation was sent to ${email}.
-  </div>
-</body>
-</html>`
-
-    // ── Email to Jackee (both addresses) ──────────────────────────────────────
-    const jackeeHtml = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><style>
-  body { font-family: Arial, sans-serif; color: #1a1a1a; max-width: 560px; margin: 0 auto; padding: 20px; font-size: 14px; }
-</style></head>
-<body>
-  <p><strong>New strategy call booked</strong></p>
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;">
-${row('When', `<strong>${pstDisplay}</strong>`)}
-${row('Name', name)}
-${row('Email', `<a href="mailto:${email}" style="color:#8B4513;">${email}</a>`)}
-${row('Topic', topic)}
-${MEETING_LINK ? row('Meeting Link', `<a href="${MEETING_LINK}" style="color:#8B4513;">${MEETING_LINK}</a>`) : ''}
-${row('Their TZ', timezone || '—')}
-${timezone && timezone !== 'Unknown' ? row('Their Time', localDisplay) : ''}
-  </table>
-  <br><p>Calendar invite attached. Reply to this email to contact the client.</p>
-</body>
-</html>`
-
     // Send all three emails (client + both Jackee addresses) in parallel
     await Promise.all([
       resend.emails.send({
         from: FROM,
         to: email,
-        replyTo: 'jackee@kasandyconsulting.com',
-        subject: `Confirmed: Your Strategy Call — ${pstDisplay}`,
-        html: clientHtml,
+        replyTo: REPLY_TO,
+        subject: subjects.clientBooked(date, time),
+        html: clientBookingHtml(facts),
         attachments: [icsAttachment],
       }),
       resend.emails.send({
         from: FROM,
         to: JACKEE_EMAILS,
         replyTo: email,
-        subject: `📅 New Booking: ${name} — ${pstDisplay}`,
-        html: jackeeHtml,
+        subject: subjects.jackeeBooked(name, date, time),
+        html: jackeeBookingHtml(facts),
         attachments: [icsAttachment],
       }),
     ])
