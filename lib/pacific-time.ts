@@ -70,3 +70,38 @@ export function slotToUTC(dateStr: string, timeStr: string): Date {
 export function pacificLabel(dateStr: string): 'PDT' | 'PST' {
   return isPDT(dateStr) ? 'PDT' : 'PST'
 }
+
+/**
+ * The reverse of `slotToUTC`: a UTC instant back to the Pacific date and time it
+ * falls on.
+ *
+ * Needed because the hub stores `starts_at` as a timestamptz. Everything the client
+ * ever sees — the confirmation, the invite, the warning that tells them the call is
+ * in Vancouver — is phrased in Pacific, so a booking read back out of the database
+ * has to be turned back into the grid coordinates it came from.
+ *
+ * Uses Intl with the real IANA zone rather than the hand-rolled rule in `isPDT`,
+ * because this direction has to be right for instants the slot grid never produced
+ * — a hub booking at 09:40, an operator override outside the window. The two are
+ * held to agreeing by a round-trip contract in lib/regression.test.ts; a DST rule
+ * implemented twice is a wrong meeting time waiting to happen, and this file already
+ * says so once.
+ */
+export function utcToPacificParts(instant: Date): { dateStr: string; timeStr: string } {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Vancouver',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit',
+    hour12: false,
+  }).formatToParts(instant)
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
+  // en-CA renders midnight as "24" in some ICU versions; normalise it to 00, which
+  // is the same instant and the only form the rest of the code parses.
+  const hour = get('hour') === '24' ? '00' : get('hour')
+
+  return {
+    dateStr: `${get('year')}-${get('month')}-${get('day')}`,
+    timeStr: `${hour}:${get('minute')}`,
+  }
+}

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { SystemStrip } from '../../../_components/ui'
 import BookingRow, { type BookingWithOrg } from './BookingRow'
 import StandingRoom from './StandingRoom'
+import NewBooking from './NewBooking'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,6 +72,7 @@ export default async function CalendarPage({
           <Link href="/calendar?show=past" className={`btn sm${showPast ? ' ox' : ''}`}>
             Past ({past.length})
           </Link>
+          <NewBooking orgs={orgs} />
         </div>
       </div>
 
@@ -163,8 +165,10 @@ export default async function CalendarPage({
       </div>
 
       <SystemStrip>
-        The database refuses two bookings in the same slot, so the website and this
-        screen cannot double-book between them. Cancelling a booking releases the slot.
+        The database refuses two bookings in the same slot, and the website now reads
+        its availability from that same table — so a booking made or moved here closes
+        the slot on the site immediately, rather than only when a visitor tries to take
+        it. Cancelling a booking releases the slot and tells the client.
         Attaching a booking to an organisation is what lets the rest of the engine run:
         call → intake → discovery → proposal → signature, and a signature creates the
         client, the engagement and the invoice by itself.{' '}
