@@ -123,8 +123,9 @@ export default function CommsPanels({
         <div className="note" style={{ marginTop: 16 }}>
           <b>Replies are logged by hand.</b> Inbound routing is not configured, so this
           shows what went out plus anything recorded here. To thread real replies
-          automatically, route a mailbox to <code>/api/engine/inbound</code> and set{' '}
-          <code>INBOUND_EMAIL_SECRET</code>. Logging a reply has the same effect either
+          automatically, enable Inbound on the Resend domain, point its webhook at{' '}
+          <code>/api/engine/inbound</code>, and set <code>RESEND_WEBHOOK_SECRET</code> to
+          the signing secret it gives you. Logging a reply has the same effect either
           way: it halts the sequence.
         </div>
       )}

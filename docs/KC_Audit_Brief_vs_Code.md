@@ -176,7 +176,7 @@ that is not a test to be updated, it is a regression to be fixed.
 **Unbuilt, by decision**
 - E2 remainder: Square webhook engine-side, QBO reconciliation, dunning cron
 - E7 close-out: retire `ADMIN_PASSWORD`
-- Inbound email routing (built; awaits DNS + `INBOUND_EMAIL_SECRET`)
+- Inbound email routing (built against Resend Inbound; awaits `RESEND_WEBHOOK_SECRET` and a Resend-side webhook + forwarding rule)
 
 **Never exercised live** — the reason the 92-check brief exists
 - No proposal signed, no phase verified, no invoice released by verification

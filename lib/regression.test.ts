@@ -159,9 +159,27 @@ test('the demo route still records the opening and refuses a bad token', () => {
 })
 
 test('the inbound webhook still fails closed without its secret', () => {
+  // Replaces the shared-secret contract (INBOUND_EMAIL_SECRET + x-inbound-secret),
+  // written before any provider was chosen and never exercised against a real one.
+  // Resend Inbound is Svix-signed, not header-secret-authenticated; RESEND_WEBHOOK_SECRET
+  // is the value that now stands in for a session, and the fail-closed rule carries over.
   const route = read(join(ROOT, 'app/api/engine/inbound/route.ts'))
-  assert.match(route, /INBOUND_EMAIL_SECRET/, 'the inbound secret check is gone')
+  assert.match(route, /RESEND_WEBHOOK_SECRET/, 'the inbound secret check is gone')
   assert.match(route, /status: 503/, 'inbound no longer fails closed when unconfigured')
+  assert.match(route, /webhooks\.verify\(/, 'inbound no longer verifies the Resend signature')
+})
+
+test('a retried inbound delivery cannot thread the same reply twice', () => {
+  // Resend documents that webhook delivery is retried. Without this, two deliveries
+  // of one email insert two rows and run the reply-stop trigger twice for one event.
+  const route = read(join(ROOT, 'app/api/engine/inbound/route.ts'))
+  assert.match(route, /onConflict: 'provider_message_id', ignoreDuplicates: true/,
+    'a repeated inbound delivery is no longer deduplicated')
+  const migrations = readdirSync(join(ROOT, 'supabase/migrations'))
+  const hasIndex = migrations.some((f) =>
+    read(join(ROOT, 'supabase/migrations', f)).includes('messages_provider_message_id_uidx'),
+  )
+  assert.ok(hasIndex, 'the unique index backing inbound idempotency is gone')
 })
 
 test('the legacy admin cookie is still verified rather than counted', () => {

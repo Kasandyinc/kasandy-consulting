@@ -28,6 +28,11 @@ export default async function AdminPage() {
     { key: 'NEXT_PUBLIC_SUPABASE_URL', set: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL), why: 'Database and auth.' },
     { key: 'SUPABASE_SECRET_KEY', set: Boolean(process.env.SUPABASE_SECRET_KEY), why: 'Opt-out, crons, and the legacy import.' },
     { key: 'RESEND_API_KEY', set: Boolean(process.env.RESEND_API_KEY), why: 'Nothing can be emailed without it.' },
+    {
+      key: 'RESEND_WEBHOOK_SECRET',
+      set: Boolean(process.env.RESEND_WEBHOOK_SECRET),
+      why: 'Verifies Resend Inbound webhook deliveries. Unset — replies are logged by hand in Comms.',
+    },
     { key: 'CRON_SECRET', set: Boolean(process.env.CRON_SECRET), why: 'Both crons return 401 without it.' },
     { key: 'KV_REST_API_URL', set: Boolean(process.env.KV_REST_API_URL), why: 'Rate limiting, and the legacy CMS store.' },
     { key: 'ENGINE_OPERATOR_EMAILS', set: Boolean(process.env.ENGINE_OPERATOR_EMAILS), why: 'The app-side operator allow-list.' },

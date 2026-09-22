@@ -85,7 +85,7 @@ export default async function CommsPage() {
         orgs={(orgs ?? []) as never}
         contacts={(contacts ?? []) as never}
         messages={all as never}
-        inboundConfigured={Boolean(process.env.INBOUND_EMAIL_SECRET)}
+        inboundConfigured={Boolean(process.env.RESEND_WEBHOOK_SECRET)}
       />
 
       <SystemStrip>
