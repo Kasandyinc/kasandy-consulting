@@ -267,6 +267,33 @@ test('both website alerts still fire', () => {
   }
 })
 
+test('a call that has been and gone still asks for its outcome', () => {
+  // A booking left at requested/confirmed/held after its time has no outcome
+  // recorded, so Start intake never opens and a no-show is indistinguishable from a
+  // call that went well. It only appeared under Calendar → Past, where nothing
+  // prompted anyone to look.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/page.tsx'))
+  assert.match(
+    src,
+    /\.in\('status', \['requested', 'confirmed', 'held'\]\)[\s\S]{0,80}\.lt\('starts_at'/,
+    'past calls with no outcome dropped off Do next',
+  )
+  assert.match(src, /pastIds\.has/, 'a past unconfirmed booking is listed twice again')
+})
+
+test('nothing infers that a call happened from the notes on it', () => {
+  // Meeting notes are routinely written BEFORE a call, as preparation. Treating
+  // their presence as evidence the call took place marks no-shows as held — which
+  // is exactly the wrong conclusion drawn from this record on 22 Sep 2026.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/page.tsx'))
+  assert.doesNotMatch(
+    src,
+    /meeting_notes[^\n]{0,40}(is\b|!==|not\.is|\?\?)[^\n]{0,20}null[\s\S]{0,200}status/,
+    'the dashboard is deciding a booking outcome from whether notes exist',
+  )
+  assert.doesNotMatch(src, /meeting_notes/, 'Do next reads the notes to decide what happened')
+})
+
 test('the dashboard still surfaces the two things the alerts point at', () => {
   // An alert nobody can see is not an alert. "Do next" is where both land.
   const src = read(join(ROOT, 'app/(hub)/hub/(app)/page.tsx'))

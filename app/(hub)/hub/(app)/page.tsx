@@ -7,7 +7,15 @@ export const dynamic = 'force-dynamic'
 export default async function Dashboard() {
   const supabase = createClient()
 
-  const [orgs, contacts, verified, flagged, awaiting, enquiries] = await Promise.all([
+  // A call that has been and gone but still reads `requested`, `confirmed` or `held`
+  // has no outcome recorded. Until it does, the next step cannot happen — Start
+  // intake only opens on `done` — and a no-show looks identical to a call that went
+  // well. Deliberately not inferred from anything else: meeting notes are often
+  // written *before* the call, so their presence says nothing about whether it
+  // happened, and assuming otherwise would quietly mark no-shows as held.
+  const nowIso = new Date().toISOString()
+
+  const [orgs, contacts, verified, flagged, awaiting, enquiries, unresolved] = await Promise.all([
     supabase.from('orgs').select('*', { count: 'exact', head: true }),
     supabase.from('contacts').select('*', { count: 'exact', head: true }),
     supabase.from('orgs').select('*', { count: 'exact', head: true }).not('leader_name', 'is', null),
@@ -29,13 +37,27 @@ export default async function Dashboard() {
       .eq('status', 'new')
       .order('submitted_at', { ascending: false })
       .limit(10),
+    supabase
+      .from('bookings')
+      .select('id,name,organisation,starts_at,timezone,status')
+      .in('status', ['requested', 'confirmed', 'held'])
+      .lt('starts_at', nowIso)
+      .order('starts_at', { ascending: false })
+      .limit(10),
   ])
 
   const needsAttention = flagged.data ?? []
-  const newBookings = awaiting.data ?? []
   const newEnquiries = enquiries.data ?? []
+  const pastCalls = unresolved.data ?? []
+  // A past booking appears once, under "what happened", not twice. Without this a
+  // website booking nobody confirmed would sit in both lists asking two questions.
+  const pastIds = new Set(pastCalls.map((b) => b.id))
+  const newBookings = (awaiting.data ?? []).filter((b) => !pastIds.has(b.id))
   const nothingToDo =
-    needsAttention.length === 0 && newBookings.length === 0 && newEnquiries.length === 0
+    needsAttention.length === 0 &&
+    newBookings.length === 0 &&
+    newEnquiries.length === 0 &&
+    pastCalls.length === 0
   const failed = orgs.error || contacts.error || flagged.error
 
   const when = (iso: string, tz: string | null) =>
@@ -97,6 +119,14 @@ export default async function Dashboard() {
                     Meeting booked with {b.organisation || b.name} — {when(b.starts_at, b.timezone)}
                   </Link>
                   <span className="tag warn">⚑ Confirm</span>
+                </li>
+              ))}
+              {pastCalls.map((b) => (
+                <li key={b.id} className="row between center">
+                  <Link href="/calendar?show=past" style={{ fontWeight: 600 }}>
+                    {b.organisation || b.name} — {when(b.starts_at, b.timezone)} has passed
+                  </Link>
+                  <span className="tag warn">⚑ What happened?</span>
                 </li>
               ))}
               {newEnquiries.map((s) => (
