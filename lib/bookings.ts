@@ -91,17 +91,55 @@ export function isDateBookable(dateStr: string): boolean {
 const slotKey   = (d: string, t: string) => `slot:${d}:${t}`
 const indexKey  = 'bookings:index'
 
+/**
+ * What the visitor is shown for a given date.
+ *
+ * Two stores, each authoritative for one fact:
+ *
+ *   booked  — `public.bookings`, statuses requested/confirmed/held. The same rows the
+ *             partial unique index on `starts_at` refuses a second booking against,
+ *             so what the website offers now matches what it will accept. This used
+ *             to come from KV, which the hub never writes to: a booking Jackee made
+ *             or moved in the hub blocked nothing here, and the visitor discovered it
+ *             only after filling in the form.
+ *
+ *   blocked — KV. A slot an operator blocked by hand from /admin/bookings. The hub's
+ *             schema has no concept of this, so KV remains the only place it lives,
+ *             and a straight swap to Supabase would have quietly un-blocked every
+ *             slot Jackee had closed off.
+ *
+ * Booked wins over blocked: a real call in a slot somebody also blocked is still a
+ * real call, and showing it as merely unavailable would hide it from the person
+ * reading the admin screen.
+ *
+ * If the database cannot be reached, this falls back to KV alone and says so in the
+ * log. That is the old behaviour — degraded, not broken: KV still holds every
+ * website booking, and the unique index still refuses the collision at write time,
+ * so the worst case is a visitor offered a slot that turns out to be taken. Refusing
+ * every slot during an outage would be the larger failure.
+ */
 export async function getSlotStatuses(dateStr: string): Promise<Record<string, SlotStatus>> {
   const dayOfWeek = getDayOfWeek(dateStr)
   const slots = getDaySlots(dayOfWeek)
   if (!slots.length) return {}
 
+  const { takenSlotsForDate } = await import('./bookings-availability')
+  const taken = await takenSlotsForDate(dateStr)
+
+  if (!taken) {
+    console.warn('[bookings] availability fell back to KV — hub bookings are not reflected')
+  }
+
   const result: Record<string, SlotStatus> = {}
   for (const time of slots) {
     const val = await kv.get(slotKey(dateStr, time))
-    if (!val)               result[time] = 'available'
+
+    if (taken?.has(time))       result[time] = 'booked'
     else if (val === 'blocked') result[time] = 'blocked'
-    else                    result[time] = 'booked'
+    // The KV fallback path, and the only case where a KV booking still decides
+    // anything: the database said nothing because it could not be asked.
+    else if (!taken && val)     result[time] = 'booked'
+    else                        result[time] = 'available'
   }
   return result
 }
