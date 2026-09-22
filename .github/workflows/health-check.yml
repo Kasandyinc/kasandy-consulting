@@ -1,0 +1,130 @@
+# Website + hub health check.
+#
+# Runs Monday, Wednesday and Friday morning. Supabase pauses a free-plan project
+# after seven days without activity, so the longest gap this leaves (Friday to
+# Monday, three days) has room for one run to fail and still not reach the limit.
+#
+# Why GitHub Actions and not a Vercel cron:
+#
+#   · Vercel's Hobby plan allows two cron jobs, once a day. `vercel.json` already
+#     has two (sequence advance, reports). A third would be rejected, and pushing
+#     the maintenance check ahead of either of those is the wrong trade.
+#
+#   · The three things that need to stay awake are Supabase, Vercel and GitHub, and
+#     this covers all three with one mechanism: the workflow running is the GitHub
+#     activity, the request it makes is the Vercel activity, and the query that
+#     request runs is the Supabase activity. A Vercel cron would keep two of the
+#     three alive and could not reach the one that disables itself.
+#
+#   · GitHub disables scheduled workflows after 60 days of repository inactivity
+#     and emails the owner when a scheduled run fails. That is the alerting half,
+#     already built, with nothing to maintain.
+#
+# Setup, once:
+#   Settings → Secrets and variables → Actions
+#     HEALTH_URL     https://<the deployed host>/api/health
+#     CRON_SECRET    the same value set on the Vercel project
+#
+# Without those two secrets the job fails on its first run and says which is
+# missing — deliberately, rather than passing green while checking nothing.
+
+name: Health check
+
+on:
+  schedule:
+    # 15:20 UTC — 08:20 Pacific in summer, 07:20 in winter. Offset from the hour
+    # because GitHub delays scheduled runs that land on a busy minute.
+    - cron: '20 15 * * 1,3,5'
+  # So it can be run by hand after a deploy, or to confirm a fix.
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require configuration
+        env:
+          HEALTH_URL: ${{ secrets.HEALTH_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          missing=
+          [ -z "$HEALTH_URL" ]  && missing="$missing HEALTH_URL"
+          [ -z "$CRON_SECRET" ] && missing="$missing CRON_SECRET"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing"
+            echo "Add them under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+      - name: Call the health endpoint
+        id: call
+        env:
+          HEALTH_URL: ${{ secrets.HEALTH_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -o pipefail
+          # --max-time guards against a hung deployment holding the job open.
+          # --retry covers a cold start, which is not an outage.
+          code=$(curl -sS \
+            --max-time 45 \
+            --retry 2 --retry-delay 10 --retry-connrefused \
+            -H "authorization: Bearer $CRON_SECRET" \
+            -o response.json \
+            -w '%{http_code}' \
+            "$HEALTH_URL") || {
+              echo "::error::Could not reach $HEALTH_URL — the site itself may be down."
+              exit 1
+            }
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "HTTP $code"
+
+      - name: Report
+        run: |
+          code='${{ steps.call.outputs.code }}'
+
+          # Readable in the run summary without opening the raw log.
+          {
+            echo "### Health check"
+            echo ""
+            echo "HTTP \`$code\`"
+            echo ""
+            echo '```json'
+            cat response.json 2>/dev/null || echo '(no body)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$code" = "401" ]; then
+            echo "::error::Unauthorized. CRON_SECRET here does not match the one on the Vercel project."
+            exit 1
+          fi
+
+          if [ "$code" != "200" ]; then
+            echo "::error::Health check failed with HTTP $code."
+            exit 1
+          fi
+
+          # Warnings are things to do, not things that are broken. They are surfaced
+          # as annotations and the run still passes: a job that is permanently red
+          # is a job nobody reads, which is the same as having no check at all.
+          python3 - <<'PY'
+          import json, sys
+          try:
+              body = json.load(open('response.json'))
+          except Exception as err:
+              print(f"::error::Health endpoint returned something that is not JSON: {err}")
+              sys.exit(1)
+
+          if not body.get('ok'):
+              for name, c in (body.get('checks') or {}).items():
+                  if not c.get('ok'):
+                      print(f"::error::{name}: {c.get('detail')}")
+              sys.exit(1)
+
+          for name, c in (body.get('checks') or {}).items():
+              print(f"  {name}: {c.get('detail')}")
+
+          for w in body.get('warnings') or []:
+              print(f"::warning::{w}")
+
+          print("All checks passed.")
+          PY

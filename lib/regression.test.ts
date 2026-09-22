@@ -753,3 +753,75 @@ test('moving a booking brings it back under the slot-protecting index', () => {
   assert.deepEqual([...listed].sort(), [...holding].sort(),
     'reschedule and availability disagree about which statuses hold a slot')
 })
+
+// ─── 12 · The stack stays awake, and says when it is not well ───────────────
+// What broke: Supabase pauses a free-plan project after seven days without
+// activity. The website writes a booking to the hub BEFORE it confirms anything,
+// so a paused hub does not merely empty the calendar screen — it turns every
+// booking attempt on the public site into a 500.
+
+test('the health endpoint is behind the shared secret', () => {
+  // It reports real bookings: how many are unconfirmed, how many are unlinked.
+  // An unauthenticated endpoint with no check is one of the defects this file was
+  // started for.
+  const src = read(join(ROOT, 'app/api/health/route.ts'))
+  assert.match(src, /process\.env\.CRON_SECRET/, 'the health check no longer requires a secret')
+  assert.match(src, /Bearer \$\{secret\}/, 'the health check no longer checks the bearer token')
+  assert.match(src, /status: 401/, 'an unauthorized caller is no longer refused')
+})
+
+test('the health check makes a real query, not just a connection', () => {
+  // A connection that is opened and dropped is not activity, and a keepalive that
+  // does not keep anything alive fails in the one way nobody notices: silently,
+  // for seven days, until the project is paused.
+  const src = read(join(ROOT, 'app/api/health/route.ts'))
+  assert.match(src, /\.from\('bookings'\)[\s\S]{0,200}\.select\(/, 'the health check stopped querying')
+})
+
+test('a failed check fails the run and a warning does not', () => {
+  // A job that is permanently red is a job nobody reads, which is the same as
+  // having no check at all. Warnings are things to do; checks are things broken.
+  const src = read(join(ROOT, 'app/api/health/route.ts'))
+  assert.match(src, /status: ok \? 200 : 503/, 'a broken check no longer fails the run')
+  const wf = read(join(ROOT, '.github/workflows/health-check.yml'))
+  assert.match(wf, /::warning::/, 'warnings are no longer surfaced')
+  assert.doesNotMatch(
+    wf.slice(wf.indexOf('for w in body.get')),
+    /sys\.exit\(1\)/,
+    'a warning now fails the run, which is how a check stops being read',
+  )
+})
+
+test('the health schedule leaves a gap shorter than the pause window', () => {
+  // Two statements of one fact: the cron day-of-week in the workflow, and the
+  // seven-day inactivity window Supabase pauses on. Thinning the schedule to
+  // weekly would pass every other check here and pause the database.
+  const wf = read(join(ROOT, '.github/workflows/health-check.yml'))
+  const cron = wf.match(/- cron: '([^']+)'/)
+  assert.ok(cron, 'the health check is no longer scheduled')
+
+  const dow = cron![1].trim().split(/\s+/)[4]
+  assert.notEqual(dow, '*', 'unexpected: a daily schedule needs no gap check, but verify intent')
+
+  const days = dow.split(',').map(Number).sort((a, b) => a - b)
+  assert.ok(days.length >= 2, 'a single run a week leaves a seven-day gap')
+
+  // Largest gap between consecutive runs, wrapping around the week.
+  let worst = 0
+  for (let i = 0; i < days.length; i++) {
+    const next = days[(i + 1) % days.length]
+    const gap = i === days.length - 1 ? next + 7 - days[i] : next - days[i]
+    worst = Math.max(worst, gap)
+  }
+  assert.ok(worst <= 4, `the schedule leaves a ${worst}-day gap; Supabase pauses at 7`)
+})
+
+test('the secrets the health workflow needs are documented and demanded', () => {
+  // A workflow that passes green while checking nothing is worse than no workflow.
+  const wf = read(join(ROOT, '.github/workflows/health-check.yml'))
+  assert.match(wf, /Missing repository secret/, 'the workflow no longer fails on missing configuration')
+  for (const key of ['HEALTH_URL', 'CRON_SECRET']) {
+    assert.ok(wf.includes(key), `${key} is no longer required by the workflow`)
+  }
+  assert.match(read(join(ROOT, '.env.local.example')), /CRON_SECRET=/, 'CRON_SECRET left undocumented')
+})
