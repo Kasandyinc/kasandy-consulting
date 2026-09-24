@@ -544,7 +544,7 @@ test('the proposal document renders markdown, never raw', () => {
   const client = read(join(ROOT, 'app/(hub)/hub/(client)/proposal/[token]/page.tsx'))
   assert.doesNotMatch(
     client,
-    /dangerouslySetInnerHTML.*blueprint_md/s,
+    /dangerouslySetInnerHTML[\s\S]*blueprint_md/,
     'the client page is rendering blueprint_md directly again, bypassing markdown',
   )
 })

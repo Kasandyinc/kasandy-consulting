@@ -205,7 +205,13 @@ const DOC_STYLE = `
   gap:28px; flex-wrap:wrap;
   padding-bottom:20px; border-bottom:2px solid var(--doc-brand);
 }
-.kc-doc__logo{height:52px; width:auto; max-width:230px}
+/* The mark is a 500×500 square (see lib/engine/signature.ts, which renders the same
+   file at 140px in the email signature — verified working, not a guess). The
+   reference's height:52px/width:auto treated it as a wide wordmark-shaped logo,
+   which made a square mark render at roughly a tenth of its real size. Fixed
+   square dimensions, sized for a letterhead sitting beside a three-line contact
+   block rather than a signature block. */
+.kc-doc__logo{height:84px; width:84px; object-fit:contain}
 .kc-doc__wordmark{
   font-family:var(--doc-display); font-weight:300;
   font-size:clamp(21px,3.6vw,30px); letter-spacing:.22em;

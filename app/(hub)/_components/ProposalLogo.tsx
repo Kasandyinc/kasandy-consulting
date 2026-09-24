@@ -24,6 +24,11 @@ export default function ProposalLogo({ url }: { url: string | null }) {
       className="kc-doc__logo"
       src={url}
       alt="Kasandy Consulting"
+      // Explicit attributes, not just the CSS box — the same reasoning
+      // lib/engine/signature.ts uses for this identical file: some renderers draw
+      // an <img> at its native size (500×500) until width/height say otherwise.
+      width={84}
+      height={84}
       onError={() => setBroken(true)}
     />
   )
