@@ -136,6 +136,9 @@ export type Proposal = {
   decided_at: string | null
   decline_reason: string | null
   token: string
+  contact_id: string | null
+  preview_hash: string | null
+  preview_opened_at: string | null
 }
 
 export type ProposalSignature = {
@@ -173,11 +176,29 @@ export function defaultDepositCents(totalCents: number): number {
 /**
  * Why this proposal cannot go out yet. Same shape as the outreach send-gate: say
  * every reason at once rather than one at a time.
+ *
+ * Three checks were added for the document layer, each named in the brief as a hard
+ * gate — none is a style preference:
+ *
+ * - gstNumber empty: a Canadian tax invoice without the supplier's GST registration
+ *   number is not valid for the client to claim an input tax credit or a Public
+ *   Service Body rebate. Grant-funded clients get audited on exactly this line.
+ * - modules do not sum to total_cents: total_cents is denormalised from the modules
+ *   at save time, which makes it correct today and says nothing about tomorrow — a
+ *   direct edit to a module row, or a future code path that forgets to recompute,
+ *   would otherwise send a document whose total and whose line items disagree with
+ *   nobody noticing until a client does the arithmetic themselves.
+ * - previewHash mismatch: an operator must have actually seen the rendered document —
+ *   headings resolved, numbers reconciled — for the version being sent, not some
+ *   earlier draft of it. Comparing hashes rather than a boolean flag means any edit
+ *   after the last Preview reopens this gate on its own, with nothing to remember to
+ *   reset.
  */
 export function proposalBlockers(
   proposal: Pick<Proposal, 'title' | 'blueprint_md' | 'terms_md' | 'total_cents' | 'status'>,
-  modules: unknown[],
+  modules: Pick<ProposalModule, 'price_cents' | 'quantity'>[],
   recipientEmail: string | null,
+  gate?: { gstNumber: string | null; currentPreviewHash: string | null; savedPreviewHash: string | null },
 ): string[] {
   const reasons: string[] = []
   if (!proposal.title.trim()) reasons.push('No title')
@@ -187,6 +208,28 @@ export function proposalBlockers(
   if (proposal.total_cents <= 0) reasons.push('Total is zero')
   if (!recipientEmail) reasons.push('No contact with an email address to send it to')
   if (proposal.status !== 'draft') reasons.push(`Already ${proposal.status}`)
+
+  if (gate) {
+    if (!gate.gstNumber?.trim()) {
+      reasons.push(
+        'No GST number on file — set settings.gst_number before this can go out; a tax invoice is not valid for a client\'s ITC or PSB rebate without it',
+      )
+    }
+    const summed = proposalTotalCents(modules)
+    if (summed !== proposal.total_cents) {
+      // A local formatter rather than an import from lib/engine/money — this file is
+      // dependency-free by design, and a blocker message showing raw cents would be
+      // exactly the kind of number nobody double-checks by eye.
+      const cad = (c: number) => `$${(c / 100).toFixed(2)}`
+      reasons.push(
+        `The modules sum to ${cad(summed)} but the proposal total reads ${cad(proposal.total_cents)} — these must agree before this can be sent`,
+      )
+    }
+    if (!gate.savedPreviewHash || gate.savedPreviewHash !== gate.currentPreviewHash) {
+      reasons.push('Preview has not been opened for the current version of this proposal')
+    }
+  }
+
   return reasons
 }
 

@@ -122,6 +122,7 @@ test('every hub page is linked from the navigation or listed as a sub-page', () 
     '/outreach/[id]/compose',
     '/outreach/[id]/discovery',
     '/outreach/[id]/proposal',
+    '/outreach/[id]/proposal/preview',
     '/clients/[id]',
     '/cms/[slug]',
     '/cms/content',
@@ -503,6 +504,74 @@ test('research reads what the organisation has told us, as data', () => {
   assert.match(route, /meeting_notes/, 'research no longer reads the notes from the call')
   const research = read(join(ROOT, 'lib/engine/research.ts'))
   assert.match(research, /NOT instruction/, 'correspondence is no longer fenced off as data')
+})
+
+test('the three hard gates on Send for signature are still checked', () => {
+  // GST, totals reconciliation, and preview freshness — each names why it refuses.
+  // The raw markdown regression this whole layer exists to fix is checked here too:
+  // the client signing page and the internal Preview must render through the
+  // document component, never mdToHtml's email-shaped output or a raw textarea.
+  const send = read(join(ROOT, 'app/(hub)/hub/(app)/outreach/[id]/proposal/actions.ts'))
+  assert.match(send, /gstNumber:/, 'the GST gate is no longer passed into proposalBlockers')
+  assert.match(send, /currentPreviewHash/, 'the preview-freshness gate is no longer checked at send')
+
+  const delivery = read(join(ROOT, 'lib/engine/delivery.ts'))
+  assert.match(delivery, /gate\.gstNumber/, 'proposalBlockers no longer refuses on a missing GST number')
+  assert.match(
+    delivery,
+    /summed !== proposal\.total_cents/,
+    'proposalBlockers no longer checks modules against the stored total',
+  )
+  assert.match(
+    delivery,
+    /savedPreviewHash !== gate\.currentPreviewHash/,
+    'proposalBlockers no longer refuses an unpreviewed or stale-previewed version',
+  )
+})
+
+test('the client signing page and Preview render through the same document component', () => {
+  const client = read(join(ROOT, 'app/(hub)/hub/(client)/proposal/[token]/page.tsx'))
+  const preview = read(join(ROOT, 'app/(hub)/hub/(app)/outreach/[id]/proposal/preview/page.tsx'))
+  assert.match(client, /ProposalDocument/, 'the client signing page no longer renders the document component')
+  assert.match(preview, /ProposalDocument/, 'internal Preview no longer renders the document component')
+  // The same import path, not two components that happen to look alike.
+  const importLine = /from ['"]@\/app\/\(hub\)\/_components\/ProposalDocument['"]/
+  assert.match(client, importLine)
+  assert.match(preview, importLine)
+})
+
+test('the proposal document renders markdown, never raw', () => {
+  const client = read(join(ROOT, 'app/(hub)/hub/(client)/proposal/[token]/page.tsx'))
+  assert.doesNotMatch(
+    client,
+    /dangerouslySetInnerHTML.*blueprint_md/s,
+    'the client page is rendering blueprint_md directly again, bypassing markdown',
+  )
+})
+
+test('the document logo has a real fallback, not a default', () => {
+  // Rule 3 of the brief: the wordmark is a fallback for an empty or broken URL,
+  // never the thing rendered by default.
+  const logo = read(join(ROOT, 'app/(hub)/_components/ProposalLogo.tsx'))
+  assert.match(logo, /<img/, 'the real logo image is no longer rendered')
+  assert.match(logo, /kc-doc__wordmark/, 'the text wordmark fallback is gone')
+  assert.match(logo, /onError/, 'a broken logo URL no longer falls back at runtime')
+})
+
+test('the document stylesheet introduces no new palette or typeface', () => {
+  // Every --doc-* token must resolve to a token the hub already defines in
+  // app/(hub)/globals.css, and the two font stacks must be the hub's own.
+  const globalCss = read(join(ROOT, 'app/(hub)/globals.css'))
+  const doc = read(join(ROOT, 'app/(hub)/_components/ProposalDocument.tsx'))
+  const hubTokens = new Set(
+    Array.from(globalCss.matchAll(/--([a-z0-9-]+):/g)).map((m) => m[1]),
+  )
+  const mapped = Array.from(doc.matchAll(/--doc-[a-z-]+:\s*var\(--([a-z0-9-]+)\)/g))
+  assert.ok(mapped.length >= 9, 'fewer --doc-* tokens are mapped than the reference defined')
+  for (const [, target] of mapped) {
+    assert.ok(hubTokens.has(target), `--doc-* points at --${target}, which globals.css does not define`)
+  }
+  assert.doesNotMatch(doc, /#[0-9A-Fa-f]{6}/, 'a raw hex value has crept into the document stylesheet')
 })
 
 test('the research brief is still asked for the things a consultant needs', () => {

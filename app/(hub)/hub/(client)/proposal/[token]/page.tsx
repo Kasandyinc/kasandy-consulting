@@ -3,7 +3,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { formatMoney } from '@/lib/engine/money'
 import type { ProposalModule } from '@/lib/engine/delivery'
 import SignPanel from './SignPanel'
-import { mdToHtml } from '@/lib/engine/proposal-md'
+import ProposalDocument from '@/app/(hub)/_components/ProposalDocument'
+import PrintButton from '@/app/(hub)/_components/PrintButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,11 @@ export const dynamic = 'force-dynamic'
  * leaked token cannot expose working copy. What is shown is the frozen document —
  * the database refuses edits to it — which is why the signature can honestly claim
  * to be against exactly this text.
+ *
+ * The document itself renders through ProposalDocument — the same component the
+ * operator's Preview and the print/PDF view use. This page supplies the data and
+ * the parts that are specific to being the actual signing page: the status banner
+ * and, when there is something to sign, the live SignPanel.
  */
 export default async function ProposalPage({ params }: { params: { token: string } }) {
   if (!/^[0-9a-f]{32,64}$/i.test(params.token)) notFound()
@@ -27,11 +33,19 @@ export default async function ProposalPage({ params }: { params: { token: string
 
   if (!proposal || proposal.status === 'draft') notFound()
 
-  const [{ data: modules }, { data: signature }, { data: org }] = await Promise.all([
-    supabase.from('proposal_modules').select('*').eq('proposal_id', proposal.id).order('position'),
-    supabase.from('proposal_signatures').select('*').eq('proposal_id', proposal.id).maybeSingle(),
-    supabase.from('orgs').select('name').eq('id', proposal.org_id).maybeSingle(),
-  ])
+  const [{ data: modules }, { data: signature }, { data: org }, { data: settings }, { data: contact }] =
+    await Promise.all([
+      supabase.from('proposal_modules').select('*').eq('proposal_id', proposal.id).order('position'),
+      supabase.from('proposal_signatures').select('*').eq('proposal_id', proposal.id).maybeSingle(),
+      supabase.from('orgs').select('name').eq('id', proposal.org_id).maybeSingle(),
+      supabase
+        .from('settings')
+        .select('mailing_address, phone, signature_email, signature_name, signature_role, signature_logo_url, gst_number')
+        .maybeSingle(),
+      proposal.contact_id
+        ? supabase.from('contacts').select('name').eq('id', proposal.contact_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ])
 
   const mods = (modules ?? []) as ProposalModule[]
   const expired =
@@ -48,64 +62,25 @@ export default async function ProposalPage({ params }: { params: { token: string
         {signature && <span className="tag good">✓ Signed</span>}
       </div>
 
-      <div className="card" style={{ marginTop: 22 }}>
-        <div className="card-b">
-          <div
-            style={{ lineHeight: 1.7 }}
-            dangerouslySetInnerHTML={{ __html: mdToHtml(proposal.blueprint_md) }}
-          />
-        </div>
-      </div>
+      <PrintButton />
 
-      {mods.length > 0 && (
-        <div className="card" style={{ marginTop: 16 }}>
-          <div className="card-h"><h3>What is included</h3></div>
-          <table>
-            <tbody>
-              {mods.map((m) => (
-                <tr key={m.id}>
-                  <td>
-                    <div style={{ fontWeight: 600 }}>{m.name}</div>
-                    {m.summary && (
-                      <div style={{ color: 'var(--muted)', fontSize: 12.5, marginTop: 3 }}>{m.summary}</div>
-                    )}
-                  </td>
-                  <td className="mono" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                    {formatMoney(m.price_cents * m.quantity)}
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td style={{ fontWeight: 700 }}>Total</td>
-                <td
-                  className="mono"
-                  style={{ textAlign: 'right', fontWeight: 700, whiteSpace: 'nowrap' }}
-                >
-                  {formatMoney(proposal.total_cents)}
-                </td>
-              </tr>
-              {proposal.deposit_cents > 0 && (
-                <tr>
-                  <td style={{ color: 'var(--muted)' }}>Deposit on signature</td>
-                  <td className="mono" style={{ textAlign: 'right', color: 'var(--muted)' }}>
-                    {formatMoney(proposal.deposit_cents)}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <div className="card" style={{ marginTop: 16 }}>
-        <div className="card-h"><h3>Terms</h3></div>
-        <div className="card-b">
-          <div
-            style={{ lineHeight: 1.7 }}
-            dangerouslySetInnerHTML={{ __html: mdToHtml(proposal.terms_md) }}
-          />
-        </div>
-      </div>
+      <ProposalDocument
+        settings={
+          settings ?? {
+            mailing_address: null,
+            phone: null,
+            signature_email: null,
+            signature_name: null,
+            signature_role: null,
+            signature_logo_url: null,
+            gst_number: null,
+          }
+        }
+        proposal={proposal}
+        modules={mods}
+        orgName={org?.name ?? 'your organisation'}
+        contactName={signature?.signer_name ?? contact?.name ?? null}
+      />
 
       {signature ? (
         <div className="card" style={{ marginTop: 16, borderLeft: '3px solid var(--good)' }}>

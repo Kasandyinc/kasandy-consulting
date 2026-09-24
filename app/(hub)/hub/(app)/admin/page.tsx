@@ -89,6 +89,7 @@ export default async function AdminPage() {
             default_meeting_link: null,
             square_location_id: null,
             square_env: 'sandbox',
+            gst_number: null,
           }) as never
         }
         operators={(operators ?? []) as never}

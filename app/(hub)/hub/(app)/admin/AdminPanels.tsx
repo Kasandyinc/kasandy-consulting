@@ -30,6 +30,7 @@ type Settings = {
   default_meeting_link: string | null
   square_location_id: string | null
   square_env: string | null
+  gst_number: string | null
 }
 
 type Operator = { email: string; role: string; added_at: string }
@@ -69,6 +70,7 @@ export default function AdminPanels({
     defaultMeetingLink: settings.default_meeting_link ?? '',
     squareLocationId: settings.square_location_id ?? '',
     squareEnv: settings.square_env ?? 'sandbox',
+    gstNumber: settings.gst_number ?? '',
   })
 
   const [newOperator, setNewOperator] = useState('')
@@ -126,6 +128,17 @@ export default function AdminPanels({
               hint='Must be on the domain verified in Resend. "Name <address>" is allowed.'
             >
               <input value={s.sendingAddress} onChange={set('sendingAddress')} style={field} />
+            </Row>
+            <Row
+              label="GST/HST registration number"
+              hint="Printed on every proposal. Without it, a Canadian tax invoice is not valid for a client's input tax credit or PSB rebate — Send for signature is refused until this is set."
+            >
+              <input
+                value={s.gstNumber}
+                onChange={set('gstNumber')}
+                placeholder="123456789RT0001"
+                style={field}
+              />
             </Row>
             <div className="row wrap" style={{ gap: 12 }}>
               <div style={{ flex: '1 1 200px' }}>

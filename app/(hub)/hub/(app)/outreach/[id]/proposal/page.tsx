@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 export default async function ProposalPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
 
-  const [{ data: org }, { data: proposalRow }, { data: catalogue }, { data: contacts }] =
+  const [{ data: org }, { data: proposalRow }, { data: catalogue }, { data: contacts }, { data: settings }] =
     await Promise.all([
       supabase.from('orgs').select('*').eq('id', params.id).maybeSingle(),
       supabase
@@ -23,6 +23,7 @@ export default async function ProposalPage({ params }: { params: { id: string } 
         .maybeSingle(),
       supabase.from('service_modules').select('*').eq('active', true).order('position'),
       supabase.from('contacts').select('*').eq('org_id', params.id).order('name'),
+      supabase.from('settings').select('gst_number').maybeSingle(),
     ])
 
   if (!org) notFound()
@@ -62,6 +63,7 @@ export default async function ProposalPage({ params }: { params: { id: string } 
           title: c.title,
         }))}
         signature={(signature ?? null) as ProposalSignature | null}
+        gstNumber={(settings as { gst_number: string | null } | null)?.gst_number ?? null}
       />
 
       <SystemStrip>

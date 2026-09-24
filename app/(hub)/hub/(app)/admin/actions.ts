@@ -39,6 +39,7 @@ export async function saveSettings(args: {
   defaultMeetingLink: string
   squareLocationId: string
   squareEnv: string
+  gstNumber: string
 }) {
   const { supabase, email, ok } = await operator()
   if (!ok) return { ok: false, error: 'Not authorized.' }
@@ -94,6 +95,18 @@ export async function saveSettings(args: {
     return { ok: false, error: 'Square environment must be sandbox or production.' }
   }
 
+  // CRA's format: 9 digits, then a two-letter program identifier, then a 4-digit
+  // reference number — RT for GST/HST. Blank is allowed here (Send is what refuses
+  // on blank); a non-blank value that does not look like a real registration number
+  // is refused the same way a malformed Square location is.
+  const gstNumber = args.gstNumber.trim().toUpperCase()
+  if (gstNumber && !/^\d{9}RT\d{4}$/.test(gstNumber)) {
+    return {
+      ok: false,
+      error: 'That does not look like a GST/HST number — the format is 123456789RT0001.',
+    }
+  }
+
   const { error } = await supabase
     .from('settings')
     .update({
@@ -111,6 +124,7 @@ export async function saveSettings(args: {
       default_meeting_link: args.defaultMeetingLink.trim() || null,
       square_location_id: squareLocation || null,
       square_env: args.squareEnv || 'sandbox',
+      gst_number: gstNumber || null,
     })
     .eq('id', true)
 

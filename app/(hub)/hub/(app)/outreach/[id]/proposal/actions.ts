@@ -12,6 +12,7 @@ import {
   type ProposalModule,
 } from '@/lib/engine/delivery'
 import { formatMoney } from '@/lib/engine/money'
+import { proposalPreviewHash } from '@/lib/engine/proposal-doc'
 
 async function operator() {
   const supabase = createClient()
@@ -167,6 +168,46 @@ export async function saveProposal(args: {
 }
 
 /**
+ * Stamp the current saved version as previewed.
+ *
+ * Called when the operator opens Preview, against the row as it stands in the
+ * database right now — not whatever is still sitting unsaved in the builder's
+ * textareas, since it is the saved version that Send will actually deliver. Any
+ * edit and re-save after this moves proposals.updated_at forward and changes what
+ * proposalPreviewHash computes, which is what reopens the Send gate on its own.
+ */
+export async function markProposalPreviewed(args: { orgId: string; proposalId: string }) {
+  const { supabase, ok } = await operator()
+  if (!ok) return { ok: false, error: 'Not authorized.' }
+
+  const [{ data: proposal }, { data: modules }] = await Promise.all([
+    supabase.from('proposals').select('*').eq('id', args.proposalId).maybeSingle(),
+    supabase.from('proposal_modules').select('*').eq('proposal_id', args.proposalId).order('position'),
+  ])
+
+  if (!proposal) return { ok: false, error: 'Proposal not found.' }
+
+  const hash = await proposalPreviewHash({
+    title: proposal.title,
+    blueprint_md: proposal.blueprint_md,
+    terms_md: proposal.terms_md,
+    deposit_cents: proposal.deposit_cents,
+    valid_until: proposal.valid_until,
+    modules: (modules ?? []) as ProposalModule[],
+  })
+
+  const { error } = await supabase
+    .from('proposals')
+    .update({ preview_hash: hash, preview_opened_at: new Date().toISOString() })
+    .eq('id', args.proposalId)
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath(`/outreach/${args.orgId}/proposal`)
+  return { ok: true }
+}
+
+/**
  * Compose the Blueprint from the discovery findings and the chosen modules.
  *
  * Like the assessment, this composes rather than invents: the problem statement comes
@@ -269,7 +310,7 @@ export async function sendProposal(args: { orgId: string; proposalId: string; co
   const [{ data: proposal }, { data: modules }, { data: contact }, { data: settings }, { data: org }] =
     await Promise.all([
       supabase.from('proposals').select('*').eq('id', args.proposalId).maybeSingle(),
-      supabase.from('proposal_modules').select('id').eq('proposal_id', args.proposalId),
+      supabase.from('proposal_modules').select('*').eq('proposal_id', args.proposalId).order('position'),
       supabase.from('contacts').select('*').eq('id', args.contactId).maybeSingle(),
       supabase.from('settings').select('*').maybeSingle(),
       supabase.from('orgs').select('name').eq('id', args.orgId).maybeSingle(),
@@ -277,7 +318,24 @@ export async function sendProposal(args: { orgId: string; proposalId: string; co
 
   if (!proposal) return { ok: false, error: 'Proposal not found.' }
 
-  const blockers = proposalBlockers(proposal, modules ?? [], contact?.email ?? null)
+  const mods = (modules ?? []) as ProposalModule[]
+  // Recomputed the same way markProposalPreviewed computed it, over the row exactly
+  // as it stands right now — a stale preview_hash on the proposal (from before the
+  // most recent edit) will not match, and Send is refused.
+  const currentPreviewHash = await proposalPreviewHash({
+    title: proposal.title,
+    blueprint_md: proposal.blueprint_md,
+    terms_md: proposal.terms_md,
+    deposit_cents: proposal.deposit_cents,
+    valid_until: proposal.valid_until,
+    modules: mods,
+  })
+
+  const blockers = proposalBlockers(proposal, mods, contact?.email ?? null, {
+    gstNumber: (settings as { gst_number: string | null } | null)?.gst_number ?? null,
+    currentPreviewHash,
+    savedPreviewHash: proposal.preview_hash,
+  })
   if (blockers.length) {
     await supabase.from('audit_log').insert({
       actor: email,
@@ -293,7 +351,7 @@ export async function sendProposal(args: { orgId: string; proposalId: string; co
   // the document is still the one the link points at.
   const { error: freezeError } = await supabase
     .from('proposals')
-    .update({ status: 'sent', sent_at: new Date().toISOString() })
+    .update({ status: 'sent', sent_at: new Date().toISOString(), contact_id: args.contactId })
     .eq('id', args.proposalId)
 
   if (freezeError) return { ok: false, error: freezeError.message }

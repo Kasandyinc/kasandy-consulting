@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   isFrozen,
@@ -12,6 +12,7 @@ import {
   type ServiceModule,
 } from '@/lib/engine/delivery'
 import { formatMoney } from '@/lib/engine/money'
+import { proposalPreviewHash } from '@/lib/engine/proposal-doc'
 import {
   createProposal,
   setProposalModules,
@@ -19,6 +20,7 @@ import {
   generateBlueprint,
   sendProposal,
   withdrawProposal,
+  markProposalPreviewed,
 } from './actions'
 
 const field: React.CSSProperties = {
@@ -49,6 +51,7 @@ export default function ProposalBuilder({
   catalogue,
   contacts,
   signature,
+  gstNumber,
 }: {
   orgId: string
   orgName: string
@@ -57,6 +60,7 @@ export default function ProposalBuilder({
   catalogue: ServiceModule[]
   contacts: ContactView[]
   signature: ProposalSignature | null
+  gstNumber: string | null
 }) {
   const router = useRouter()
   const [pending, start] = useTransition()
@@ -101,6 +105,7 @@ export default function ProposalBuilder({
         pending={pending}
         run={run}
         orgId={orgId}
+        gstNumber={gstNumber}
       />
 
       <div className="grid g2" style={{ marginTop: 16, alignItems: 'start' }}>
@@ -130,6 +135,7 @@ function Header({
   pending,
   run,
   orgId,
+  gstNumber,
 }: {
   proposal: Proposal
   signature: ProposalSignature | null
@@ -138,10 +144,37 @@ function Header({
   pending: boolean
   run: (fn: () => Promise<{ ok: boolean; error?: string }>, okText: string) => void
   orgId: string
+  gstNumber: string | null
 }) {
   const [contactId, setContactId] = useState(contacts.find((c) => c.email)?.id ?? '')
   const recipient = contacts.find((c) => c.id === contactId)
-  const blockers = proposalBlockers(proposal, chosen, recipient?.email ?? null)
+
+  // Recomputed the same way the server recomputes it in sendProposal, over the same
+  // saved fields — so what the button disables on matches what Send would actually
+  // refuse with, rather than a client-side guess that can drift from the real gate.
+  const [currentPreviewHash, setCurrentPreviewHash] = useState<string | null>(null)
+  useEffect(() => {
+    let live = true
+    proposalPreviewHash({
+      title: proposal.title,
+      blueprint_md: proposal.blueprint_md,
+      terms_md: proposal.terms_md,
+      deposit_cents: proposal.deposit_cents,
+      valid_until: proposal.valid_until,
+      modules: chosen,
+    }).then((h) => {
+      if (live) setCurrentPreviewHash(h)
+    })
+    return () => {
+      live = false
+    }
+  }, [proposal.title, proposal.blueprint_md, proposal.terms_md, proposal.deposit_cents, proposal.valid_until, chosen])
+
+  const blockers = proposalBlockers(proposal, chosen, recipient?.email ?? null, {
+    gstNumber,
+    currentPreviewHash,
+    savedPreviewHash: proposal.preview_hash,
+  })
 
   return (
     <div className="card" style={{ marginTop: 20 }}>
@@ -352,6 +385,7 @@ function Document({
 }) {
   const frozen = isFrozen(proposal.status)
   const [tab, setTab] = useState<'blueprint' | 'terms'>('blueprint')
+  const [previewing, setPreviewing] = useState(false)
   const [title, setTitle] = useState(proposal.title)
   const [blueprint, setBlueprint] = useState(proposal.blueprint_md)
   const [terms, setTerms] = useState(proposal.terms_md)
@@ -377,15 +411,39 @@ function Document({
             Terms
           </button>
         </div>
-        {!frozen && (
+        <div className="row" style={{ gap: 6 }}>
+          {!frozen && (
+            <button
+              className="btn sm ai"
+              disabled={pending}
+              onClick={() => run(() => generateBlueprint({ orgId, proposalId: proposal.id }), 'Blueprint composed.')}
+            >
+              ✨ Compose
+            </button>
+          )}
           <button
-            className="btn sm ai"
-            disabled={pending}
-            onClick={() => run(() => generateBlueprint({ orgId, proposalId: proposal.id }), 'Blueprint composed.')}
+            className="btn sm"
+            disabled={pending || previewing}
+            title="Save the document first — Preview shows the saved version, not unsaved edits."
+            onClick={() => {
+              setPreviewing(true)
+              // A new tab, opened from the click itself rather than after the action
+              // resolves — popup blockers allow a tab opened synchronously in
+              // response to a click, and refuse one opened from a callback.
+              const win = window.open('', '_blank')
+              markProposalPreviewed({ orgId, proposalId: proposal.id }).then((res) => {
+                setPreviewing(false)
+                if (res.ok && win) {
+                  win.location.href = `/outreach/${orgId}/proposal/preview`
+                } else if (win) {
+                  win.close()
+                }
+              })
+            }}
           >
-            ✨ Compose
+            {previewing ? 'Opening…' : '👁 Preview'}
           </button>
-        )}
+        </div>
       </div>
       <div className="card-b">
         {frozen && (

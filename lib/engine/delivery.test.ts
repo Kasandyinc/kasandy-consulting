@@ -53,7 +53,7 @@ test('a complete draft has no blockers', () => {
   assert.deepEqual(
     proposalBlockers(
       { title: 'Ops platform', blueprint_md: 'Plan', terms_md: 'Terms', total_cents: 100, status: 'draft' },
-      [{}],
+      [{ price_cents: 100, quantity: 1 }],
       'a@b.org',
     ),
     [],
@@ -63,7 +63,7 @@ test('a complete draft has no blockers', () => {
 test('a proposal already sent is blocked from being sent again', () => {
   const reasons = proposalBlockers(
     { title: 'T', blueprint_md: 'B', terms_md: 'T', total_cents: 100, status: 'sent' },
-    [{}],
+    [{ price_cents: 100, quantity: 1 }],
     'a@b.org',
   )
   assert.ok(reasons.some((r) => /already sent/i.test(r)))
@@ -91,4 +91,84 @@ test('findings sort worst first, strengths last', () => {
     .slice()
     .sort((a, b) => SEVERITY_ORDER[a] - SEVERITY_ORDER[b])
   assert.deepEqual(sorted, ['critical', 'material', 'minor', 'strength'])
+})
+
+// ─── The three document-layer gates ──────────────────────────────────────────
+// Each is opt-in via the fourth `gate` argument, so the pre-existing gate-less
+// checks above never run them — the same signature, wider by one optional field.
+
+const readyProposal = {
+  title: 'Governance & Roles',
+  blueprint_md: 'Plan',
+  terms_md: 'Terms',
+  total_cents: 300,
+  status: 'draft' as const,
+}
+const readyModules = [{ price_cents: 300, quantity: 1 }]
+
+test('an empty GST number blocks, and names why it matters', () => {
+  const reasons = proposalBlockers(readyProposal, readyModules, 'a@b.org', {
+    gstNumber: '',
+    currentPreviewHash: 'h1',
+    savedPreviewHash: 'h1',
+  })
+  assert.ok(reasons.some((r) => /GST/.test(r)))
+})
+
+test('a null GST number blocks the same as an empty one', () => {
+  const reasons = proposalBlockers(readyProposal, readyModules, 'a@b.org', {
+    gstNumber: null,
+    currentPreviewHash: 'h1',
+    savedPreviewHash: 'h1',
+  })
+  assert.ok(reasons.some((r) => /GST/.test(r)))
+})
+
+test('modules that do not sum to total_cents block, showing both figures', () => {
+  const reasons = proposalBlockers(readyProposal, [{ price_cents: 250, quantity: 1 }], 'a@b.org', {
+    gstNumber: '804428431RT0001',
+    currentPreviewHash: 'h1',
+    savedPreviewHash: 'h1',
+  })
+  const line = reasons.find((r) => /sum to/.test(r))
+  assert.ok(line, 'no reconciliation blocker was raised')
+  // Both figures, never just one — a mismatch shown with only the total invites the
+  // reader to trust the wrong number.
+  assert.match(line!, /\$2\.50/)
+  assert.match(line!, /\$3\.00/)
+})
+
+test('an unpreviewed proposal blocks even with everything else correct', () => {
+  const reasons = proposalBlockers(readyProposal, readyModules, 'a@b.org', {
+    gstNumber: '804428431RT0001',
+    currentPreviewHash: 'h1',
+    savedPreviewHash: null,
+  })
+  assert.ok(reasons.some((r) => /Preview/.test(r)))
+})
+
+test('a preview taken against an earlier version blocks the same as no preview', () => {
+  const reasons = proposalBlockers(readyProposal, readyModules, 'a@b.org', {
+    gstNumber: '804428431RT0001',
+    currentPreviewHash: 'h2-after-an-edit',
+    savedPreviewHash: 'h1-before-the-edit',
+  })
+  assert.ok(reasons.some((r) => /Preview/.test(r)))
+})
+
+test('all three gates pass together and add nothing to a clean send', () => {
+  assert.deepEqual(
+    proposalBlockers(readyProposal, readyModules, 'a@b.org', {
+      gstNumber: '804428431RT0001',
+      currentPreviewHash: 'h1',
+      savedPreviewHash: 'h1',
+    }),
+    [],
+  )
+})
+
+test('omitting the gate argument entirely skips all three checks', () => {
+  // The pre-existing three-argument call shape, used by callers that have not yet
+  // supplied gate state, must keep working exactly as before.
+  assert.deepEqual(proposalBlockers(readyProposal, readyModules, 'a@b.org'), [])
 })
