@@ -27,8 +27,8 @@ export default function ProposalLogo({ url }: { url: string | null }) {
       // Explicit attributes, not just the CSS box — the same reasoning
       // lib/engine/signature.ts uses for this identical file: some renderers draw
       // an <img> at its native size (500×500) until width/height say otherwise.
-      width={84}
-      height={84}
+      width={130}
+      height={130}
       onError={() => setBroken(true)}
     />
   )
