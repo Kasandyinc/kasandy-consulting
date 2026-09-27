@@ -10,12 +10,33 @@
  * organisation can be tested without a zip, a bucket or a database.
  */
 
+export type PackageKind = 'demo' | 'proposal' | 'demo_pdf'
+
 export type PackageFile = {
   /** Folder key from the zip, e.g. `skills_for_change`. */
   orgKey: string
-  kind: 'demo' | 'proposal'
+  kind: PackageKind
   path: string
   bytes: Uint8Array
+}
+
+/**
+ * What each kind is stored as — the extension, the content-type and the column
+ * on `orgs` — kept in one place. `demo_object` / `proposal_object` already show
+ * what happens when that mapping is written twice: a third kind is exactly where
+ * a copy-pasted ternary quietly goes wrong.
+ */
+export const PACKAGE_KIND_META: Record<
+  PackageKind,
+  { ext: string; contentType: string; column: 'demo_object' | 'proposal_object' | 'demo_pdf_object' }
+> = {
+  demo: { ext: 'html', contentType: 'text/html; charset=utf-8', column: 'demo_object' },
+  proposal: {
+    ext: 'docx',
+    contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    column: 'proposal_object',
+  },
+  demo_pdf: { ext: 'pdf', contentType: 'application/pdf', column: 'demo_pdf_object' },
 }
 
 export type ResearchRecord = {
@@ -56,7 +77,7 @@ export function isJunk(path: string): boolean {
  * zip. Falling back to the filename means a re-zipped or re-organised folder still
  * imports rather than silently matching nothing.
  */
-export function classify(path: string): { orgKey: string; kind: 'demo' | 'proposal' } | null {
+export function classify(path: string): { orgKey: string; kind: PackageKind } | null {
   if (isJunk(path)) return null
 
   // `Core/` holds the reusable masters — Master_Platform_Demo.html ends in
@@ -69,14 +90,18 @@ export function classify(path: string): { orgKey: string; kind: 'demo' | 'propos
   const base = (segments.pop() ?? '').trim()
   const lower = base.toLowerCase()
 
-  let kind: 'demo' | 'proposal'
+  // A PDF sits next to the HTML demo under the same key — `<key>_Demo.pdf` beside
+  // `<key>_Demo.html` — rather than under a suffix of its own, so the two are
+  // obviously the same document in two forms, not two different facts about the org.
+  let kind: PackageKind
   if (lower.endsWith('_demo.html') || lower.endsWith('_demo.htm')) kind = 'demo'
+  else if (lower.endsWith('_demo.pdf')) kind = 'demo_pdf'
   else if (lower.endsWith('_proposal.docx')) kind = 'proposal'
   else return null
 
   // The key is the filename minus the suffix — authoritative, because the folder may
   // have been flattened.
-  const orgKey = base.replace(/_(Demo\.html?|Proposal\.docx)$/i, '').trim().toLowerCase()
+  const orgKey = base.replace(/_(Demo\.html?|Demo\.pdf|Proposal\.docx)$/i, '').trim().toLowerCase()
   return orgKey ? { orgKey, kind } : null
 }
 
