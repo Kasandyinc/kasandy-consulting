@@ -17,7 +17,9 @@ export default async function PackagesPage() {
   const [{ data: orgs }, { count: views }] = await Promise.all([
     supabase
       .from('orgs')
-      .select('id, name, stage, demo_object, proposal_object, package_token, detail_hook')
+      .select(
+        'id, name, stage, demo_object, proposal_object, demo_pdf_object, package_token, detail_hook',
+      )
       .order('name'),
     supabase.from('demo_views').select('id', { count: 'exact', head: true }),
   ])
@@ -28,6 +30,7 @@ export default async function PackagesPage() {
     stage: string
     demo_object: string | null
     proposal_object: string | null
+    demo_pdf_object: string | null
     package_token: string
     detail_hook: string | null
   }[]

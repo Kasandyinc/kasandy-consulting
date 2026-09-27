@@ -161,6 +161,34 @@ test('the demo route still records the opening and refuses a bad token', () => {
   assert.match(route, /injectFrame\(/, 'the demo is served without its framing banner')
 })
 
+test('the PDF demo route validates its token and records its opening the same way', () => {
+  // A second document, the same contract — not free to skip the checks the HTML
+  // route already earns its place by passing.
+  const route = read(join(ROOT, 'app/demo/[token]/pdf/route.ts'))
+  assert.match(route, /\[0-9a-f\]\{32,64\}/, 'the PDF token is no longer validated')
+  assert.match(route, /demo_views/, 'PDF openings are no longer recorded')
+  assert.match(route, /kind: 'demo_pdf'/, 'a PDF opening is no longer distinguished from an HTML one')
+})
+
+test('every package kind the importer accepts has somewhere to be stored', () => {
+  // Two statements of one fact: PACKAGE_KIND_META in TypeScript, and the columns
+  // that actually exist on orgs. The Phone-tab class of failure, one layer over —
+  // a fourth kind whose column nobody added would upload, then fail silently on
+  // the update that was supposed to point an org at it.
+  const pkg = read(join(ROOT, 'lib/engine/package-import.ts'))
+  const columns = Array.from(pkg.matchAll(/column:\s*'([a-z_]+)'/g)).map((m) => m[1])
+  assert.ok(columns.length >= 3, 'PACKAGE_KIND_META lost an entry')
+
+  const migrations = readdirSync(join(ROOT, 'supabase/migrations')).sort()
+  const allSql = migrations.map((f) => read(join(ROOT, 'supabase/migrations', f))).join('\n')
+  for (const col of columns) {
+    assert.ok(
+      allSql.includes(`add column ${col}`) || allSql.includes(`add column if not exists ${col}`),
+      `PACKAGE_KIND_META names column "${col}" but no migration adds it`,
+    )
+  }
+})
+
 test('the inbound webhook still fails closed without its secret', () => {
   // Replaces the shared-secret contract (INBOUND_EMAIL_SECRET + x-inbound-secret),
   // written before any provider was chosen and never exercised against a real one.
