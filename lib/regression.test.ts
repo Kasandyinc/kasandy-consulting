@@ -939,3 +939,67 @@ test('the secrets the health workflow needs are documented and demanded', () => 
   }
   assert.match(read(join(ROOT, '.env.local.example')), /CRON_SECRET=/, 'CRON_SECRET left undocumented')
 })
+
+// ─── 13 · The signature creates the engagement ──────────────────────────────
+// What broke: accept_on_signature() set the proposal accepted, inserted a clients
+// row, moved the org to 8_won, and returned. That was the whole function. P-0005 was
+// signed on 4 November 2026 with $7,218.75 attached; engagements, engagement_phases
+// and invoices stayed empty for ten days. Nothing errored, because nothing was
+// attempted — the most expensive shape of defect in this build.
+
+test('accepting a proposal creates the engagement, not just the client', () => {
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000022_signature_creates_engagement.sql'))
+  assert.match(sql, /create or replace function accept_on_signature/)
+  assert.match(sql, /insert into engagements/, 'the signature no longer creates an engagement')
+  assert.match(sql, /insert into clients/, 'the signature no longer creates the client')
+})
+
+test('the signature does not invent a billing schedule', () => {
+  // P-0005 is the proof it cannot: eight priced modules plus a GST line became four
+  // phases of $875 / $3,000 / $1,500 / $1,500, and only two fall on module
+  // boundaries. Seeding a phase per module would produce nine, one of them GST — and
+  // wrong structure looks like structure, so it is worse than none.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000022_signature_creates_engagement.sql'))
+  const fn = sql.slice(sql.indexOf('function accept_on_signature'), sql.indexOf('next_invoice_number'))
+  assert.doesNotMatch(fn, /insert into engagement_phases/, 'the trigger now guesses the billing schedule')
+  assert.doesNotMatch(fn, /insert into invoices/, 'the trigger now raises invoices by itself')
+})
+
+test('a second acceptance cannot stack a second engagement', () => {
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000022_signature_creates_engagement.sql'))
+  assert.match(sql, /not exists \(select 1 from engagements where client_id = v_client_id\)/)
+})
+
+// ─── 14 · An invoice is a valid tax invoice, or it does not go out ──────────
+
+test('the database refuses a second live invoice for one phase', () => {
+  // Not a code check: between a read and a write the queue can fire. The first
+  // client submits receipts to a funder who audits them, and two invoices for the
+  // same $3,150 is something she has to explain. Same shape as bookings_slot_unique.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000021_invoice_tax_and_payment_methods.sql'))
+  assert.match(sql, /create unique index if not exists invoices_one_live_per_phase/)
+  assert.match(sql, /where phase_id is not null and status <> 'void'/)
+})
+
+test('the three money figures on an invoice cannot drift apart', () => {
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000021_invoice_tax_and_payment_methods.sql'))
+  assert.match(sql, /check \(amount_cents = subtotal_cents \+ tax_cents\)/)
+})
+
+test('the GST gate on issuing says the same thing as the gate on sending', () => {
+  // Two documents, one rule: without the supplier's registration number neither is
+  // valid for the client's ITC or PSB rebate.
+  const invoice = read(join(ROOT, 'lib/engine/invoice.ts'))
+  const proposal = read(join(ROOT, 'lib/engine/delivery.ts'))
+  for (const [name, src] of [['invoice', invoice], ['proposal', proposal]] as const) {
+    assert.match(src, /ITC or PSB rebate/, `the ${name} gate dropped the GST reason`)
+  }
+})
+
+test('the queue cannot fire on a phase with no date', () => {
+  // Phase 3's December date is not confirmed. A queue that guessed it would invoice
+  // for a workshop that has not been scheduled, let alone delivered.
+  const src = read(join(ROOT, 'lib/engine/invoice.ts'))
+  const fn = src.slice(src.indexOf('export function shouldDraftToday'))
+  assert.match(fn.slice(0, 300), /if \(!phase\.send_on\) return false/)
+})
