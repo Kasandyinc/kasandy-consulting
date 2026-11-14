@@ -1,7 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import {
   gstCents,
+  requiresVerification,
+  billingBlockers,
   amountsFromSubtotal,
   amountsAgree,
   invoiceBlockers,
@@ -226,4 +229,64 @@ test('asking for bank details with none on file falls back to on request', () =>
     null,
   )
   assert.equal(eft.kind, 'on_request')
+})
+
+// ─── What releases a phase's invoice ────────────────────────────────────────
+// The client asked to be invoiced before the Foundations Workshop. Under the old
+// model the only way to do that was to have her mark the phase verified eight days
+// before it happened — a false delivery record, in a file a funder audits.
+
+test('a scheduled phase does not wait for verification', () => {
+  assert.equal(requiresVerification({ billing_trigger: 'on_schedule' }), false)
+})
+
+test('verification is still the default, and anything unrecognised is treated as one', () => {
+  // The safer side: a phase whose trigger is missing, misspelled or newly added
+  // bills only after the client confirms delivery, rather than billing immediately.
+  assert.equal(requiresVerification({ billing_trigger: 'on_verification' }), true)
+  assert.equal(requiresVerification({ billing_trigger: '' }), true)
+  assert.equal(requiresVerification({ billing_trigger: 'something_new' }), true)
+})
+
+test('a milestone phase is blocked until the client marks it live', () => {
+  const phase = {
+    billing_trigger: 'on_verification',
+    verified_at: null,
+    send_on: '2027-02-13',
+    name: 'Governance manual and document set',
+  }
+  const reasons = billingBlockers(phase, '2027-02-12')
+  assert.equal(reasons.length, 1)
+  assert.match(reasons[0], /bills on verification and the client has not marked it live/)
+
+  assert.deepEqual(billingBlockers({ ...phase, verified_at: '2027-02-14T00:00:00Z' }, '2027-02-14'), [])
+})
+
+test('a scheduled phase with no date is blocked, not billed immediately', () => {
+  // Phase 3's December date is unconfirmed. "No date" must never read as "now".
+  const reasons = billingBlockers(
+    { billing_trigger: 'on_schedule', verified_at: null, send_on: null, name: 'In-person governance workshop' },
+    '2026-12-01',
+  )
+  assert.equal(reasons.length, 1)
+  assert.match(reasons[0], /no date set yet/)
+})
+
+test('a scheduled phase with a date bills without any verification', () => {
+  assert.deepEqual(
+    billingBlockers(
+      { billing_trigger: 'on_schedule', verified_at: null, send_on: '2026-11-22', name: 'Foundations Workshop' },
+      '2026-11-21',
+    ),
+    [],
+  )
+})
+
+test('the two gates answer different questions and are not collapsed', () => {
+  // billingBlockers asks whether we may bill for the work. invoiceBlockers asks
+  // whether the document is a lawful tax invoice. They fail for different reasons,
+  // and one hiding behind the other is how a defect reaches a client.
+  const src = readFileSync(new URL('./invoice.ts', import.meta.url), 'utf8')
+  const billing = src.slice(src.indexOf('export function billingBlockers'))
+  assert.doesNotMatch(billing.slice(0, 900), /gstNumber/, 'the billing gate now also judges the document')
 })

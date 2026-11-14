@@ -1003,3 +1003,58 @@ test('the queue cannot fire on a phase with no date', () => {
   const fn = src.slice(src.indexOf('export function shouldDraftToday'))
   assert.match(fn.slice(0, 300), /if \(!phase\.send_on\) return false/)
 })
+
+// ─── 15 · The verification gate bills the phase it names ────────────────────
+// What broke: enforce_verification_gate() read engagements.verified_at — one column
+// for the whole engagement. On the four-phase Governance Build that meant the first
+// verification satisfied every later invoice, so the rule protecting phases 3 and 4
+// would have fired once and never again. Present, readable, and doing nothing — the
+// same shape as the signature that never created an engagement.
+
+test('the verification gate reads the phase, not the engagement', () => {
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000023_billing_trigger_and_acceptance.sql'))
+  const fn = sql.slice(sql.indexOf('create or replace function enforce_verification_gate'))
+  assert.match(fn, /from engagement_phases\s*\n\s*where id = new\.phase_id/,
+    'the gate is back to reading one column for the whole engagement')
+  assert.doesNotMatch(fn, /from engagements\s+where id = new\.engagement_id/,
+    'the gate reads the engagement-level verified_at again')
+})
+
+test('an invoice that bills a milestone must name the phase it bills', () => {
+  // Without this the gate has nothing to check and would pass by default.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000023_billing_trigger_and_acceptance.sql'))
+  assert.match(sql, /names no phase, so there is nothing to verify/)
+})
+
+test('a scheduled phase cannot carry an invoice that claims to need verification', () => {
+  // The two would then disagree about what releases the money, and the database is
+  // where that disagreement gets settled rather than in whichever screen wrote last.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000023_billing_trigger_and_acceptance.sql'))
+  assert.match(sql, /which bills on schedule, so it must not require verification/)
+})
+
+test('accepting an invoice and verifying delivery are separate acts', () => {
+  // Collapsing them is what forced a client to certify delivery of a workshop eight
+  // days before it happened, in a file her funder audits.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(client)/portal/actions.ts'))
+  assert.match(actions, /export async function acceptInvoice/)
+  assert.match(actions, /export async function verifyPhase/)
+  const accept = actions.slice(actions.indexOf('export async function acceptInvoice'))
+  assert.doesNotMatch(accept, /verified_at/, 'accepting an invoice now also records a delivery')
+})
+
+test('a client can only accept an invoice that has actually been issued', () => {
+  const actions = read(join(ROOT, 'app/(hub)/hub/(client)/portal/actions.ts'))
+  const accept = actions.slice(actions.indexOf('export async function acceptInvoice'))
+  assert.match(accept.slice(0, 2000), /status === 'draft'/, 'a draft can be accepted again')
+  // The write is conditional on it still being unaccepted, so two tabs cannot both
+  // record an acceptance.
+  assert.match(accept, /\.is\('accepted_at', null\)/, 'acceptance is no longer race-safe')
+})
+
+test('the client portal still acts as the client, never as a service key', () => {
+  // RLS is the rule that decides whose invoice this is. An admin client here would
+  // bypass the thing the action exists to honour.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(client)/portal/actions.ts'))
+  assert.doesNotMatch(actions, /createAdminClient/, 'the portal now bypasses RLS')
+})

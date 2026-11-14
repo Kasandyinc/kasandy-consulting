@@ -144,6 +144,65 @@ export function shouldDraftToday(
   return send.toISOString().slice(0, 10) <= today
 }
 
+// ─── What releases a phase's invoice ─────────────────────────────────────────
+
+export type BillingTrigger = 'on_schedule' | 'on_verification'
+
+/**
+ * Whether an invoice for this phase must wait for the client to verify delivery.
+ *
+ * Derived from the phase rather than typed into the invoice, so the two cannot
+ * disagree. The database refuses the disagreement too, but a value that is computed
+ * never has to be refused.
+ *
+ * 'on_verification' is the default and the safer one: nothing bills until the client
+ * has the thing and says it works. 'on_schedule' exists because that rule is wrong
+ * for a booked session — you pay to hold the date — and the alternative was asking a
+ * client to certify delivery of a workshop that had not happened yet, which is not a
+ * workaround but a false record.
+ */
+export function requiresVerification(phase: { billing_trigger: string }): boolean {
+  return phase.billing_trigger !== 'on_schedule'
+}
+
+export type PhaseForBilling = {
+  billing_trigger: string
+  verified_at: string | null
+  send_on: string | null
+  name: string
+}
+
+/**
+ * Why this phase cannot be invoiced yet, or an empty list.
+ *
+ * Separate from `invoiceBlockers`, which asks whether a document is a lawful tax
+ * invoice. This asks whether we are entitled to bill for the work at all — and they
+ * fail for different reasons, so collapsing them would hide one behind the other.
+ */
+export function billingBlockers(phase: PhaseForBilling, today: string): string[] {
+  const reasons: string[] = []
+
+  if (requiresVerification(phase)) {
+    if (!phase.verified_at) {
+      reasons.push(
+        `"${phase.name}" bills on verification and the client has not marked it live yet`,
+      )
+    }
+    return reasons
+  }
+
+  // on_schedule. The date is what entitles us to bill, so its absence is the blocker
+  // — and a null one is never treated as "now", which would invoice for a session
+  // nobody has booked.
+  if (!phase.send_on) {
+    reasons.push(
+      `"${phase.name}" bills on schedule but has no date set yet — set one when the session is booked`,
+    )
+  }
+
+  return reasons
+}
+
 // ─── Payment instructions ────────────────────────────────────────────────────
 
 export type PaymentInstructionSettings = {
