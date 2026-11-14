@@ -1,5 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { bookingRow, pacificLabel, icsUidFor } from './bookings-hub.ts'
 
 // The hub's live schema, read from the database on 15 Sep 2026 and extended by
@@ -53,18 +54,76 @@ test('a September slot converts at PDT, not PST', () => {
   assert.equal(pacificLabel('2026-09-18'), 'PDT')
 })
 
-test('a January slot converts at PST', () => {
-  const row = bookingRow({ ...input, date: '2027-01-15', time: '10:25' })
-  assert.equal(row.starts_at, '2027-01-15T18:25:00.000Z')
-  assert.equal(pacificLabel('2027-01-15'), 'PST')
+/**
+ * Two tests used to stand here: that a January slot converts at PST, and that the
+ * labels flip on the first Sunday in November. Both encoded the old
+ * second-Sunday-in-March rule. British Columbia moved to permanent daylight time on
+ * 1 November 2026 — tzdata 2026e has America/Vancouver on UTC-7 with no further
+ * transitions — so they stopped being true. They were not guarding a regression;
+ * they asserted a fact about the law, and the law moved underneath them.
+ *
+ * What replaces them asserts a fact about the code: that a conversion agrees with
+ * the time zone database, whatever the database currently says. A legislature can
+ * move the boundary again and these keep working, where the old pair would have to
+ * be rewritten each time — which is exactly how they came to be wrong with nobody
+ * noticing.
+ */
+
+/** The offset tzdata itself reports for a date, in minutes. */
+function tzdataOffsetMins(dateStr: string): number {
+  const [y, mo, d] = dateStr.split('-').map(Number)
+  const at = new Date(Date.UTC(y, mo - 1, d, 12, 0))
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Vancouver',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  }).formatToParts(at)
+  const g = (t: string) => Number(parts.find((p) => p.type === t)?.value)
+  const h = g('hour') === 24 ? 0 : g('hour')
+  return Math.round(
+    (Date.UTC(g('year'), g('month') - 1, g('day'), h, g('minute'), g('second')) - at.getTime()) / 60_000,
+  )
+}
+
+test('a slot converts at the offset the zone database reports, not one of our own', () => {
+  for (const date of ['2026-01-15', '2026-07-15', '2026-11-15', '2027-01-15', '2027-07-15']) {
+    const [y, mo, d] = date.split('-').map(Number)
+    const want = new Date(Date.UTC(y, mo - 1, d, 10, 25) - tzdataOffsetMins(date) * 60_000)
+    assert.equal(
+      bookingRow({ ...input, date, time: '10:25' }).starts_at,
+      want.toISOString(),
+      `${date} was converted at an offset tzdata does not agree with`,
+    )
+  }
 })
 
-test('the labels flip on the exact DST boundaries', () => {
-  // 2026: DST starts Sun 8 March, ends Sun 1 November.
+test('the label matches what the zone database calls that date', () => {
+  for (const date of ['2026-01-15', '2026-03-07', '2026-03-08', '2026-07-15', '2026-11-15', '2027-01-15']) {
+    const [y, mo, d] = date.split('-').map(Number)
+    const fromTzdata = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Vancouver',
+      timeZoneName: 'short',
+    })
+      .formatToParts(new Date(Date.UTC(y, mo - 1, d, 12, 0)))
+      .find((p) => p.type === 'timeZoneName')?.value
+    assert.equal(pacificLabel(date), fromTzdata, `${date} is labelled differently from tzdata`)
+  }
+})
+
+test('the March 2026 transition, which the old rule and tzdata both agree on', () => {
+  // Kept from the original pair because it is still true and still worth guarding:
+  // a conversion that ignored transitions altogether would satisfy both tests above
+  // and fail this one.
   assert.equal(pacificLabel('2026-03-07'), 'PST')
   assert.equal(pacificLabel('2026-03-08'), 'PDT')
-  assert.equal(pacificLabel('2026-10-31'), 'PDT')
-  assert.equal(pacificLabel('2026-11-01'), 'PST')
+})
+
+test('no DST rule is written by hand in the time module', () => {
+  // The defect this replaces: a second-Sunday-in-March rule in our own code, which
+  // a legislature invalidated and which only a deploy could have corrected.
+  const src = readFileSync(new URL('./pacific-time.ts', import.meta.url), 'utf8')
+  assert.doesNotMatch(src, /nthSunday/, 'a hand-rolled DST rule is back')
+  assert.match(src, /America\/Vancouver/, 'the zone is no longer named for the database to resolve')
 })
 
 // ─── Fields the hub renders ─────────────────────────────────────────────────
