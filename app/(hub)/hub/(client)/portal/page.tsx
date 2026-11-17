@@ -1,7 +1,10 @@
+import { Fragment } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { formatMoney } from '@/lib/engine/money'
 import { mdToHtml } from '@/lib/engine/proposal-md'
 import VerifyPanel from './VerifyPanel'
+import AcceptPanel from './AcceptPanel'
+import { paymentInstructions } from '@/lib/engine/invoice'
 import SignOutButton from '../../(app)/SignOutButton'
 
 export const dynamic = 'force-dynamic'
@@ -60,6 +63,20 @@ export default async function PortalPage() {
       supabase.from('invoices').select('*').order('issued_on', { ascending: false }),
     ])
 
+  // Only the three fields a client needs to pay, through a view that exposes nothing
+  // else — `settings` itself is operator-only and holds revenue goals and the
+  // signature block.
+  const { data: paySettings } = await supabase
+    .from('invoice_payment_settings')
+    .select('gst_number, etransfer_email, eft_details_md')
+    .maybeSingle()
+
+  const payFields = (paySettings ?? {
+    gst_number: null,
+    etransfer_email: null,
+    eft_details_md: null,
+  }) as { gst_number: string | null; etransfer_email: string | null; eft_details_md: string | null }
+
   const phaseRows = (phases ?? []) as {
     id: string
     engagement_id: string
@@ -85,9 +102,15 @@ export default async function PortalPage() {
     number: string
     description: string | null
     amount_cents: number
+    subtotal_cents: number
+    tax_cents: number
     status: string
     issued_on: string | null
     due_on: string | null
+    accepted_at: string | null
+    show_bank_details: boolean
+    square_invoice_id: string | null
+    square_payment_url: string | null
   }[]
 
   return (
@@ -195,21 +218,61 @@ export default async function PortalPage() {
             </thead>
             <tbody>
               {invoiceRows.map((i) => (
-                <tr key={i.id}>
-                  <td className="mono">{i.number}</td>
-                  <td>{i.description ?? '—'}</td>
-                  <td className="mono" style={{ fontSize: 11.5 }}>{i.issued_on ?? '—'}</td>
-                  <td className="mono" style={{ fontSize: 11.5 }}>{i.due_on ?? '—'}</td>
-                  <td>
-                    <span className={`tag ${i.status === 'paid' ? 'good' : i.status === 'overdue' ? 'bad' : 'info'}`}>
-                      {i.status}
-                    </span>
-                  </td>
-                  <td className="mono" style={{ textAlign: 'right' }}>{formatMoney(i.amount_cents)}</td>
-                </tr>
+                <Fragment key={i.id}>
+                  <tr>
+                    <td className="mono">{i.number}</td>
+                    <td>{i.description ?? '—'}</td>
+                    <td className="mono" style={{ fontSize: 11.5 }}>{i.issued_on ?? '—'}</td>
+                    <td className="mono" style={{ fontSize: 11.5 }}>{i.due_on ?? '—'}</td>
+                    <td>
+                      <span className={`tag ${i.status === 'paid' ? 'good' : i.status === 'overdue' ? 'bad' : 'info'}`}>
+                        {i.status}
+                      </span>
+                      {i.accepted_at && (
+                        <span className="tag good" style={{ marginLeft: 4 }}>accepted</span>
+                      )}
+                    </td>
+                    {/* Subtotal, GST and total as three lines, never one gross
+                        figure: without the breakdown and the registration number
+                        below, this is not a document she can claim an input tax
+                        credit or a PSB rebate against. */}
+                    <td className="mono" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <div style={{ color: 'var(--muted)', fontSize: 11.5 }}>
+                        {formatMoney(i.subtotal_cents)}
+                      </div>
+                      <div style={{ color: 'var(--muted)', fontSize: 11.5 }}>
+                        GST {formatMoney(i.tax_cents)}
+                      </div>
+                      <div style={{ fontWeight: 600 }}>{formatMoney(i.amount_cents)}</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan={6} style={{ paddingTop: 0 }}>
+                      <AcceptPanel
+                        invoiceId={i.id}
+                        invoiceNumber={i.number}
+                        acceptedAt={i.accepted_at}
+                        status={i.status}
+                        instructions={paymentInstructions(
+                          { number: i.number, show_bank_details: i.show_bank_details },
+                          payFields,
+                          i.square_payment_url,
+                        )}
+                      />
+                    </td>
+                  </tr>
+                </Fragment>
               ))}
             </tbody>
           </table>
+          {payFields.gst_number && (
+            <div
+              className="mono"
+              style={{ fontSize: 11, color: 'var(--muted)', padding: '10px 14px' }}
+            >
+              Kasandy Consulting · GST/HST {payFields.gst_number}
+            </div>
+          )}
         </div>
       )}
     </>

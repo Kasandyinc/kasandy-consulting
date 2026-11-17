@@ -180,7 +180,8 @@ test('the e-Transfer line carries the address, the invoice number and autodeposi
     null,
   )
   assert.equal(etransfer.kind, 'instructions')
-  if (etransfer.kind !== 'instructions') return
+  // Narrow on both: `kind` alone still admits the EFT variant.
+  if (etransfer.method !== 'e_transfer' || etransfer.kind !== 'instructions') return
   assert.equal(etransfer.recipient, 'pay@kasandyconsulting.com')
   // The message line is what matches a bare e-Transfer notification to what it paid.
   assert.equal(etransfer.message, 'INV-0007')
