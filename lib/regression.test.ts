@@ -1260,3 +1260,20 @@ test('the Invoice type carries the columns the database has', () => {
     assert.match(src, new RegExp(`\\b${col}\\b`), `Invoice has no ${col}`)
   }
 })
+
+// ─── 20 · A client sees issued invoices, and only those ─────────────────────
+
+test('the client portal hides drafts and voids alike', () => {
+  // The original policy excluded drafts only. A voided invoice therefore stayed
+  // visible — worse than a draft, because a cancelled invoice in a portal is a bill
+  // the client believes she owes, and she forwards these to a funder who audits
+  // them.
+  const sql = read(join(ROOT, 'supabase/migrations/20261118000026_client_does_not_see_void_invoices.sql'))
+  assert.match(sql, /status not in \('draft', 'void'\)/)
+})
+
+test('nothing reads invoices for a client through a service key', () => {
+  // RLS is what decides whose invoice this is. The portal must keep asking it.
+  const page = read(join(ROOT, 'app/(hub)/hub/(client)/portal/page.tsx'))
+  assert.doesNotMatch(page, /createAdminClient/, 'the portal now bypasses RLS')
+})
