@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+
 import {
   gstCents,
   requiresVerification,
@@ -11,6 +12,7 @@ import {
   dueOnFrom,
   shouldDraftToday,
   paymentInstructions,
+  likelyDuplicates,
 } from './invoice.ts'
 
 // ─── The four real invoices on the SCN engagement ───────────────────────────
@@ -290,4 +292,53 @@ test('the two gates answer different questions and are not collapsed', () => {
   const src = readFileSync(new URL('./invoice.ts', import.meta.url), 'utf8')
   const billing = src.slice(src.indexOf('export function billingBlockers'))
   assert.doesNotMatch(billing.slice(0, 900), /gstNumber/, 'the billing gate now also judges the document')
+})
+
+// ─── The duplicate a person makes ───────────────────────────────────────────
+// The commencement deposit was raised by hand in the Square dashboard. Square holds
+// it, our square_invoice_id is null, and the column check waves Issue straight
+// through — so the client gets a second invoice for the same $3,150 in a file her
+// funder audits. Matching is on the amount, because a dashboard-raised invoice
+// carries Square's numbering and will never match ours.
+
+test('an unpaid Square invoice for the same amount is treated as a likely duplicate', () => {
+  const found = likelyDuplicates(
+    [
+      { id: 'sq-a', number: '000012', totalCents: 315000, status: 'UNPAID', paymentUrl: null },
+      { id: 'sq-b', number: '000013', totalCents: 91875, status: 'UNPAID', paymentUrl: null },
+    ],
+    315000,
+    [],
+  )
+  assert.equal(found.length, 1)
+  assert.equal(found[0].id, 'sq-a')
+})
+
+test('a Square invoice already linked to one of ours is not a duplicate', () => {
+  // It is the same invoice, reconciled. Flagging it would block the second
+  // legitimate invoice on the engagement.
+  const found = likelyDuplicates(
+    [{ id: 'sq-a', number: '000012', totalCents: 315000, status: 'UNPAID', paymentUrl: null }],
+    315000,
+    ['sq-a'],
+  )
+  assert.deepEqual(found, [])
+})
+
+test('a different amount is not a duplicate', () => {
+  // The workshop and the deposit must both be issuable on the same day.
+  const candidates = [
+    { id: 'sq-a', number: '000012', totalCents: 315000, status: 'UNPAID', paymentUrl: null },
+  ]
+  assert.deepEqual(likelyDuplicates(candidates, 91875, []), [])
+})
+
+test('the two SCN invoices do not shadow each other', () => {
+  // INV-0001 is 918.75 and INV-0002 is 3150.00. Issuing one must not make the
+  // other look like a duplicate of it.
+  const squareHasTheDeposit = [
+    { id: 'sq-deposit', number: '000012', totalCents: 315000, status: 'UNPAID', paymentUrl: null },
+  ]
+  assert.equal(likelyDuplicates(squareHasTheDeposit, 91875, []).length, 0, 'the workshop was blocked')
+  assert.equal(likelyDuplicates(squareHasTheDeposit, 315000, []).length, 1, 'the deposit was not caught')
 })

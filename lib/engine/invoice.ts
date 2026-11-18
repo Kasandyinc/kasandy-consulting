@@ -203,6 +203,41 @@ export function billingBlockers(phase: PhaseForBilling, today: string): string[]
   return reasons
 }
 
+// ─── The duplicate a person makes ────────────────────────────────────────────
+
+export type SquareInvoiceSummary = {
+  id: string
+  number: string | null
+  totalCents: number | null
+  status: string
+  paymentUrl: string | null
+}
+
+/**
+ * Square invoices that could already be this one.
+ *
+ * The duplicate worth preventing is the one a person created. The commencement
+ * deposit was raised by hand in the Square dashboard while this path was being
+ * built: Square holds it, our `square_invoice_id` is null, and a check that reads
+ * only our own column waves Issue straight through — so the client receives a
+ * second invoice for the same amount, in a file her funder audits.
+ *
+ * Matching is on the total, not the number, because a dashboard-raised invoice
+ * carries Square's own numbering and will never match ours.
+ *
+ * Pure, and here rather than beside the API calls, because it is the judgement
+ * that decides whether a client gets billed twice — and a judgement that can only
+ * be exercised by calling Square is one that never gets exercised.
+ */
+export function likelyDuplicates(
+  candidates: SquareInvoiceSummary[],
+  amountCents: number,
+  alreadyLinkedIds: string[],
+): SquareInvoiceSummary[] {
+  const linked = new Set(alreadyLinkedIds)
+  return candidates.filter((c) => c.totalCents === amountCents && !linked.has(c.id))
+}
+
 // ─── Payment instructions ────────────────────────────────────────────────────
 
 export type PaymentInstructionSettings = {

@@ -1096,13 +1096,47 @@ test('invoice status follows every payment, not just the latest one', () => {
 
 // ─── 17 · The queue drafts and stops there ──────────────────────────────────
 
-test('the queue never sends and never touches Square', () => {
+test('the queue never issues and never touches Square', () => {
   // Issuing stays deliberate: invoices 3 and 4 are triggered by delivery, and only
   // a person knows whether the session actually happened.
+  //
+  // This used to forbid the word "send" outright, which was too blunt to tell a
+  // reminder to Jackee from an invoice to the client — and the reminder is the
+  // whole point of drafting a day ahead. It now asserts the thing that actually
+  // matters: nothing here creates a Square invoice or issues one.
   const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
-  assert.doesNotMatch(src, /createSquareInvoice|issueInvoice|resend|emails\.send/,
-    'the invoice queue now sends or issues by itself')
+  assert.doesNotMatch(src, /createSquareInvoice|issueInvoice/,
+    'the invoice queue now issues by itself')
   assert.match(src, /status: 'draft'/)
+})
+
+test('the only mail the queue sends goes to Jackee, never to a client', () => {
+  // A queue that could email a client is one bad conditional away from sending an
+  // invoice for a session that did not happen.
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  const sends = Array.from(src.matchAll(/emails\.send\(\{[\s\S]{0,400}?\}\)/g)).map((m) => m[0])
+  assert.ok(sends.length >= 1, 'the queue no longer reminds anyone')
+  for (const call of sends) {
+    assert.match(call, /to: JACKEE_EMAILS/, 'the queue sends mail to someone other than Jackee')
+  }
+  // And the reminder must not carry a payment link, which would make forwarding it
+  // to the client the fastest way to skip every gate.
+  const emails = read(join(ROOT, 'lib/invoice-emails.ts'))
+  assert.doesNotMatch(emails, /square_payment_url|squareUrl|paymentUrl/,
+    'the reminder now carries a payment link')
+})
+
+test('a reminder is only sent when something was actually drafted', () => {
+  // A daily "nothing to do" teaches the recipient to stop opening it, and then the
+  // one that matters is missed too.
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(src, /if \(draftedDetail\.length > 0\)/, 'the queue mails on quiet days again')
+})
+
+test('a reminder that fails to send is recorded, not swallowed', () => {
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(src, /invoice\.reminder_sent/)
+  assert.match(src, /notifyError/)
 })
 
 test('the queue skips a phase with no date rather than guessing one', () => {

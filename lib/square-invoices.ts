@@ -1,4 +1,7 @@
 import { squareClient, squareEnvName } from './square'
+import type { SquareInvoiceSummary } from './engine/invoice'
+
+export type { SquareInvoiceSummary }
 
 /**
  * Square invoices: create one, import one that already exists, and push a payment
@@ -77,6 +80,53 @@ export async function fetchSquareInvoice(squareInvoiceId: string): Promise<Squar
     return { ok: true, value: view(res.invoice as unknown as Record<string, unknown>) }
   } catch (err) {
     return failure(err, `fetching invoice ${squareInvoiceId}`)
+  }
+}
+
+/**
+ * Unpaid invoices Square already holds at this location.
+ *
+ * Exists because the duplicate this system most needs to prevent is one a *person*
+ * created. The commencement deposit was raised by hand in the Square dashboard
+ * while this path was being built: Square has it, our `square_invoice_id` is null,
+ * and pressing Issue would cheerfully mint a second invoice for the same $3,150 —
+ * in a file the client submits to a funder who audits it.
+ *
+ * Our own column cannot see that, and Square's idempotency key cannot either: the
+ * dashboard invoice was created outside this code with no key of ours. The only way
+ * to know is to ask Square what it already has.
+ *
+ * Square's invoice search filters by location and customer, not by number or
+ * amount, so this lists and scans. The account is small and the alternative is a
+ * duplicate reaching a client, which is the trade made deliberately.
+ */
+export async function listUnpaidSquareInvoices(
+  locationId: string,
+): Promise<SquareResult<SquareInvoiceSummary[]>> {
+  try {
+    const out: SquareInvoiceSummary[] = []
+    const page = await squareClient.invoices.list({ locationId, limit: 100 })
+
+    for await (const invoice of page) {
+      const raw = invoice as unknown as Record<string, unknown>
+      const status = String(raw.status ?? '')
+      // DRAFT and UNPAID are the states that can still collide with a new invoice.
+      // A PAID or CANCELED one is not something a second invoice would duplicate.
+      if (!['DRAFT', 'UNPAID', 'SCHEDULED', 'PARTIALLY_PAID'].includes(status)) continue
+
+      const v = view(raw)
+      out.push({
+        id: v.id,
+        number: (raw.invoiceNumber as string | undefined) ?? null,
+        totalCents: v.totalCents,
+        status,
+        paymentUrl: v.paymentUrl,
+      })
+    }
+
+    return { ok: true, value: out }
+  } catch (err) {
+    return failure(err, `listing unpaid invoices at ${locationId}`)
   }
 }
 

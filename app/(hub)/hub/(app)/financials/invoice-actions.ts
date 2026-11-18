@@ -9,12 +9,14 @@ import {
   requiresVerification,
   amountsFromSubtotal,
   dueOnFrom,
+  likelyDuplicates,
 } from '@/lib/engine/invoice'
 import {
   createSquareInvoice,
   fetchSquareInvoice,
   recordExternalPayment,
   squareConfigured,
+  listUnpaidSquareInvoices,
 } from '@/lib/square-invoices'
 
 async function operator() {
@@ -217,7 +219,14 @@ export async function importSquareInvoice(args: { invoiceId: string; squareInvoi
  * registration number is not valid for the client's ITC or PSB rebate, and one that
  * reached Square would be one the client has already been asked to pay.
  */
-export async function issueInvoice(args: { invoiceId: string }) {
+export async function issueInvoice(args: {
+  invoiceId: string
+  /**
+   * Proceed even though Square already holds an unpaid invoice for this amount.
+   * Set only by a person who has looked at both and decided they are different.
+   */
+  evenThoughSquareHasOne?: boolean
+}) {
   const { supabase, email, ok } = await operator()
   if (!ok) return { ok: false, error: 'Not authorized.' }
 
@@ -252,6 +261,48 @@ export async function issueInvoice(args: { invoiceId: string }) {
     (settings as { square_location_id: string | null } | null)?.square_location_id ||
     process.env.SQUARE_LOCATION_ID
   if (!locationId) return { ok: false, error: 'No Square location configured.' }
+
+  // ── Does Square already have this invoice? ────────────────────────────────
+  //
+  // The duplicate worth preventing here is one a person created. The deposit was
+  // raised by hand in the Square dashboard, so Square holds it while our
+  // square_invoice_id is null — and the check above, which only reads our own
+  // column, waves it straight through. Square's idempotency key cannot help
+  // either: that invoice was made outside this code and carries no key of ours.
+  //
+  // So we ask Square. A match on the amount, not the number, because a
+  // dashboard-raised invoice carries Square's numbering and never matches ours.
+  if (!args.evenThoughSquareHasOne) {
+    const unpaid = await listUnpaidSquareInvoices(locationId)
+    if (unpaid.ok) {
+      const { data: linkedRows } = await supabase
+        .from('invoices')
+        .select('square_invoice_id')
+        .not('square_invoice_id', 'is', null)
+
+      const linked = (linkedRows ?? [])
+        .map((r) => r.square_invoice_id as string)
+        .filter(Boolean)
+
+      const clashes = likelyDuplicates(unpaid.value, invoice.amount_cents, linked)
+      if (clashes.length) {
+        const c = clashes[0]
+        return {
+          ok: false,
+          squareAlreadyHas: clashes.map((x) => ({ id: x.id, number: x.number, status: x.status })),
+          error:
+            `Square already has an unpaid invoice for ${(invoice.amount_cents / 100).toFixed(2)} CAD ` +
+            `(${c.number ?? c.id}, ${c.status}). If that is this invoice, link it instead of issuing — ` +
+            `issuing would send the client a second one. If it is genuinely different, issue again confirming.`,
+        }
+      }
+    } else {
+      // Could not ask. Refusing on a read failure would block a legitimate invoice
+      // over a transient API problem, so this proceeds and says so — the per-phase
+      // index and the unique square_invoice_id still hold on our side.
+      console.warn('[invoice] could not check Square for duplicates:', unpaid.error)
+    }
+  }
 
   // Who the invoice is for. Read for the Square record rather than decided here.
   const { data: contact } = await supabase

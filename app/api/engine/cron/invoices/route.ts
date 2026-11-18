@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { shouldDraftToday, amountsFromSubtotal, requiresVerification, dueOnFrom } from '@/lib/engine/invoice'
+import { Resend } from 'resend'
+import { bookings as FROM } from '@/lib/email'
+import { draftedHtml, draftedSubject, JACKEE_EMAILS, type DraftedInvoice } from '@/lib/invoice-emails'
 
 /**
  * Queue tomorrow's invoices as drafts, one day ahead. Jackee presses send.
@@ -42,6 +45,7 @@ export async function GET(req: NextRequest) {
   }
 
   const drafted: string[] = []
+  const draftedDetail: DraftedInvoice[] = []
   const skipped: { phase: string; why: string }[] = []
 
   for (const phase of phases ?? []) {
@@ -115,6 +119,15 @@ export async function GET(req: NextRequest) {
     }
 
     drafted.push(invoice!.number as string)
+    draftedDetail.push({
+      number: invoice!.number as string,
+      description: phase.name as string,
+      subtotalCents: amounts.subtotalCents,
+      taxCents: amounts.taxCents,
+      totalCents: amounts.totalCents,
+      sendOn: phase.send_on as string,
+      phaseName: phase.name as string,
+    })
 
     await supabase.from('audit_log').insert({
       actor: 'cron',
@@ -130,5 +143,57 @@ export async function GET(req: NextRequest) {
     })
   }
 
-  return NextResponse.json({ ok: true, today, drafted, skipped })
+  // ── The reminder ──────────────────────────────────────────────────────────
+  // The run's annotations are not a place anybody looks, which makes them the same
+  // as no reminder at all — and a signed engagement sitting untouched because
+  // nothing said anything was waiting is the exact failure this work began with.
+  //
+  // Sent only when something was actually drafted. A daily "nothing to do" is how a
+  // recipient learns to stop opening it, and then the one that matters is missed
+  // too.
+  let notified = false
+  let notifyError: string | null = null
+
+  if (draftedDetail.length > 0) {
+    if (!process.env.RESEND_API_KEY) {
+      notifyError = 'RESEND_API_KEY is not set'
+      console.error('[cron/invoices] drafted invoices but could not send the reminder:', notifyError)
+    } else {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY)
+        const hubUrl = process.env.NEXT_PUBLIC_URL?.trim() || 'https://hub.kasandyconsulting.com'
+        await resend.emails.send({
+          from: FROM,
+          to: JACKEE_EMAILS,
+          subject: draftedSubject(draftedDetail),
+          html: draftedHtml(draftedDetail, hubUrl),
+        })
+        notified = true
+      } catch (err) {
+        // The drafts exist either way. A failed reminder is recorded rather than
+        // retried: the invoices are in the hub and the next day's run will not
+        // recreate them, so a silent retry would be the thing that produced a
+        // duplicate notification about work already done.
+        notifyError = err instanceof Error ? err.message : String(err)
+        console.error('[cron/invoices] reminder not sent:', notifyError)
+      }
+    }
+
+    await supabase.from('audit_log').insert({
+      actor: 'cron',
+      action: 'invoice.reminder_sent',
+      entity: 'invoices',
+      entity_id: null,
+      meta: {
+        message: notified
+          ? `Reminder sent: ${drafted.join(', ')} ready to send`
+          : `Invoices drafted but the reminder did not send: ${notifyError}`,
+        drafted,
+        notified,
+        error: notifyError,
+      },
+    })
+  }
+
+  return NextResponse.json({ ok: true, today, drafted, skipped, notified, notifyError })
 }
