@@ -1176,7 +1176,7 @@ test('the gate runs before Square is called, not after', () => {
 
 test('every invoice action is behind the operator gate', () => {
   const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
-  for (const m of src.matchAll(/export async function (\w+)/g)) {
+  for (const m of Array.from(src.matchAll(/export async function (\w+)/g))) {
     const fn = src.slice(src.indexOf(`export async function ${m[1]}`))
     const body = fn.slice(0, fn.indexOf('\nexport ') === -1 ? undefined : fn.indexOf('\nexport '))
     assert.match(body, /if \(!ok\) return \{ ok: false, error: 'Not authorized\.' \}/, `${m[1]} has no auth check`)

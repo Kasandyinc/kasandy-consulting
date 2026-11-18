@@ -5,6 +5,8 @@ import { createDownloadToken, updateTokenEmail } from '@/lib/tokens'
 import { kv } from '@vercel/kv'
 import { DEFAULT_DOWNLOADS } from '@/data/downloads'
 import { noreply } from '@/lib/email'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { isInvoiceEvent, parseInvoiceEvent, applyInvoiceEvent } from '@/lib/square-invoice-webhook'
 
 // Map Square line item names → product slugs
 // Update this map if product names change in Square
@@ -61,6 +63,38 @@ export async function POST(req: NextRequest) {
   }
 
   const eventType = event.type as string
+
+  // ── Invoice events ────────────────────────────────────────────────────────
+  // Checked before the product branch below. An invoice payment belongs to an
+  // invoice, a client and an engagement, none of which a download token knows
+  // about, so it is a different record rather than a variant of one.
+  //
+  // Always answers 200, even when it declines to act: Square retries anything else,
+  // and a delivery it cannot match — this account also takes product sales — is
+  // nothing to retry.
+  if (isInvoiceEvent(eventType)) {
+    const parsed = parseInvoiceEvent(event)
+    if (!parsed) {
+      console.warn('[webhook] invoice event in an unexpected shape:', eventType)
+      return NextResponse.json({ received: true, handled: false })
+    }
+
+    try {
+      const outcome = await applyInvoiceEvent(parsed, createAdminClient() as never)
+      if (outcome.handled) {
+        console.log(`[webhook] ${eventType} → ${outcome.invoiceNumber}: ${outcome.action}`)
+      } else {
+        console.log(`[webhook] ${eventType} not applied: ${outcome.why}`)
+      }
+      return NextResponse.json({ received: true, ...outcome })
+    } catch (err) {
+      // A thrown error here would be retried by Square for hours. Record it and
+      // accept the delivery; the reconciliation is visible in the platform either
+      // way, because an unpaid invoice stays unpaid and says so.
+      console.error('[webhook] invoice event failed:', err)
+      return NextResponse.json({ received: true, handled: false })
+    }
+  }
 
   // Handle payment completion
   if (eventType === 'payment.updated') {
