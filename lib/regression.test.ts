@@ -1182,3 +1182,47 @@ test('every invoice action is behind the operator gate', () => {
     assert.match(body, /if \(!ok\) return \{ ok: false, error: 'Not authorized\.' \}/, `${m[1]} has no auth check`)
   }
 })
+
+// ─── 19 · The screen offers the action that matches the state ───────────────
+
+test('there is one issueInvoice, and it is the one that talks to Square', () => {
+  // What stood in financials/actions.ts flipped status to 'issued' and stopped: no
+  // Square invoice, so nothing the client could pay, and no check on the document.
+  // Two exported functions with one name doing different things is how a screen
+  // ends up calling the one that does less.
+  const old = read(join(ROOT, 'app/(hub)/hub/(app)/financials/actions.ts'))
+  assert.doesNotMatch(old, /export async function issueInvoice/,
+    'a second issueInvoice is back in financials/actions.ts')
+  const neue = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  assert.match(neue, /export async function issueInvoice/)
+})
+
+test('an invoice already in Square is offered linking, not issuing', () => {
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/financials/page.tsx'))
+  // Issue only when Square does not already hold it — otherwise the button that
+  // creates a duplicate is the one sitting under the operator's cursor.
+  assert.match(page, /i\.status === 'draft' && !i\.square_invoice_id && \(\s*<IssueButton/)
+  assert.match(page, /<ImportSquareButton/)
+})
+
+test('an issued invoice Square does not know about says so on the row', () => {
+  // That state is a half-finished reconciliation, and it is invisible unless the
+  // screen says it out loud.
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/financials/page.tsx'))
+  assert.match(page, /not in Square/)
+})
+
+test('the invoice table shows the tax breakdown, not one gross figure', () => {
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/financials/page.tsx'))
+  assert.match(page, /i\.subtotal_cents/, 'the operator view lost the subtotal')
+  assert.match(page, /GST/, 'the operator view lost the GST line')
+})
+
+test('the Invoice type carries the columns the database has', () => {
+  // The type drifting behind the schema is how a screen reads a column that is
+  // there and TypeScript says is not — which is what happened here.
+  const src = read(join(ROOT, 'lib/engine/money.ts'))
+  for (const col of ['subtotal_cents', 'tax_cents', 'square_invoice_id', 'square_payment_url', 'accepted_at', 'phase_id']) {
+    assert.match(src, new RegExp(`\\b${col}\\b`), `Invoice has no ${col}`)
+  }
+})

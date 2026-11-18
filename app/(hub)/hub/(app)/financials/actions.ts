@@ -71,45 +71,20 @@ export async function createInvoice(form: {
  * Issue a draft invoice. For a milestone invoice the database refuses this until the
  * client has marked the phase verified, so the refusal surfaces here verbatim.
  */
-export async function issueInvoice(invoiceId: string) {
-  const supabase = createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!isOperator(user?.email)) return { ok: false, error: 'Not authorized.' }
-
-  const { error } = await supabase
-    .from('invoices')
-    .update({ status: 'issued', issued_on: new Date().toISOString().slice(0, 10) })
-    .eq('id', invoiceId)
-
-  if (error) {
-    await supabase.from('audit_log').insert({
-      actor: user!.email,
-      action: 'invoice.refused',
-      entity: 'invoices',
-      entity_id: invoiceId,
-      meta: { reason: error.message },
-    })
-    return { ok: false, error: error.message }
-  }
-
-  await supabase.from('audit_log').insert({
-    actor: user!.email,
-    action: 'invoice.issued',
-    entity: 'invoices',
-    entity_id: invoiceId,
-  })
-
-  revalidatePath('/financials')
-  return { ok: true }
-}
-
 /**
- * Record a payment that did not come through Square — an e-transfer or a cheque.
- * These reconcile against QuickBooks the same way card payments do, which is why
- * they live in the same ledger rather than a side list.
+ * Issuing lives in ./invoice-actions.ts now.
+ *
+ * What stood here flipped status to 'issued' and stopped. It created nothing in
+ * Square, so an "issued" invoice had no way to be paid, and it checked nothing about
+ * the document — a gross figure with no GST breakdown and no registration number
+ * would have gone out, which is not valid for the client's ITC or PSB rebate. It
+ * leaned entirely on the database trigger to refuse what it should not have offered.
+ *
+ * Deleted rather than kept alongside: two exported functions called issueInvoice,
+ * doing different things, is how a screen ends up calling the one that does less.
  */
+
+
 export async function recordPayment(form: {
   invoiceId: string
   amount: string

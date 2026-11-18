@@ -17,14 +17,26 @@ const inv = (over: Partial<Invoice> = {}): Invoice => ({
   number: 'INV-1',
   client_id: 'c1',
   engagement_id: null,
+  phase_id: null,
   description: null,
+  // The three money figures, kept consistent in the fixture for the same reason the
+  // database constrains them: a default that does not add up would let a test pass
+  // against a row the database would refuse.
   amount_cents: 500_000,
+  subtotal_cents: 476_190,
+  tax_cents: 23_810,
   currency: 'CAD',
   status: 'issued',
   requires_verification: false,
   issued_on: '2026-07-01',
   due_on: '2026-07-15',
   paid_at: null,
+  accepted_at: null,
+  accepted_by: null,
+  square_invoice_id: null,
+  square_payment_url: null,
+  square_version: null,
+  show_bank_details: false,
   ...over,
 })
 
@@ -34,6 +46,7 @@ const pay = (over: Partial<Payment> = {}): Payment => ({
   amount_cents: 100_000,
   currency: 'CAD',
   method: 'e_transfer',
+  pushed_to_square: null,
   received_on: '2026-07-10',
   reference: null,
   square_location_id: null,

@@ -19,14 +19,30 @@ export type Invoice = {
   number: string
   client_id: string
   engagement_id: string | null
+  /** The phase this bills. At most one live invoice per phase, enforced by index. */
+  phase_id: string | null
   description: string | null
+  /**
+   * The gross figure, and what is owed. `subtotal_cents + tax_cents` by database
+   * constraint — the breakdown decomposes this rather than replacing it, so every
+   * existing reader (tiles, aging, dunning) keeps working on the amount due.
+   */
   amount_cents: number
+  subtotal_cents: number
+  tax_cents: number
   currency: string
   status: InvoiceStatus
   requires_verification: boolean
   issued_on: string | null
   due_on: string | null
   paid_at: string | null
+  /** When the client agreed to pay. Not the same as the phase being verified. */
+  accepted_at: string | null
+  accepted_by: string | null
+  square_invoice_id: string | null
+  square_payment_url: string | null
+  square_version: number | null
+  show_bank_details: boolean
 }
 
 export type Payment = {
@@ -34,10 +50,18 @@ export type Payment = {
   invoice_id: string
   amount_cents: number
   currency: string
-  method: 'square' | 'e_transfer' | 'cheque' | 'other'
+  /**
+   * 'card' is a card however it clears; 'square' is retired — it named the
+   * processor rather than the method, and would have become a lie the day a card
+   * was taken another way. Postgres cannot drop an enum value, so it stays in the
+   * type and out of use.
+   */
+  method: 'card' | 'e_transfer' | 'eft' | 'cheque' | 'other' | 'square'
   received_on: string
   reference: string | null
   square_location_id: string | null
+  /** Null when the payment came from Square; false when it still owes a push. */
+  pushed_to_square: boolean | null
 }
 
 /** Format cents as currency. Never used for arithmetic — display only. */
