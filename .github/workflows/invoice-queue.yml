@@ -1,0 +1,105 @@
+# Queue tomorrow's invoices as drafts.
+#
+# Daily, unlike the health check's Monday/Wednesday/Friday, because the queue draws
+# a one-day lead: a phase whose send_on is a Saturday needs the draft on the Friday,
+# and a thrice-weekly schedule would produce it the following Monday — after the
+# session it bills for. The first engagement has exactly that case (22 November is a
+# Sunday, so the draft is due on the 21st, a Saturday).
+#
+# Driven from here rather than vercel.json for the same reason the health check is:
+# Hobby allows two cron jobs and the project already has both, spent on sequence
+# advance and reports. Displacing either for this would be the wrong trade.
+#
+# It drafts and alerts. It never sends and never touches Square — issuing stays a
+# deliberate act.
+#
+# Uses the same HEALTH_URL host and CRON_SECRET as the health check.
+
+name: Invoice queue
+
+on:
+  schedule:
+    # 16:10 UTC — after the two Vercel crons, so a drafted invoice lands in the same
+    # morning's picture rather than the next day's. Offset off the hour because
+    # GitHub delays runs scheduled on a busy minute.
+    - cron: '10 16 * * *'
+  workflow_dispatch:
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require configuration
+        env:
+          HEALTH_URL: ${{ secrets.HEALTH_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          missing=
+          [ -z "$HEALTH_URL" ]  && missing="$missing HEALTH_URL"
+          [ -z "$CRON_SECRET" ] && missing="$missing CRON_SECRET"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing"
+            exit 1
+          fi
+
+      - name: Draft what is due
+        id: call
+        env:
+          HEALTH_URL: ${{ secrets.HEALTH_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -o pipefail
+          # The queue endpoint sits beside the health endpoint on the same host.
+          url="${HEALTH_URL%/api/health}/api/engine/cron/invoices"
+          echo "calling ${url}"
+          code=$(curl -sS \
+            --max-time 60 \
+            --retry 2 --retry-delay 10 --retry-connrefused \
+            -H "authorization: Bearer $CRON_SECRET" \
+            -o response.json -w '%{http_code}' "$url") || {
+              echo "::error::Could not reach the invoice queue — the site may be down."
+              exit 1
+            }
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Report
+        run: |
+          code='${{ steps.call.outputs.code }}'
+          {
+            echo "### Invoice queue"
+            echo ""
+            echo "HTTP \`$code\`"
+            echo ""
+            echo '```json'
+            cat response.json 2>/dev/null || echo '(no body)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$code" = "401" ]; then
+            echo "::error::Unauthorized. CRON_SECRET here does not match the Vercel project."
+            exit 1
+          fi
+          if [ "$code" != "200" ]; then
+            echo "::error::Invoice queue failed with HTTP $code."
+            exit 1
+          fi
+
+          python3 - <<'PY'
+          import json, sys
+          try:
+              body = json.load(open('response.json'))
+          except Exception as err:
+              print(f"::error::The queue returned something that is not JSON: {err}")
+              sys.exit(1)
+
+          drafted = body.get('drafted') or []
+          # A draft waiting to be sent is the whole point of this job, so it is a
+          # notice rather than a silent success.
+          for number in drafted:
+              print(f"::warning::{number} is drafted and ready to send.")
+
+          for s in body.get('skipped') or []:
+              print(f"  skipped {s.get('phase')}: {s.get('why')}")
+
+          print(f"{len(drafted)} invoice(s) drafted.")
+          PY
