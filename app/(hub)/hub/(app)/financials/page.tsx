@@ -12,7 +12,7 @@ import {
 } from '@/lib/engine/money'
 import { squareEnvName } from '@/lib/square'
 import { SystemStrip } from '../../../_components/ui'
-import MoneyForms, { IssueButton } from './MoneyForms'
+import MoneyForms, { IssueButton, ImportSquareButton, MarkPaidButton } from './MoneyForms'
 
 export const dynamic = 'force-dynamic'
 
@@ -169,7 +169,18 @@ export default async function Financials() {
                 <tr key={i.id}>
                   <td className="mono" style={{ fontSize: 12 }}>{i.number}</td>
                   <td>{clientName.get(i.client_id) ?? '—'}</td>
-                  <td>{formatMoney(i.amount_cents, i.currency)}</td>
+                  {/* Subtotal, GST and total as separate lines. A gross-only
+                      figure is not a valid tax invoice for the client's ITC or
+                      PSB rebate, and this screen is where it is checked before
+                      it goes out. */}
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+                      {formatMoney(i.subtotal_cents ?? i.amount_cents, i.currency)}
+                      {' + '}
+                      {formatMoney(i.tax_cents ?? 0, i.currency)} GST
+                    </div>
+                    <div>{formatMoney(i.amount_cents, i.currency)}</div>
+                  </td>
                   <td>{formatMoney(balanceCents(i, payments), i.currency)}</td>
                   <td>
                     <span className={`tag ${i.status === 'paid' ? 'good' : i.status === 'void' ? '' : daysOverdue(i) > 0 ? 'bad' : 'warn'}`}>
@@ -178,13 +189,45 @@ export default async function Financials() {
                     {i.requires_verification && !i.paid_at && (
                       <span className="tag info" style={{ marginLeft: 4 }}>milestone</span>
                     )}
+                    {!i.square_invoice_id && i.status !== 'draft' && i.status !== 'void' && (
+                      <span className="tag warn" style={{ marginLeft: 4 }} title="Issued here but Square does not know about it">
+                        not in Square
+                      </span>
+                    )}
                   </td>
                   <td className="mono" style={{ fontSize: 11.5 }}>{i.due_on ?? '—'}</td>
                   <td>
                     {agingBucket(i)}
                     {level > 0 && <span className="tag bad" style={{ marginLeft: 6 }}>dunning L{level}</span>}
                   </td>
-                  <td>{i.status === 'draft' && <IssueButton invoiceId={i.id} />}</td>
+                  <td>
+                    <div className="row" style={{ gap: 5, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {i.status === 'draft' && !i.square_invoice_id && (
+                        <IssueButton invoiceId={i.id} />
+                      )}
+                      {/* Linking is offered whenever Square does not know about this
+                          invoice yet — including on a draft, because an invoice
+                          raised by hand in the dashboard has to be imported rather
+                          than issued a second time. */}
+                      {!i.square_invoice_id && i.status !== 'void' && (
+                        <ImportSquareButton invoiceId={i.id} />
+                      )}
+                      {i.square_payment_url && (
+                        <a
+                          className="btn sm"
+                          href={i.square_payment_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="The page the client pays on"
+                        >
+                          Pay link
+                        </a>
+                      )}
+                      {i.status !== 'draft' && i.status !== 'void' && i.status !== 'paid' && (
+                        <MarkPaidButton invoiceId={i.id} amountCents={balanceCents(i, payments)} />
+                      )}
+                    </div>
+                  </td>
                 </tr>
               )
             })}

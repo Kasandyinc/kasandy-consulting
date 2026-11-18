@@ -939,3 +939,341 @@ test('the secrets the health workflow needs are documented and demanded', () => 
   }
   assert.match(read(join(ROOT, '.env.local.example')), /CRON_SECRET=/, 'CRON_SECRET left undocumented')
 })
+
+// ─── 13 · The signature creates the engagement ──────────────────────────────
+// What broke: accept_on_signature() set the proposal accepted, inserted a clients
+// row, moved the org to 8_won, and returned. That was the whole function. P-0005 was
+// signed on 4 November 2026 with $7,218.75 attached; engagements, engagement_phases
+// and invoices stayed empty for ten days. Nothing errored, because nothing was
+// attempted — the most expensive shape of defect in this build.
+
+test('accepting a proposal creates the engagement, not just the client', () => {
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000022_signature_creates_engagement.sql'))
+  assert.match(sql, /create or replace function accept_on_signature/)
+  assert.match(sql, /insert into engagements/, 'the signature no longer creates an engagement')
+  assert.match(sql, /insert into clients/, 'the signature no longer creates the client')
+})
+
+test('the signature does not invent a billing schedule', () => {
+  // P-0005 is the proof it cannot: eight priced modules plus a GST line became four
+  // phases of $875 / $3,000 / $1,500 / $1,500, and only two fall on module
+  // boundaries. Seeding a phase per module would produce nine, one of them GST — and
+  // wrong structure looks like structure, so it is worse than none.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000022_signature_creates_engagement.sql'))
+  const fn = sql.slice(sql.indexOf('function accept_on_signature'), sql.indexOf('next_invoice_number'))
+  assert.doesNotMatch(fn, /insert into engagement_phases/, 'the trigger now guesses the billing schedule')
+  assert.doesNotMatch(fn, /insert into invoices/, 'the trigger now raises invoices by itself')
+})
+
+test('a second acceptance cannot stack a second engagement', () => {
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000022_signature_creates_engagement.sql'))
+  assert.match(sql, /not exists \(select 1 from engagements where client_id = v_client_id\)/)
+})
+
+// ─── 14 · An invoice is a valid tax invoice, or it does not go out ──────────
+
+test('the database refuses a second live invoice for one phase', () => {
+  // Not a code check: between a read and a write the queue can fire. The first
+  // client submits receipts to a funder who audits them, and two invoices for the
+  // same $3,150 is something she has to explain. Same shape as bookings_slot_unique.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000021_invoice_tax_and_payment_methods.sql'))
+  assert.match(sql, /create unique index if not exists invoices_one_live_per_phase/)
+  assert.match(sql, /where phase_id is not null and status <> 'void'/)
+})
+
+test('the three money figures on an invoice cannot drift apart', () => {
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000021_invoice_tax_and_payment_methods.sql'))
+  assert.match(sql, /check \(amount_cents = subtotal_cents \+ tax_cents\)/)
+})
+
+test('the GST gate on issuing says the same thing as the gate on sending', () => {
+  // Two documents, one rule: without the supplier's registration number neither is
+  // valid for the client's ITC or PSB rebate.
+  const invoice = read(join(ROOT, 'lib/engine/invoice.ts'))
+  const proposal = read(join(ROOT, 'lib/engine/delivery.ts'))
+  for (const [name, src] of [['invoice', invoice], ['proposal', proposal]] as const) {
+    assert.match(src, /ITC or PSB rebate/, `the ${name} gate dropped the GST reason`)
+  }
+})
+
+test('the queue cannot fire on a phase with no date', () => {
+  // Phase 3's December date is not confirmed. A queue that guessed it would invoice
+  // for a workshop that has not been scheduled, let alone delivered.
+  const src = read(join(ROOT, 'lib/engine/invoice.ts'))
+  const fn = src.slice(src.indexOf('export function shouldDraftToday'))
+  assert.match(fn.slice(0, 300), /if \(!phase\.send_on\) return false/)
+})
+
+// ─── 15 · The verification gate bills the phase it names ────────────────────
+// What broke: enforce_verification_gate() read engagements.verified_at — one column
+// for the whole engagement. On the four-phase Governance Build that meant the first
+// verification satisfied every later invoice, so the rule protecting phases 3 and 4
+// would have fired once and never again. Present, readable, and doing nothing — the
+// same shape as the signature that never created an engagement.
+
+test('the verification gate reads the phase, not the engagement', () => {
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000023_billing_trigger_and_acceptance.sql'))
+  const fn = sql.slice(sql.indexOf('create or replace function enforce_verification_gate'))
+  assert.match(fn, /from engagement_phases\s*\n\s*where id = new\.phase_id/,
+    'the gate is back to reading one column for the whole engagement')
+  assert.doesNotMatch(fn, /from engagements\s+where id = new\.engagement_id/,
+    'the gate reads the engagement-level verified_at again')
+})
+
+test('an invoice that bills a milestone must name the phase it bills', () => {
+  // Without this the gate has nothing to check and would pass by default.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000023_billing_trigger_and_acceptance.sql'))
+  assert.match(sql, /names no phase, so there is nothing to verify/)
+})
+
+test('a scheduled phase cannot carry an invoice that claims to need verification', () => {
+  // The two would then disagree about what releases the money, and the database is
+  // where that disagreement gets settled rather than in whichever screen wrote last.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000023_billing_trigger_and_acceptance.sql'))
+  assert.match(sql, /which bills on schedule, so it must not require verification/)
+})
+
+test('accepting an invoice and verifying delivery are separate acts', () => {
+  // Collapsing them is what forced a client to certify delivery of a workshop eight
+  // days before it happened, in a file her funder audits.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(client)/portal/actions.ts'))
+  assert.match(actions, /export async function acceptInvoice/)
+  assert.match(actions, /export async function verifyPhase/)
+  const accept = actions.slice(actions.indexOf('export async function acceptInvoice'))
+  assert.doesNotMatch(accept, /verified_at/, 'accepting an invoice now also records a delivery')
+})
+
+test('a client can only accept an invoice that has actually been issued', () => {
+  const actions = read(join(ROOT, 'app/(hub)/hub/(client)/portal/actions.ts'))
+  const accept = actions.slice(actions.indexOf('export async function acceptInvoice'))
+  assert.match(accept.slice(0, 2000), /status === 'draft'/, 'a draft can be accepted again')
+  // The write is conditional on it still being unaccepted, so two tabs cannot both
+  // record an acceptance.
+  assert.match(accept, /\.is\('accepted_at', null\)/, 'acceptance is no longer race-safe')
+})
+
+test('the client portal still acts as the client, never as a service key', () => {
+  // RLS is the rule that decides whose invoice this is. An admin client here would
+  // bypass the thing the action exists to honour.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(client)/portal/actions.ts'))
+  assert.doesNotMatch(actions, /createAdminClient/, 'the portal now bypasses RLS')
+})
+
+// ─── 16 · Money reconciles in both directions ───────────────────────────────
+// A payment can be recorded on either side. If one side never learns about the
+// other, Square shows a permanently unpaid invoice and qbo_sync never balances —
+// and that surfaces at year end, when the evidence is months old.
+
+test('a payment recorded here is pushed back to Square', () => {
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  const fn = src.slice(src.indexOf('export async function markInvoicePaid'))
+  assert.match(fn, /recordExternalPayment\(/, 'an e-Transfer no longer reaches Square at all')
+  assert.match(fn, /pushed_to_square: true/, 'a successful push is no longer recorded')
+})
+
+test('a failed push is surfaced, not swallowed', () => {
+  // pushed_to_square false is an unfinished reconciliation and has to stay visible.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  const fn = src.slice(src.indexOf('export async function markInvoicePaid'))
+  assert.match(fn, /Square will show this invoice unpaid until that is fixed/)
+  assert.match(fn, /push_error/, 'a failed push leaves no trace in the audit log')
+})
+
+test('a webhook retry cannot book the same payment twice', () => {
+  // Square retries deliveries and documents that handlers must be idempotent.
+  const sql = read(join(ROOT, 'supabase/migrations/20261114000025_square_invoice_link.sql'))
+  assert.match(sql, /create unique index if not exists payments_square_payment_id_unique/)
+})
+
+test('invoice status follows every payment, not just the latest one', () => {
+  // Two part payments that together cover the invoice must land on paid, not
+  // partially_paid — summing only the newest one is how a client stays in the
+  // overdue ladder after settling in full.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  const fn = src.slice(src.indexOf('export async function markInvoicePaid'))
+  assert.match(fn, /allPayments[\s\S]{0,200}reduce/, 'status is computed from one payment again')
+})
+
+// ─── 17 · The queue drafts and stops there ──────────────────────────────────
+
+test('the queue never issues and never touches Square', () => {
+  // Issuing stays deliberate: invoices 3 and 4 are triggered by delivery, and only
+  // a person knows whether the session actually happened.
+  //
+  // This used to forbid the word "send" outright, which was too blunt to tell a
+  // reminder to Jackee from an invoice to the client — and the reminder is the
+  // whole point of drafting a day ahead. It now asserts the thing that actually
+  // matters: nothing here creates a Square invoice or issues one.
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.doesNotMatch(src, /createSquareInvoice|issueInvoice/,
+    'the invoice queue now issues by itself')
+  assert.match(src, /status: 'draft'/)
+})
+
+test('the only mail the queue sends goes to Jackee, never to a client', () => {
+  // A queue that could email a client is one bad conditional away from sending an
+  // invoice for a session that did not happen.
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  const sends = Array.from(src.matchAll(/emails\.send\(\{[\s\S]{0,400}?\}\)/g)).map((m) => m[0])
+  assert.ok(sends.length >= 1, 'the queue no longer reminds anyone')
+  for (const call of sends) {
+    assert.match(call, /to: JACKEE_EMAILS/, 'the queue sends mail to someone other than Jackee')
+  }
+  // And the reminder must not carry a payment link, which would make forwarding it
+  // to the client the fastest way to skip every gate.
+  const emails = read(join(ROOT, 'lib/invoice-emails.ts'))
+  assert.doesNotMatch(emails, /square_payment_url|squareUrl|paymentUrl/,
+    'the reminder now carries a payment link')
+})
+
+test('a reminder is only sent when something was actually drafted', () => {
+  // A daily "nothing to do" teaches the recipient to stop opening it, and then the
+  // one that matters is missed too.
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(src, /if \(draftedDetail\.length > 0\)/, 'the queue mails on quiet days again')
+})
+
+test('a reminder that fails to send is recorded, not swallowed', () => {
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(src, /invoice\.reminder_sent/)
+  assert.match(src, /notifyError/)
+})
+
+test('the queue skips a phase with no date rather than guessing one', () => {
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(src, /\.not\('send_on', 'is', null\)/, 'the queue now reads dateless phases')
+  assert.match(src, /shouldDraftToday\(/)
+})
+
+test('the queue will not bill a milestone the client has not verified', () => {
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(src, /requiresVerification\([\s\S]{0,80}&& !phase\.verified_at/)
+})
+
+test('the queue is behind the shared secret, like the other crons', () => {
+  const src = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(src, /process\.env\.CRON_SECRET/)
+  assert.match(src, /status: 401/)
+})
+
+test('the invoice queue runs daily, not on the health check schedule', () => {
+  // The lead is one day. A phase whose send_on falls on a Sunday needs the draft on
+  // the Saturday, and a Mon/Wed/Fri schedule would produce it the following Monday —
+  // after the session it bills for. The first engagement has exactly that case.
+  const wf = read(join(ROOT, '.github/workflows/invoice-queue.yml'))
+  const cron = wf.match(/- cron: '([^']+)'/)
+  assert.ok(cron, 'the invoice queue is no longer scheduled')
+  const [, , , , dow] = cron![1].trim().split(/\s+/)
+  assert.equal(dow, '*', 'the invoice queue no longer runs every day')
+})
+
+// ─── 18 · Importing rather than duplicating ─────────────────────────────────
+
+test('an invoice already in Square is imported, never recreated', () => {
+  // The deposit was raised by hand in the dashboard while this was being built. Two
+  // invoices for the same $3,150 in a funder-audited file is the client's problem
+  // to explain, not ours.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  assert.match(src, /export async function importSquareInvoice/)
+  const issue = src.slice(src.indexOf('export async function issueInvoice'))
+  assert.match(issue.slice(0, 1200), /if \(invoice\.square_invoice_id\)[\s\S]{0,160}already in Square/,
+    'issuing no longer checks whether Square already holds this invoice')
+})
+
+test('a link is refused when the two totals disagree', () => {
+  // A link between invoices for different amounts reads as reconciled while the
+  // client has been asked for a different number than the platform believes.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  assert.match(src, /Fix one before linking them/)
+})
+
+test('a Square failure leaves the invoice a draft', () => {
+  // A row marked issued with no payment link is an invoice the client cannot pay
+  // and nobody is told about.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  assert.match(src, /invoice\.issue_failed/)
+  const issue = src.slice(src.indexOf('export async function issueInvoice'))
+  const failBlock = issue.slice(issue.indexOf('if (!square.ok)'))
+  assert.doesNotMatch(failBlock.slice(0, 600), /status: 'issued'/, 'a Square failure still marks it issued')
+})
+
+test('the gate runs before Square is called, not after', () => {
+  // An invoice that reaches Square is one the client has been asked to pay. The
+  // GST check has to happen first or it is checking a document already sent.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  const issue = src.slice(src.indexOf('export async function issueInvoice'))
+  const gate = issue.indexOf('invoiceBlockers(')
+  const square = issue.indexOf('createSquareInvoice(')
+  assert.ok(gate !== -1 && square !== -1)
+  assert.ok(gate < square, 'Square is now called before the invoice is checked')
+})
+
+test('every invoice action is behind the operator gate', () => {
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  for (const m of Array.from(src.matchAll(/export async function (\w+)/g))) {
+    const fn = src.slice(src.indexOf(`export async function ${m[1]}`))
+    const body = fn.slice(0, fn.indexOf('\nexport ') === -1 ? undefined : fn.indexOf('\nexport '))
+    assert.match(body, /if \(!ok\) return \{ ok: false, error: 'Not authorized\.' \}/, `${m[1]} has no auth check`)
+  }
+})
+
+// ─── 19 · The screen offers the action that matches the state ───────────────
+
+test('there is one issueInvoice, and it is the one that talks to Square', () => {
+  // What stood in financials/actions.ts flipped status to 'issued' and stopped: no
+  // Square invoice, so nothing the client could pay, and no check on the document.
+  // Two exported functions with one name doing different things is how a screen
+  // ends up calling the one that does less.
+  const old = read(join(ROOT, 'app/(hub)/hub/(app)/financials/actions.ts'))
+  assert.doesNotMatch(old, /export async function issueInvoice/,
+    'a second issueInvoice is back in financials/actions.ts')
+  const neue = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  assert.match(neue, /export async function issueInvoice/)
+})
+
+test('an invoice already in Square is offered linking, not issuing', () => {
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/financials/page.tsx'))
+  // Issue only when Square does not already hold it — otherwise the button that
+  // creates a duplicate is the one sitting under the operator's cursor.
+  assert.match(page, /i\.status === 'draft' && !i\.square_invoice_id && \(\s*<IssueButton/)
+  assert.match(page, /<ImportSquareButton/)
+})
+
+test('an issued invoice Square does not know about says so on the row', () => {
+  // That state is a half-finished reconciliation, and it is invisible unless the
+  // screen says it out loud.
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/financials/page.tsx'))
+  assert.match(page, /not in Square/)
+})
+
+test('the invoice table shows the tax breakdown, not one gross figure', () => {
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/financials/page.tsx'))
+  assert.match(page, /i\.subtotal_cents/, 'the operator view lost the subtotal')
+  assert.match(page, /GST/, 'the operator view lost the GST line')
+})
+
+test('the Invoice type carries the columns the database has', () => {
+  // The type drifting behind the schema is how a screen reads a column that is
+  // there and TypeScript says is not — which is what happened here.
+  const src = read(join(ROOT, 'lib/engine/money.ts'))
+  for (const col of ['subtotal_cents', 'tax_cents', 'square_invoice_id', 'square_payment_url', 'accepted_at', 'phase_id']) {
+    assert.match(src, new RegExp(`\\b${col}\\b`), `Invoice has no ${col}`)
+  }
+})
+
+// ─── 20 · A client sees issued invoices, and only those ─────────────────────
+
+test('the client portal hides drafts and voids alike', () => {
+  // The original policy excluded drafts only. A voided invoice therefore stayed
+  // visible — worse than a draft, because a cancelled invoice in a portal is a bill
+  // the client believes she owes, and she forwards these to a funder who audits
+  // them.
+  const sql = read(join(ROOT, 'supabase/migrations/20261118000026_client_does_not_see_void_invoices.sql'))
+  assert.match(sql, /status not in \('draft', 'void'\)/)
+})
+
+test('nothing reads invoices for a client through a service key', () => {
+  // RLS is what decides whose invoice this is. The portal must keep asking it.
+  const page = read(join(ROOT, 'app/(hub)/hub/(client)/portal/page.tsx'))
+  assert.doesNotMatch(page, /createAdminClient/, 'the portal now bypasses RLS')
+})

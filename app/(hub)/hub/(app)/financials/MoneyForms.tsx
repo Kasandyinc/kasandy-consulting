@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createInvoice, issueInvoice, recordPayment } from './actions'
+import { createInvoice, recordPayment } from './actions'
+import { issueInvoice, importSquareInvoice, markInvoicePaid } from './invoice-actions'
 
 type ClientOpt = { id: string; name: string }
 type InvoiceOpt = { id: string; number: string; status: string; balance: string }
@@ -178,7 +179,7 @@ export function IssueButton({ invoiceId }: { invoiceId: string }) {
         disabled={pending}
         onClick={() =>
           start(async () => {
-            const res = await issueInvoice(invoiceId)
+            const res = await issueInvoice({ invoiceId })
             if (!res.ok) setError(res.error ?? 'Refused.')
             else { setError(''); router.refresh() }
           })
@@ -190,5 +191,150 @@ export function IssueButton({ invoiceId }: { invoiceId: string }) {
         <div style={{ color: 'var(--bad)', fontSize: 11, marginTop: 4, maxWidth: 280 }}>{error}</div>
       )}
     </>
+  )
+}
+
+/**
+ * Link an invoice to one that already exists in Square.
+ *
+ * The deposit for the first client was raised by hand in the Square dashboard while
+ * this path was being built. Square holds it; this reconciles the platform row to
+ * it. Creating a second invoice instead would put two documents for the same amount
+ * in front of a client who submits receipts to a funder.
+ */
+export function ImportSquareButton({ invoiceId }: { invoiceId: string }) {
+  const router = useRouter()
+  const [pending, start] = useTransition()
+  const [open, setOpen] = useState(false)
+  const [squareId, setSquareId] = useState('')
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  if (!open) {
+    return (
+      <button className="btn sm" onClick={() => setOpen(true)} title="Link to an invoice already in Square">
+        Link Square
+      </button>
+    )
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 6, minWidth: 260 }}>
+      <input
+        value={squareId}
+        onChange={(e) => setSquareId(e.target.value)}
+        placeholder="Square invoice id"
+        style={{ fontSize: 12.5 }}
+      />
+      <div className="row" style={{ gap: 6 }}>
+        <button
+          className="btn sm ox"
+          disabled={pending || !squareId.trim()}
+          onClick={() =>
+            start(async () => {
+              const res = await importSquareInvoice({ invoiceId, squareInvoiceId: squareId.trim() })
+              setMsg({ ok: !!res.ok, text: res.ok ? 'Linked.' : res.error ?? 'Failed.' })
+              if (res.ok) { setOpen(false); router.refresh() }
+            })
+          }
+        >
+          {pending ? 'Linking…' : 'Link'}
+        </button>
+        <button className="btn sm" onClick={() => { setOpen(false); setMsg(null) }}>Cancel</button>
+      </div>
+      {msg && (
+        <div style={{ fontSize: 11, color: msg.ok ? 'var(--good)' : 'var(--bad)' }}>{msg.text}</div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Record a payment that arrived outside Square, and push it back to Square.
+ *
+ * The push is what keeps the two systems agreeing. Without it Square shows a
+ * permanently unpaid invoice and the reconciliation downstream never balances —
+ * which is discovered at year end, when the evidence is months old. If the push
+ * fails the payment is still recorded here and the warning says so explicitly,
+ * because an unfinished reconciliation that looks finished is the worse outcome.
+ */
+export function MarkPaidButton({
+  invoiceId,
+  amountCents,
+}: {
+  invoiceId: string
+  amountCents: number
+}) {
+  const router = useRouter()
+  const [pending, start] = useTransition()
+  const [open, setOpen] = useState(false)
+  const [amount, setAmount] = useState((amountCents / 100).toFixed(2))
+  const [receivedOn, setReceivedOn] = useState(new Date().toISOString().slice(0, 10))
+  const [method, setMethod] = useState<'e_transfer' | 'eft' | 'cheque' | 'other'>('e_transfer')
+  const [reference, setReference] = useState('')
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  if (!open) {
+    return <button className="btn sm" onClick={() => setOpen(true)}>Mark as paid</button>
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 6, minWidth: 280 }}>
+      <div className="row" style={{ gap: 6 }}>
+        <input
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Amount"
+          style={{ fontSize: 12.5, width: 100 }}
+        />
+        <input
+          type="date"
+          value={receivedOn}
+          onChange={(e) => setReceivedOn(e.target.value)}
+          style={{ fontSize: 12.5 }}
+        />
+      </div>
+      <select
+        value={method}
+        onChange={(e) => setMethod(e.target.value as typeof method)}
+        style={{ fontSize: 12.5 }}
+      >
+        <option value="e_transfer">Interac e-Transfer</option>
+        <option value="eft">EFT / bank transfer</option>
+        <option value="cheque">Cheque</option>
+        <option value="other">Other</option>
+      </select>
+      <input
+        value={reference}
+        onChange={(e) => setReference(e.target.value)}
+        placeholder="Reference (confirmation number)"
+        style={{ fontSize: 12.5 }}
+      />
+      <div className="row" style={{ gap: 6 }}>
+        <button
+          className="btn sm ox"
+          disabled={pending}
+          onClick={() =>
+            start(async () => {
+              const res = await markInvoicePaid({ invoiceId, amount, receivedOn, method, reference })
+              setMsg({
+                ok: !!res.ok,
+                text: res.ok
+                  ? ('warning' in res && res.warning ? res.warning : 'Recorded, and Square updated.')
+                  : res.error ?? 'Failed.',
+              })
+              if (res.ok) router.refresh()
+            })
+          }
+        >
+          {pending ? 'Recording…' : 'Record payment'}
+        </button>
+        <button className="btn sm" onClick={() => { setOpen(false); setMsg(null) }}>Cancel</button>
+      </div>
+      {msg && (
+        <div style={{ fontSize: 11, color: msg.ok ? 'var(--good)' : 'var(--bad)', maxWidth: 300 }}>
+          {msg.text}
+        </div>
+      )}
+    </div>
   )
 }
