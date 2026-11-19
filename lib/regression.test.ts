@@ -6,7 +6,7 @@ import { STEP_KEYS } from './engine/steps.ts'
 import { slotToUTC, utcToPacificParts } from './pacific-time.ts'
 import { icsUidFor } from './bookings-hub.ts'
 import { hubRoute } from './engine/hub-routing.ts'
-import { paymentInstructions } from './engine/invoice.ts'
+import { paymentInstructions, invoiceBlockers } from './engine/invoice.ts'
 
 /**
  * The no-regression rule, as tests rather than a promise.
@@ -1493,4 +1493,75 @@ test('no payment address is hardcoded into the instructions', () => {
   )
   // With nothing on file it must say nothing rather than guess an address.
   assert.doesNotMatch(none.find((i) => i.method === 'eft')!.note, /@/)
+})
+
+// ─── 23 · An invoice marked issued that Square never saw ────────────────────
+//
+// INV-0002 was issued through the old code path, which flipped a status column
+// and never called Square. The row then read "issued · not in Square", and the
+// only control beside it was a box for a Square invoice id — which did not
+// exist, because the invoice had never been created there. The client was
+// holding a $3,150 bill with no way to pay it by card and no route back.
+
+const GATE = { gstNumber: '804428431RT0001' }
+const BASE = {
+  subtotal_cents: 300000,
+  tax_cents: 15000,
+  amount_cents: 315000,
+  description: 'Governance build — commencement deposit',
+  due_on: '2026-12-13',
+}
+
+test('an issued invoice Square never saw can still be created there', () => {
+  const blockers = invoiceBlockers(
+    { ...BASE, status: 'issued', square_invoice_id: null },
+    GATE,
+  )
+  assert.deepEqual(blockers, [], `a stranded invoice is still blocked: ${blockers.join(' · ')}`)
+})
+
+test('an invoice already in Square is still refused', () => {
+  // This is the guard that actually prevents a double. Letting the status check
+  // through must not weaken it.
+  const blockers = invoiceBlockers(
+    { ...BASE, status: 'issued', square_invoice_id: 'sq-inv-123' },
+    GATE,
+  )
+  assert.ok(blockers.some((b) => /already issued/i.test(b)), 'an invoice in Square is no longer refused')
+})
+
+test('paid and void invoices are still refused whatever Square holds', () => {
+  for (const status of ['paid', 'void', 'partially_paid']) {
+    const blockers = invoiceBlockers({ ...BASE, status, square_invoice_id: null }, GATE)
+    assert.ok(
+      blockers.some((b) => b === `Already ${status}`),
+      `a ${status} invoice can now be issued`,
+    )
+  }
+})
+
+test('a draft is still the ordinary way in', () => {
+  assert.deepEqual(invoiceBlockers({ ...BASE, status: 'draft', square_invoice_id: null }, GATE), [])
+})
+
+test('the stranded state has a control, not just a badge', () => {
+  // The row already said "not in Square". Saying it without offering the fix is
+  // what left this sitting for a day.
+  const page = read(join(ROOT, 'app/(hub)/hub/(app)/financials/page.tsx'))
+  assert.match(page, /not in Square/, 'the warning badge is gone')
+  assert.match(
+    page,
+    /i\.status === 'issued' && !i\.square_invoice_id/,
+    'an issued invoice missing from Square has no way to be created there',
+  )
+})
+
+test('finishing an issue keeps the date the client already has', () => {
+  // Re-dating an invoice the client is holding changes when it falls due.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  assert.match(
+    actions,
+    /issued_on: invoice\.issued_on \?\? today\(\)/,
+    'issuing now overwrites the original issue date',
+  )
 })

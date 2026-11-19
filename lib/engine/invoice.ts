@@ -67,6 +67,12 @@ export type InvoiceGateInput = {
   status: string
   description: string | null
   due_on: string | null
+  /**
+   * Square's id for this invoice, or null if Square has never seen it. Part of the
+   * gate because "already issued" and "already in Square" are different facts, and
+   * an invoice can be the first without being the second.
+   */
+  square_invoice_id?: string | null
 }
 
 const cad = (c: number) => `$${(c / 100).toFixed(2)}`
@@ -110,7 +116,26 @@ export function invoiceBlockers(
     reasons.push('No description — a tax invoice has to say what it is for')
   }
   if (!invoice.due_on) reasons.push('No due date')
-  if (invoice.status !== 'draft') reasons.push(`Already ${invoice.status}`)
+  /**
+   * Normally only a draft may be issued. The exception is an invoice marked issued
+   * that Square has never heard of.
+   *
+   * That state is reachable — INV-0002 was issued through the old code path, which
+   * only flipped a status column and never called Square — and it was a dead end:
+   * the screen showed "not in Square", and the only control offered was a box for a
+   * Square invoice id that does not exist, because the invoice was never created
+   * there. A client holding that invoice has no way to pay it by card.
+   *
+   * Letting it through is not issuing twice. The real guard against that is
+   * square_invoice_id, checked by the caller before this runs and again against
+   * Square's own open invoices by amount; this only says the job was left half
+   * done. The write-back keeps the original issued_on, so finishing it does not
+   * re-date an invoice the client already has.
+   */
+  const strandedOutsideSquare = invoice.status === 'issued' && !invoice.square_invoice_id
+  if (invoice.status !== 'draft' && !strandedOutsideSquare) {
+    reasons.push(`Already ${invoice.status}`)
+  }
 
   return reasons
 }
