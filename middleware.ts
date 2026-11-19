@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { isOperator } from '@/lib/engine/operators'
+import { hubRoute } from '@/lib/engine/hub-routing'
 import { verifyAdminSession, ADMIN_COOKIE } from '@/lib/admin-session'
 import { downloadTokenState, refusalRef } from '@/lib/download-token'
 
@@ -66,26 +67,23 @@ export async function middleware(req: NextRequest) {
 
     // Refresh the Supabase session first, then read the user.
     const { supabaseResponse, user } = await updateSession(req)
-    const allowed = isOperator(user?.email)
-    const isAuthRoute = pathname === '/login' || pathname.startsWith('/auth/')
-    // The client portal is the one operator-free surface. Being signed in is enough
-    // to reach it; whether there is anything to see is RLS's decision, not this
-    // file's — a signed-in stranger gets an empty portal, never someone else's
-    // engagement. Checking membership here would mean a database round-trip in
-    // middleware and a second place for the rule to drift.
-    const isPortal = pathname === '/portal' || pathname.startsWith('/portal/')
+    const route = hubRoute(pathname, {
+      signedIn: Boolean(user?.email),
+      isOperator: isOperator(user?.email),
+    })
 
-    // Everything except the login page, auth callback and portal requires an operator.
-    if (!allowed && !isAuthRoute && !(isPortal && user)) {
-      return NextResponse.redirect(new URL('/login', req.url))
+    // The callback is a route handler that completes the sign-in; it must reach its
+    // own code, session cookies and all.
+    if (route.kind === 'passthrough') {
+      return supabaseResponse
     }
-    // Signed-in operators shouldn't sit on the login page.
-    if (allowed && pathname === '/login') {
-      return NextResponse.redirect(new URL('/', req.url))
-    }
-    // A signed-in non-operator has exactly one destination.
-    if (!allowed && user && !isPortal && !isAuthRoute) {
-      return NextResponse.redirect(new URL('/portal', req.url))
+    if (route.kind === 'redirect') {
+      const dest = NextResponse.redirect(new URL(route.to, req.url))
+      // Carry the refreshed session onto the redirect. Without this the cookies
+      // updateSession just set are dropped, the next request looks signed out, and a
+      // client bounces between /portal and /login.
+      supabaseResponse.cookies.getAll().forEach((cookie) => dest.cookies.set(cookie))
+      return dest
     }
 
     // Map clean hub URLs onto the internal /hub/* tree (URL bar stays clean).

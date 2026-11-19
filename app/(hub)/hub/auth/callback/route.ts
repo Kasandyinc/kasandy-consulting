@@ -3,8 +3,8 @@ import { createClient } from '@/lib/supabase/server'
 import { isOperator } from '@/lib/engine/operators'
 
 /**
- * Magic-link landing. Exchanges the link for a session, then enforces the operator
- * allow-list — a non-operator is signed straight back out.
+ * Magic-link landing. Exchanges the link for a session, then routes by who it is:
+ * an operator to the Engine, a client to their portal.
  *
  * Supabase delivers a magic link in one of three shapes, depending on the project's
  * flow setting and which variable the email template uses. This handled exactly one
@@ -71,10 +71,32 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/`)
   }
 
+  /**
+   * A signed-in non-operator is a client, and clients have a destination.
+   *
+   * This used to sign them out and send them to /login?error=not_authorized — "That
+   * email isn't authorized for the Engine." — which contradicted the only other place
+   * the rule is written. middleware.ts admits any signed-in user to /portal and lets
+   * RLS decide what is in it; this file refused the same person at the door. Both
+   * compiled, both read as deliberate, and the client who actually tried it got the
+   * refusal, because the callback runs first.
+   *
+   * The membership check deliberately stays out of here. Asking the database whether
+   * this address belongs to an engagement would put the rule in a third place, and a
+   * stranger who signs in reaches the portal's empty state rather than anyone's data —
+   * the policies on clients, engagements and invoices are what hold that line.
+   *
+   * Only a session with no email at all is turned away now: there is nothing to match
+   * a client record against, so there is nowhere to send it.
+   */
+  if (user?.email) {
+    return NextResponse.redirect(`${origin}/portal`)
+  }
+
   await supabase.auth.signOut()
   return NextResponse.redirect(
     `${origin}/login?error=not_authorized&reason=${encodeURIComponent(
-      user?.email ?? 'the session carried no email address',
+      'the session carried no email address',
     )}`,
   )
 }
