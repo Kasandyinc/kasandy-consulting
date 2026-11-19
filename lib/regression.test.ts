@@ -6,6 +6,7 @@ import { STEP_KEYS } from './engine/steps.ts'
 import { slotToUTC, utcToPacificParts } from './pacific-time.ts'
 import { icsUidFor } from './bookings-hub.ts'
 import { hubRoute } from './engine/hub-routing.ts'
+import { paymentInstructions } from './engine/invoice.ts'
 
 /**
  * The no-regression rule, as tests rather than a promise.
@@ -1408,4 +1409,60 @@ test('the sign-in page does not tell a client she is in the wrong place', () => 
     /isn.t authorized for the Engine/,
     'the refusal that greeted the client has come back',
   )
+})
+
+// ─── 22 · Money correspondence has one address ──────────────────────────────
+
+test('the invoice queue writes from the finance mailbox, not the calendar one', () => {
+  // A reminder about money that arrives from bookings@ gets filed with the calendar.
+  // Worse, a reply to it lands where nobody reconciles anything.
+  const route = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(route, /finance as FROM/, 'the invoice queue is sending from another mailbox again')
+})
+
+test('a finance sender exists and is on the verified domain', () => {
+  const email = read(join(ROOT, 'lib/email.ts'))
+  assert.match(email, /export const finance = /, 'the finance sender is gone')
+  // Hardcoding the domain here is how a sending address survives a domain change in
+  // name only and starts bouncing.
+  assert.match(email, /finance@\$\{DOMAIN\}/, 'the finance sender no longer follows RESEND_SENDING_DOMAIN')
+})
+
+test('the EFT note sends the client to the address that takes the money', () => {
+  // It used to say "reply to this invoice". In the portal there is nothing to reply
+  // to, so the instruction was unactionable — and a payment question answered from a
+  // different mailbox than the one receiving e-Transfers is how a payment goes
+  // unmatched.
+  const out = paymentInstructions(
+    { number: 'INV-0009', show_bank_details: false },
+    { etransfer_email: 'finance@example.com', eft_details_md: null, gst_number: '1RT0001' },
+    null,
+  )
+  const eft = out.find((i) => i.method === 'eft')!
+  assert.equal(eft.kind, 'on_request')
+  assert.match(eft.note, /finance@example\.com/, 'the EFT note no longer names an address')
+  assert.match(eft.note, /INV-0009/, 'the EFT note no longer quotes the invoice number')
+
+  const etransfer = out.find((i) => i.method === 'e_transfer')!
+  assert.equal(etransfer.kind, 'instructions')
+  assert.equal(
+    etransfer.recipient,
+    'finance@example.com',
+    'the e-Transfer and the EFT enquiry have drifted to different addresses',
+  )
+})
+
+test('no payment address is hardcoded into the instructions', () => {
+  // The address on an invoice is the address money goes to. One written into the
+  // source is a redirection waiting for a deploy.
+  const src = read(join(ROOT, 'lib/engine/invoice.ts'))
+  assert.doesNotMatch(src, /[a-z0-9._-]+@kasandyconsulting\.com/i, 'a real payment address is hardcoded')
+
+  const none = paymentInstructions(
+    { number: 'INV-0010', show_bank_details: false },
+    { etransfer_email: null, eft_details_md: null, gst_number: '1RT0001' },
+    null,
+  )
+  // With nothing on file it must say nothing rather than guess an address.
+  assert.doesNotMatch(none.find((i) => i.method === 'eft')!.note, /@/)
 })

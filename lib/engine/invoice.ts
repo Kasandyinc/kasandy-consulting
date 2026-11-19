@@ -310,7 +310,18 @@ export function paymentInstructions(
           // The default, deliberately. Invoice-redirection fraud works by presenting
           // plausible account numbers on a plausible invoice; every document carrying
           // real ones is another document worth intercepting.
-          note: 'Banking details for EFT are available on request — reply to this invoice and they will be sent separately.',
+          //
+          // It used to say "reply to this invoice", which is no instruction at all to
+          // a client reading this in the portal — there is nothing there to reply to.
+          // It names the address instead, and that is the same finance mailbox the
+          // e-Transfer goes to on purpose: a client who asks about a payment and a
+          // client who sends one should reach the same place, because a question
+          // answered somewhere else is how a payment ends up unmatched. It comes from
+          // settings for the same reason the e-Transfer address does — an address
+          // hardcoded here is a redirection waiting for a deploy.
+          note: etransfer
+            ? `Banking details for EFT are available on request — email ${etransfer}, quoting ${invoice.number}, and they will be sent separately.`
+            : 'Banking details for EFT are available on request and will be sent separately.',
         },
   )
 
