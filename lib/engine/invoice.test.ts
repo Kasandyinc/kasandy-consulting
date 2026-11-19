@@ -116,8 +116,12 @@ test('figures that do not add up are reported before the rate is questioned', ()
 })
 
 test('every blocker is reported at once, not one at a time', () => {
+  // 'void' rather than 'issued': an invoice marked issued that Square has never
+  // seen is now deliberately issuable — that is the half-done state, not a second
+  // issue — so it no longer contributes a blocker here. The invariant under test is
+  // that all of them come back together, which needs a status that always blocks.
   const reasons = invoiceBlockers(
-    { subtotal_cents: 0, tax_cents: 0, amount_cents: 0, status: 'issued', description: '', due_on: null },
+    { subtotal_cents: 0, tax_cents: 0, amount_cents: 0, status: 'void', description: '', due_on: null },
     { gstNumber: null },
   )
   assert.ok(reasons.length >= 5, `expected several reasons, got ${reasons.length}`)

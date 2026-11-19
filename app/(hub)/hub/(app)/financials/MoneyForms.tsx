@@ -167,7 +167,21 @@ export default function MoneyForms({
 }
 
 /** Issue a draft invoice — surfaces the database's refusal verbatim when gated. */
-export function IssueButton({ invoiceId }: { invoiceId: string }) {
+export function IssueButton({
+  invoiceId,
+  label = 'Issue',
+  title,
+}: {
+  invoiceId: string
+  /**
+   * 'Issue' for a draft. 'Create in Square' for an invoice already marked issued
+   * that Square has never seen — pressing it finishes a job that was left half
+   * done, and calling that "Issue" would read as sending the client a second
+   * invoice.
+   */
+  label?: string
+  title?: string
+}) {
   const router = useRouter()
   const [pending, start] = useTransition()
   const [error, setError] = useState('')
@@ -177,6 +191,7 @@ export function IssueButton({ invoiceId }: { invoiceId: string }) {
       <button
         className="btn sm"
         disabled={pending}
+        title={title}
         onClick={() =>
           start(async () => {
             const res = await issueInvoice({ invoiceId })
@@ -185,7 +200,7 @@ export function IssueButton({ invoiceId }: { invoiceId: string }) {
           })
         }
       >
-        {pending ? '…' : 'Issue'}
+        {pending ? '…' : label}
       </button>
       {error && (
         <div style={{ color: 'var(--bad)', fontSize: 11, marginTop: 4, maxWidth: 280 }}>{error}</div>

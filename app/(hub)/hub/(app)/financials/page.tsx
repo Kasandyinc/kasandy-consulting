@@ -205,6 +205,19 @@ export default async function Financials() {
                       {i.status === 'draft' && !i.square_invoice_id && (
                         <IssueButton invoiceId={i.id} />
                       )}
+                      {/* An invoice marked issued that Square has never seen was a
+                          dead end: the row said "not in Square" and offered only a
+                          box for a Square id that does not exist, because the
+                          invoice was never created there. The client is holding a
+                          bill with no way to pay it by card. This finishes the job
+                          — same number, same issue date — rather than re-issuing. */}
+                      {i.status === 'issued' && !i.square_invoice_id && (
+                        <IssueButton
+                          invoiceId={i.id}
+                          label="Create in Square"
+                          title="This invoice was never created in Square, so it has no payment link. This creates it and keeps the original number and issue date."
+                        />
+                      )}
                       {/* Linking is offered whenever Square does not know about this
                           invoice yet — including on a draft, because an invoice
                           raised by hand in the dashboard has to be imported rather
