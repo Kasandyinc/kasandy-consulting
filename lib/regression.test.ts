@@ -1636,3 +1636,36 @@ test('pasting an id by hand still works', () => {
   const ui = read(join(ROOT, 'app/(hub)/hub/(app)/financials/MoneyForms.tsx'))
   assert.match(ui, /Or paste a Square invoice id/, 'the manual id fallback is gone')
 })
+
+test('the picker says which Square it asked', () => {
+  // An empty list from the sandbox and an empty list from a live account that holds
+  // nothing look identical, and only one of them is a problem. A sandbox invoice
+  // that DOES match is worse: it would link a real bill to test money and read as
+  // reconciled. SQUARE_ENV falling back to anything but 'production' means Sandbox
+  // with nothing on screen to say so.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  assert.match(actions, /environment: squareEnvName/, 'the finder no longer reports its Square environment')
+
+  const ui = read(join(ROOT, 'app/(hub)/hub/(app)/financials/MoneyForms.tsx'))
+  assert.match(ui, /environment === 'sandbox'/, 'the picker no longer warns when it asked the sandbox')
+  // Shown whenever the panel is open, not only when nothing matched.
+  const panel = ui.slice(ui.indexOf('Asking Square'))
+  const warn = panel.indexOf("environment === 'sandbox'")
+  const matches = panel.indexOf('found.matches.length > 0')
+  assert.ok(warn !== -1 && matches !== -1 && warn < matches, 'the sandbox warning sits below the matches')
+})
+
+test('the environment is read from one place, not re-derived', () => {
+  // SQUARE_ENV vs SQUARE_ENVIRONMENT has already been wrong once here. A second
+  // reading of those variables is a second chance to disagree with the client that
+  // actually makes the calls.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  // Matched on the env read itself, not the name: the doc comment here has to be
+  // free to explain which variables lib/square reads and why that drifted once.
+  assert.doesNotMatch(
+    actions,
+    /process\.env\.SQUARE_ENV/,
+    'the environment is being re-derived instead of imported',
+  )
+  assert.match(actions, /import \{ squareEnvName \} from '@\/lib\/square'/)
+})
