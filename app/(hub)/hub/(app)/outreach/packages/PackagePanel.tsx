@@ -9,6 +9,7 @@ type Org = {
   stage: string
   demo_object: string | null
   proposal_object: string | null
+  demo_pdf_object: string | null
   package_token: string
   detail_hook: string | null
 }
@@ -89,8 +90,10 @@ export default function PackagePanel({
           <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
             The zip with <code>Packages/</code> and <code>Core/research.json</code>.
             Files go to private storage; the research fills in only the org fields that
-            are still empty. Run the dry run first — it reports exactly what would
-            change and touches nothing.
+            are still empty. A <code>_Demo.pdf</code> next to an org&rsquo;s{' '}
+            <code>_Demo.html</code> is picked up the same way, as a downloadable
+            counterpart to the tracked link. Run the dry run first — it reports
+            exactly what would change and touches nothing.
           </div>
 
           <input
@@ -157,6 +160,7 @@ export default function PackagePanel({
             <tr>
               <th>Organisation</th>
               <th>Demo</th>
+              <th>PDF</th>
               <th>Proposal</th>
               <th>Hook</th>
               <th>Prospect link</th>
@@ -172,6 +176,22 @@ export default function PackagePanel({
                     <span className={`tag ${o.demo_object ? 'good' : 'mut'}`}>
                       {o.demo_object ? 'ready' : 'none'}
                     </span>
+                  </td>
+                  <td>
+                    {o.demo_pdf_object ? (
+                      <button
+                        className="btn sm"
+                        onClick={() => {
+                          void navigator.clipboard?.writeText(`${publicBase}/demo/${o.package_token}/pdf`)
+                          setCopied(`${o.id}-pdf`)
+                          setTimeout(() => setCopied(null), 1500)
+                        }}
+                      >
+                        {copied === `${o.id}-pdf` ? 'Copied' : 'Copy PDF'}
+                      </button>
+                    ) : (
+                      <span className="tag mut">none</span>
+                    )}
                   </td>
                   <td>
                     <span className={`tag ${o.proposal_object ? 'good' : 'mut'}`}>

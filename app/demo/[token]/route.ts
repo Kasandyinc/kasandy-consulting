@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { injectFrame } from '@/lib/engine/package-frame'
+import { injectFrame, packageNotFoundHtml } from '@/lib/engine/package-frame'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,21 +78,11 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
 
 /**
  * A wrong or retired token gets a plain, human page — not a stack trace, and not a
- * hint that some other token would have worked.
+ * hint that some other token would have worked. Shared with the PDF route.
  */
 function notFound() {
-  return new NextResponse(
-    `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>Not available — Kasandy Consulting</title>
-<div style="font-family:Georgia,serif;max-width:520px;margin:12vh auto;padding:0 24px;color:#1a1a1a">
-  <p style="font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#712f1e;margin:0">Kasandy Consulting</p>
-  <h1 style="font-size:26px;font-weight:400;margin:8px 0 12px">This link isn&rsquo;t available.</h1>
-  <p style="font-family:system-ui,sans-serif;font-size:14px;line-height:1.6;color:#555">
-    It may have been replaced by a newer one. Reply to the email it came from and
-    we&rsquo;ll send a fresh link.
-  </p>
-</div>`,
-    { status: 404, headers: { 'content-type': 'text/html; charset=utf-8' } },
-  )
+  return new NextResponse(packageNotFoundHtml(), {
+    status: 404,
+    headers: { 'content-type': 'text/html; charset=utf-8' },
+  })
 }

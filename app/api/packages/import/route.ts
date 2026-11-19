@@ -7,6 +7,7 @@ import {
   classify,
   matchOrg,
   orgUpdatesFrom,
+  PACKAGE_KIND_META,
   type ResearchRecord,
 } from '@/lib/engine/package-import'
 
@@ -90,14 +91,12 @@ export async function POST(req: NextRequest) {
       continue
     }
 
-    const objectPath = `${org.id}/${c.kind}${c.kind === 'demo' ? '.html' : '.docx'}`
+    const meta = PACKAGE_KIND_META[c.kind]
+    const objectPath = `${org.id}/${c.kind}.${meta.ext}`
 
     if (!dryRun) {
       const { error: upErr } = await db.storage.from('org-packages').upload(objectPath, bytes, {
-        contentType:
-          c.kind === 'demo'
-            ? 'text/html; charset=utf-8'
-            : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        contentType: meta.contentType,
         upsert: true,
       })
       if (upErr) {
@@ -107,7 +106,7 @@ export async function POST(req: NextRequest) {
 
       const { error: setErr } = await db
         .from('orgs')
-        .update({ [c.kind === 'demo' ? 'demo_object' : 'proposal_object']: objectPath })
+        .update({ [meta.column]: objectPath })
         .eq('id', org.id)
       if (setErr) {
         errors.push(`${org.name} ${c.kind}: ${setErr.message}`)

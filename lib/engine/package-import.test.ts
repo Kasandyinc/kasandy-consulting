@@ -1,6 +1,13 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { isJunk, classify, normalise, matchOrg, orgUpdatesFrom } from './package-import.ts'
+import {
+  isJunk,
+  classify,
+  normalise,
+  matchOrg,
+  orgUpdatesFrom,
+  PACKAGE_KIND_META,
+} from './package-import.ts'
 
 // ─── Junk the operating system adds ─────────────────────────────────────────
 
@@ -31,6 +38,24 @@ test('both zip layouts classify identically', () => {
     orgKey: 'iiba',
     kind: 'proposal',
   })
+})
+
+test('a PDF next to the HTML demo classifies as demo_pdf, under the same key', () => {
+  assert.deepEqual(classify('Packages/skills_for_change/skills_for_change_Demo.pdf'), {
+    orgKey: 'skills_for_change',
+    kind: 'demo_pdf',
+  })
+  assert.deepEqual(classify('Org packages/skills_for_change_Demo.pdf'), {
+    orgKey: 'skills_for_change',
+    kind: 'demo_pdf',
+  })
+})
+
+test('every package kind has its own storage extension and column', () => {
+  const kinds = Object.keys(PACKAGE_KIND_META) as (keyof typeof PACKAGE_KIND_META)[]
+  assert.deepEqual(kinds.sort(), ['demo', 'demo_pdf', 'proposal'])
+  const exts = kinds.map((k) => PACKAGE_KIND_META[k].ext)
+  assert.equal(new Set(exts).size, exts.length, 'two package kinds share a storage extension')
 })
 
 test('anything that is not a demo or proposal is ignored', () => {
