@@ -5,6 +5,8 @@ import { join } from 'node:path'
 import { STEP_KEYS } from './engine/steps.ts'
 import { slotToUTC, utcToPacificParts } from './pacific-time.ts'
 import { icsUidFor } from './bookings-hub.ts'
+import { hubRoute } from './engine/hub-routing.ts'
+import { paymentInstructions } from './engine/invoice.ts'
 
 /**
  * The no-regression rule, as tests rather than a promise.
@@ -1276,4 +1278,191 @@ test('nothing reads invoices for a client through a service key', () => {
   // RLS is what decides whose invoice this is. The portal must keep asking it.
   const page = read(join(ROOT, 'app/(hub)/hub/(client)/portal/page.tsx'))
   assert.doesNotMatch(page, /createAdminClient/, 'the portal now bypasses RLS')
+})
+
+// ─── 21 · A client can actually get in ──────────────────────────────────────
+//
+// The engagement's only client received an invoice, followed the link, signed in
+// successfully — auth.users recorded the session — and was told "That email isn't
+// authorized for the Engine."
+//
+// Two places stated the same rule and disagreed. middleware.ts admitted any
+// signed-in user to /portal and let RLS decide what was in it. auth/callback
+// signed the same person out and sent her back to /login. Both compiled. The
+// callback runs first, so the client met the one that was wrong.
+//
+// Underneath that, the middleware's own three rules were ordered so the one naming
+// a client's destination could not run: '/' matched the refusal above it. Signing
+// in with the six-digit code lands on '/', so the fallback path was broken too.
+//
+// The decision is now one function, and this is every case of it.
+
+const CLIENT = { signedIn: true, isOperator: false }
+const OPERATOR = { signedIn: true, isOperator: true }
+const STRANGER = { signedIn: false, isOperator: false }
+
+test('a signed-in client reaches the portal from anywhere on the hub', () => {
+  // '/' is the one that mattered: it is where the code sign-in lands and where a
+  // bookmark points. It used to redirect to /login, where she was already signed in.
+  for (const path of ['/', '/login', '/financials', '/clients', '/calendar']) {
+    assert.deepEqual(
+      hubRoute(path, CLIENT),
+      { kind: 'redirect', to: '/portal' },
+      `a client at ${path} is not sent to the portal`,
+    )
+  }
+})
+
+test('a client is never sent to the sign-in page she has already used', () => {
+  // The precise failure state: signed in, looking at a sign-in form, with an invoice
+  // she cannot reach.
+  for (const path of ['/', '/login', '/portal', '/portal/invoices']) {
+    const route = hubRoute(path, CLIENT)
+    assert.ok(
+      !(route.kind === 'redirect' && route.to === '/login'),
+      `a signed-in client at ${path} is being bounced to /login`,
+    )
+  }
+})
+
+test('the portal still opens for a client', () => {
+  assert.deepEqual(hubRoute('/portal', CLIENT), { kind: 'allow' })
+  assert.deepEqual(hubRoute('/portal/anything', CLIENT), { kind: 'allow' })
+})
+
+test('the operator gate still holds against a client and a stranger', () => {
+  // The fix admits clients. It must not admit them to the Engine.
+  for (const path of ['/', '/financials', '/clients', '/calendar', '/marketing', '/settings']) {
+    assert.notDeepEqual(
+      hubRoute(path, CLIENT),
+      { kind: 'allow' },
+      `a client is being allowed into ${path}`,
+    )
+    assert.deepEqual(
+      hubRoute(path, STRANGER),
+      { kind: 'redirect', to: '/login' },
+      `an anonymous visitor is not refused at ${path}`,
+    )
+  }
+})
+
+test('an anonymous visitor cannot open the portal either', () => {
+  // Being signed in is the price of the portal. RLS decides the rest.
+  assert.deepEqual(hubRoute('/portal', STRANGER), { kind: 'redirect', to: '/login' })
+})
+
+test('operators still reach the Engine and not the portal', () => {
+  assert.deepEqual(hubRoute('/', OPERATOR), { kind: 'allow' })
+  assert.deepEqual(hubRoute('/financials', OPERATOR), { kind: 'allow' })
+  assert.deepEqual(hubRoute('/login', OPERATOR), { kind: 'redirect', to: '/' })
+})
+
+test('the auth callback is never redirected, for anyone', () => {
+  // Redirecting it means the session is never established, which reads downstream as
+  // a sign-in link that silently does nothing.
+  for (const viewer of [STRANGER, CLIENT, OPERATOR]) {
+    assert.deepEqual(hubRoute('/auth/callback', viewer), { kind: 'passthrough' })
+  }
+})
+
+test('the callback sends a client to her portal instead of signing her out', () => {
+  const route = read(join(ROOT, 'app/(hub)/hub/auth/callback/route.ts'))
+  assert.match(route, /redirect\(`\$\{origin\}\/portal`\)/, 'the callback no longer routes a client to the portal')
+  // It may still sign out a session with no email at all — there is nothing to match
+  // such a session to — but a client with an address must not hit that path.
+  const tail = route.slice(route.indexOf('if (isOperator('))
+  const signOutIdx = tail.indexOf('signOut()')
+  const portalIdx = tail.indexOf("/portal`)")
+  assert.ok(portalIdx !== -1 && portalIdx < signOutIdx, 'a client reaches signOut before the portal redirect')
+})
+
+test('the middleware reads the hub rule rather than restating it', () => {
+  // The defect was two copies of one rule. A second copy appearing here is the
+  // regression, whatever it says.
+  const mw = read(join(ROOT, 'middleware.ts'))
+  assert.match(mw, /hubRoute\(/, 'the middleware has stopped using the shared rule')
+  assert.doesNotMatch(
+    mw,
+    /isPortal && user/,
+    'the shadowed operator-gate ordering has come back',
+  )
+})
+
+test('a redirect still carries the refreshed session cookies', () => {
+  // updateSession may rotate the auth cookies. A redirect built without them looks
+  // signed out on the next request, which is a loop between /portal and /login.
+  const mw = read(join(ROOT, 'middleware.ts'))
+  const block = mw.slice(mw.indexOf("if (route.kind === 'redirect')"))
+  assert.match(
+    block.slice(0, 500),
+    /supabaseResponse\.cookies\.getAll\(\)\.forEach/,
+    'the hub redirect drops the refreshed session cookies',
+  )
+})
+
+test('the sign-in page does not tell a client she is in the wrong place', () => {
+  // She is sent here by her invoice. "Operator sign-in" reads as the wrong door.
+  const page = read(join(ROOT, 'app/(hub)/hub/login/page.tsx'))
+  assert.doesNotMatch(page, /Operator sign-in/, 'the sign-in page is operator-only again')
+  assert.doesNotMatch(
+    page,
+    /isn.t authorized for the Engine/,
+    'the refusal that greeted the client has come back',
+  )
+})
+
+// ─── 22 · Money correspondence has one address ──────────────────────────────
+
+test('the invoice queue writes from the finance mailbox, not the calendar one', () => {
+  // A reminder about money that arrives from bookings@ gets filed with the calendar.
+  // Worse, a reply to it lands where nobody reconciles anything.
+  const route = read(join(ROOT, 'app/api/engine/cron/invoices/route.ts'))
+  assert.match(route, /finance as FROM/, 'the invoice queue is sending from another mailbox again')
+})
+
+test('a finance sender exists and is on the verified domain', () => {
+  const email = read(join(ROOT, 'lib/email.ts'))
+  assert.match(email, /export const finance = /, 'the finance sender is gone')
+  // Hardcoding the domain here is how a sending address survives a domain change in
+  // name only and starts bouncing.
+  assert.match(email, /finance@\$\{DOMAIN\}/, 'the finance sender no longer follows RESEND_SENDING_DOMAIN')
+})
+
+test('the EFT note sends the client to the address that takes the money', () => {
+  // It used to say "reply to this invoice". In the portal there is nothing to reply
+  // to, so the instruction was unactionable — and a payment question answered from a
+  // different mailbox than the one receiving e-Transfers is how a payment goes
+  // unmatched.
+  const out = paymentInstructions(
+    { number: 'INV-0009', show_bank_details: false },
+    { etransfer_email: 'finance@example.com', eft_details_md: null, gst_number: '1RT0001' },
+    null,
+  )
+  const eft = out.find((i) => i.method === 'eft')!
+  assert.equal(eft.kind, 'on_request')
+  assert.match(eft.note, /finance@example\.com/, 'the EFT note no longer names an address')
+  assert.match(eft.note, /INV-0009/, 'the EFT note no longer quotes the invoice number')
+
+  const etransfer = out.find((i) => i.method === 'e_transfer')!
+  assert.equal(etransfer.kind, 'instructions')
+  assert.equal(
+    etransfer.recipient,
+    'finance@example.com',
+    'the e-Transfer and the EFT enquiry have drifted to different addresses',
+  )
+})
+
+test('no payment address is hardcoded into the instructions', () => {
+  // The address on an invoice is the address money goes to. One written into the
+  // source is a redirection waiting for a deploy.
+  const src = read(join(ROOT, 'lib/engine/invoice.ts'))
+  assert.doesNotMatch(src, /[a-z0-9._-]+@kasandyconsulting\.com/i, 'a real payment address is hardcoded')
+
+  const none = paymentInstructions(
+    { number: 'INV-0010', show_bank_details: false },
+    { etransfer_email: null, eft_details_md: null, gst_number: '1RT0001' },
+    null,
+  )
+  // With nothing on file it must say nothing rather than guess an address.
+  assert.doesNotMatch(none.find((i) => i.method === 'eft')!.note, /@/)
 })

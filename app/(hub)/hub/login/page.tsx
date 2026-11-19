@@ -13,7 +13,7 @@ export default function HubLoginPage({
 
   const headline =
     err === 'not_authorized'
-      ? 'That email isn’t authorized for the Engine.'
+      ? 'That sign-in didn’t carry an email address, so there was nothing to match it to. Please request a new link.'
       : err === 'no_code'
         ? 'That sign-in link arrived without a token. If it was opened by a mail scanner or forwarded, request a new one and paste it into the address bar rather than clicking it.'
         : err === 'auth_failed'
@@ -47,7 +47,11 @@ export default function HubLoginPage({
           The Engine
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: 13, margin: '0 0 20px' }}>
-          Operator sign-in. A one-time link will be emailed to you.
+          {/* Both the team and clients sign in here — a client reaching her own
+              engagement lands on this same screen from the link in an invoice. The
+              old wording named the operators only, which reads to a client as the
+              wrong door — so she stops instead of asking for a link. */}
+          Sign in. A one-time link and code will be emailed to you.
         </p>
         {headline && (
           <div style={{ marginBottom: 16 }}>

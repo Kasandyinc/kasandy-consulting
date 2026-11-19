@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { shouldDraftToday, amountsFromSubtotal, requiresVerification, dueOnFrom } from '@/lib/engine/invoice'
 import { Resend } from 'resend'
-import { bookings as FROM } from '@/lib/email'
+import { finance as FROM } from '@/lib/email'
 import { draftedHtml, draftedSubject, JACKEE_EMAILS, type DraftedInvoice } from '@/lib/invoice-emails'
 
 /**
