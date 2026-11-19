@@ -6,7 +6,7 @@ import { STEP_KEYS } from './engine/steps.ts'
 import { slotToUTC, utcToPacificParts } from './pacific-time.ts'
 import { icsUidFor } from './bookings-hub.ts'
 import { hubRoute } from './engine/hub-routing.ts'
-import { paymentInstructions, invoiceBlockers } from './engine/invoice.ts'
+import { paymentInstructions, invoiceBlockers, likelyDuplicates } from './engine/invoice.ts'
 
 /**
  * The no-regression rule, as tests rather than a promise.
@@ -1564,4 +1564,75 @@ test('finishing an issue keeps the date the client already has', () => {
     /issued_on: invoice\.issued_on \?\? today\(\)/,
     'issuing now overwrites the original issue date',
   )
+})
+
+// ─── 24 · Linking asks Square instead of asking a person for an id ──────────
+//
+// Linking wanted a Square invoice id, which is visible nowhere but the address bar
+// of the Square dashboard. The price was high enough that it was not paid: two
+// invoices were raised by hand in Square and neither was ever linked, so the
+// platform believed nothing had been sent and the payment webhook had no row to
+// match a payment against. A control nobody can use is the same as no control.
+
+test('the amount match used to find an invoice is the one used to refuse a duplicate', () => {
+  // Two notions of "this is the same invoice" would drift, and the direction of the
+  // drift is: the issue path refuses a duplicate the picker will not show, or the
+  // picker offers one the issue path considers distinct.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  const uses = Array.from(actions.matchAll(/likelyDuplicates\(/g))
+  assert.ok(uses.length >= 2, 'the picker is no longer matching on the same predicate as the issue gate')
+})
+
+test('an invoice Square holds that is already linked here is never offered twice', () => {
+  // Two of our invoices pointing at one of Square's reads as two bills collected
+  // when it is one.
+  const open = [
+    { id: 'sq-1', number: 'INV-0001', totalCents: 91875, status: 'UNPAID', paymentUrl: null },
+    { id: 'sq-2', number: 'INV-0002', totalCents: 91875, status: 'UNPAID', paymentUrl: null },
+  ]
+  assert.deepEqual(likelyDuplicates(open, 91875, ['sq-1']).map((c) => c.id), ['sq-2'])
+  assert.deepEqual(likelyDuplicates(open, 91875, ['sq-1', 'sq-2']), [])
+})
+
+test('an amount that does not match is not offered as a candidate', () => {
+  const open = [{ id: 'sq-9', number: null, totalCents: 315000, status: 'UNPAID', paymentUrl: null }]
+  assert.deepEqual(likelyDuplicates(open, 91875, []), [], 'a $3,150 invoice was offered for a $918.75 one')
+})
+
+test('the picker only reads — linking still re-checks against Square', () => {
+  // The amount match narrows the list. It does not authorise the link: choosing a
+  // candidate runs importSquareInvoice, which re-fetches that invoice and refuses a
+  // total that disagrees. Dropping that check would make a mis-click silent.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  const finder = actions.slice(actions.indexOf('export async function findSquareCandidates'))
+  assert.doesNotMatch(finder, /\.update\(/, 'the candidate finder now writes')
+  assert.doesNotMatch(finder, /createSquareInvoice/, 'the candidate finder now creates invoices in Square')
+
+  const importer = actions.slice(
+    actions.indexOf('export async function importSquareInvoice'),
+    actions.indexOf('export async function issueInvoice'),
+  )
+  assert.match(importer, /fetchSquareInvoice\(/, 'linking no longer re-fetches the invoice from Square')
+  assert.match(importer, /totalCents !== invoice\.amount_cents/, 'linking no longer checks the totals agree')
+})
+
+test('the finder refuses an invoice that is already linked', () => {
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  const finder = actions.slice(actions.indexOf('export async function findSquareCandidates'))
+  assert.match(finder, /invoice\.square_invoice_id/, 'the finder no longer checks for an existing link')
+})
+
+test('no match is explained rather than shown as an empty list', () => {
+  // "No match" alone cannot be told apart from a broken picker. What Square holds is
+  // the answer to why, and the one a person can act on.
+  const ui = read(join(ROOT, 'app/(hub)/hub/(app)/financials/MoneyForms.tsx'))
+  assert.match(ui, /found\.others/, 'the picker no longer shows what Square does hold')
+  assert.match(ui, /Nothing open in Square is/, 'the empty state no longer says what was looked for')
+})
+
+test('pasting an id by hand still works', () => {
+  // An invoice at another location, or already paid, will not be in the list. There
+  // has to be a way through that does not involve waiting for a code change.
+  const ui = read(join(ROOT, 'app/(hub)/hub/(app)/financials/MoneyForms.tsx'))
+  assert.match(ui, /Or paste a Square invoice id/, 'the manual id fallback is gone')
 })

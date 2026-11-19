@@ -11,6 +11,7 @@ import {
   dueOnFrom,
   likelyDuplicates,
 } from '@/lib/engine/invoice'
+import type { SquareInvoiceSummary } from '@/lib/engine/invoice'
 import {
   createSquareInvoice,
   fetchSquareInvoice,
@@ -485,5 +486,98 @@ export async function markInvoicePaid(args: {
           warning: `Recorded here, but Square was not updated: ${pushWarning}. Square will show this invoice unpaid until that is fixed.`,
         }
       : {}),
+  }
+}
+
+/**
+ * The open invoices in Square that this one could be.
+ *
+ * Linking previously demanded a Square invoice id, which lives nowhere a person
+ * can easily see — you open the invoice in the Square dashboard and read it out of
+ * the address bar. That is a bad enough ask that it gets skipped: the deposit and
+ * the workshop invoice were both raised by hand in Square and never linked, so the
+ * platform believed nothing had been sent and the payment webhook had no row to
+ * match a payment to.
+ *
+ * So the ids are fetched rather than typed. The match is by amount, using the same
+ * `likelyDuplicates` the issue path uses to refuse creating a second invoice for a
+ * figure Square already holds — one predicate, two call sites, rather than two
+ * notions of "this is the same invoice" that can drift.
+ *
+ * Invoices Square holds that do NOT match are returned too, separately. A picker
+ * that silently shows nothing cannot be told apart from one that is broken; seeing
+ * "Square has a $3,150.00 invoice and this one is $918.75" is the answer to why
+ * there is no match, and it is the answer a person can act on.
+ *
+ * This only reads. Nothing is linked until a candidate is chosen, and choosing one
+ * runs importSquareInvoice, which re-fetches that invoice and still refuses a
+ * total that disagrees — the amount match here narrows the list, it does not
+ * authorise the link.
+ */
+type FindSquareResult =
+  | { ok: false; error: string }
+  | {
+      ok: true
+      amountCents: number
+      number: string
+      matches: SquareInvoiceSummary[]
+      others: SquareInvoiceSummary[]
+    }
+
+export async function findSquareCandidates(args: {
+  invoiceId: string
+}): Promise<FindSquareResult> {
+  const { supabase, ok } = await operator()
+  if (!ok) return { ok: false, error: 'Not authorized.' }
+
+  const configured = squareConfigured()
+  if (!configured.ok) return { ok: false, error: configured.reason! }
+
+  const [{ data: invoice }, { data: settings }] = await Promise.all([
+    supabase
+      .from('invoices')
+      .select('id, number, amount_cents, square_invoice_id')
+      .eq('id', args.invoiceId)
+      .maybeSingle(),
+    supabase.from('settings').select('square_location_id').maybeSingle(),
+  ])
+
+  if (!invoice) return { ok: false, error: 'Invoice not found.' }
+  if (invoice.square_invoice_id) {
+    return {
+      ok: false,
+      error: `${invoice.number} is already linked to Square invoice ${invoice.square_invoice_id}.`,
+    }
+  }
+
+  const locationId =
+    (settings as { square_location_id: string | null } | null)?.square_location_id ||
+    process.env.SQUARE_LOCATION_ID
+  if (!locationId) return { ok: false, error: 'No Square location configured.' }
+
+  const open = await listUnpaidSquareInvoices(locationId)
+  if (!open.ok) return { ok: false, error: open.error }
+
+  // Every Square invoice already spoken for here. Offering one of these would
+  // produce two of our invoices pointing at one of Square's, which reads as two
+  // bills collected when it is one.
+  const { data: linkedRows } = await supabase
+    .from('invoices')
+    .select('square_invoice_id')
+    .not('square_invoice_id', 'is', null)
+
+  const linked = (linkedRows ?? [])
+    .map((r) => (r as { square_invoice_id: string }).square_invoice_id)
+    .filter(Boolean)
+
+  const matches = likelyDuplicates(open.value, invoice.amount_cents, linked)
+  const matchIds = new Set(matches.map((m) => m.id))
+
+  return {
+    ok: true,
+    amountCents: invoice.amount_cents,
+    number: invoice.number,
+    matches,
+    others: open.value.filter((o) => !matchIds.has(o.id) && !linked.includes(o.id)),
   }
 }
