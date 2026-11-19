@@ -3,7 +3,28 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createInvoice, recordPayment } from './actions'
-import { issueInvoice, importSquareInvoice, markInvoicePaid } from './invoice-actions'
+import {
+  issueInvoice,
+  importSquareInvoice,
+  markInvoicePaid,
+  findSquareCandidates,
+} from './invoice-actions'
+
+type SquareCandidate = {
+  id: string
+  number: string | null
+  totalCents: number | null
+  status: string
+}
+
+type FoundSquare = {
+  amountCents: number
+  matches: SquareCandidate[]
+  others: SquareCandidate[]
+}
+
+const cadFromCents = (cents: number) =>
+  new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD' }).format(cents / 100)
 
 type ClientOpt = { id: string; name: string }
 type InvoiceOpt = { id: string; number: string; status: string; balance: string }
@@ -216,6 +237,18 @@ export function IssueButton({
  * this path was being built. Square holds it; this reconciles the platform row to
  * it. Creating a second invoice instead would put two documents for the same amount
  * in front of a client who submits receipts to a funder.
+ *
+ * This used to be a bare text box wanting a Square invoice id — a value that is
+ * visible nowhere except the address bar of the Square dashboard. That is a high
+ * enough price that it simply does not get paid: two invoices were raised in Square
+ * and neither was ever linked, so the platform believed nothing had been sent and
+ * the payment webhook had no row to match against. A control nobody can use is the
+ * same as no control.
+ *
+ * So it asks Square instead. Opening it lists the open invoices there, with the
+ * ones matching this amount offered first. The id box stays underneath, because an
+ * invoice at another location or already paid will not be in the list and there has
+ * to be a way through that does not involve waiting for a code change.
  */
 export function ImportSquareButton({ invoiceId }: { invoiceId: string }) {
   const router = useRouter()
@@ -223,39 +256,93 @@ export function ImportSquareButton({ invoiceId }: { invoiceId: string }) {
   const [open, setOpen] = useState(false)
   const [squareId, setSquareId] = useState('')
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const [found, setFound] = useState<FoundSquare | null>(null)
+  const [looking, setLooking] = useState(false)
+
+  function openAndLook() {
+    setOpen(true)
+    setLooking(true)
+    setMsg(null)
+    start(async () => {
+      const res = await findSquareCandidates({ invoiceId })
+      setLooking(false)
+      if (!res.ok) setMsg({ ok: false, text: res.error ?? 'Could not reach Square.' })
+      else setFound(res as FoundSquare)
+    })
+  }
+
+  function link(id: string) {
+    start(async () => {
+      const res = await importSquareInvoice({ invoiceId, squareInvoiceId: id })
+      setMsg({ ok: !!res.ok, text: res.ok ? 'Linked.' : res.error ?? 'Failed.' })
+      if (res.ok) { setOpen(false); router.refresh() }
+    })
+  }
 
   if (!open) {
     return (
-      <button className="btn sm" onClick={() => setOpen(true)} title="Link to an invoice already in Square">
-        Link Square
+      <button className="btn sm" onClick={openAndLook} title="Find this invoice in Square and link it">
+        Find in Square
       </button>
     )
   }
 
   return (
-    <div style={{ display: 'grid', gap: 6, minWidth: 260 }}>
-      <input
-        value={squareId}
-        onChange={(e) => setSquareId(e.target.value)}
-        placeholder="Square invoice id"
-        style={{ fontSize: 12.5 }}
-      />
-      <div className="row" style={{ gap: 6 }}>
-        <button
-          className="btn sm ox"
-          disabled={pending || !squareId.trim()}
-          onClick={() =>
-            start(async () => {
-              const res = await importSquareInvoice({ invoiceId, squareInvoiceId: squareId.trim() })
-              setMsg({ ok: !!res.ok, text: res.ok ? 'Linked.' : res.error ?? 'Failed.' })
-              if (res.ok) { setOpen(false); router.refresh() }
-            })
-          }
-        >
-          {pending ? 'Linking…' : 'Link'}
-        </button>
-        <button className="btn sm" onClick={() => { setOpen(false); setMsg(null) }}>Cancel</button>
+    <div style={{ display: 'grid', gap: 8, minWidth: 300 }}>
+      {looking && <div style={{ fontSize: 11.5, color: 'var(--muted)' }}>Asking Square…</div>}
+
+      {found && found.matches.length > 0 && (
+        <div style={{ display: 'grid', gap: 4 }}>
+          <div style={{ fontSize: 11, color: 'var(--muted)' }}>
+            {found.matches.length === 1 ? 'One open invoice in Square matches' : `${found.matches.length} open invoices in Square match`} {cadFromCents(found.amountCents)}:
+          </div>
+          {found.matches.map((m) => (
+            <button
+              key={m.id}
+              className="btn sm ox"
+              disabled={pending}
+              onClick={() => link(m.id)}
+              style={{ textAlign: 'left', fontSize: 12 }}
+            >
+              {m.number ? `${m.number} · ` : ''}{cadFromCents(m.totalCents ?? 0)} · {m.status.toLowerCase()}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {found && found.matches.length === 0 && (
+        <div style={{ fontSize: 11.5, color: 'var(--muted)', lineHeight: 1.5 }}>
+          {/* Saying "no match" alone is indistinguishable from a broken picker.
+              What Square actually holds is the answer to why. */}
+          Nothing open in Square is {cadFromCents(found.amountCents)}.
+          {found.others.length > 0 ? (
+            <> Square has {found.others.map((o) => cadFromCents(o.totalCents ?? 0)).join(', ')} open — if one of those is this invoice, the amounts disagree and one of them is wrong.</>
+          ) : (
+            <> Square has no open invoices at this location.</>
+          )}
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gap: 6, borderTop: '1px solid var(--line)', paddingTop: 8 }}>
+        <div style={{ fontSize: 11, color: 'var(--muted)' }}>Or paste a Square invoice id</div>
+        <input
+          value={squareId}
+          onChange={(e) => setSquareId(e.target.value)}
+          placeholder="Square invoice id"
+          style={{ fontSize: 12.5 }}
+        />
+        <div className="row" style={{ gap: 6 }}>
+          <button
+            className="btn sm"
+            disabled={pending || !squareId.trim()}
+            onClick={() => link(squareId.trim())}
+          >
+            {pending ? 'Linking…' : 'Link'}
+          </button>
+          <button className="btn sm" onClick={() => { setOpen(false); setMsg(null); setFound(null) }}>Cancel</button>
+        </div>
       </div>
+
       {msg && (
         <div style={{ fontSize: 11, color: msg.ok ? 'var(--good)' : 'var(--bad)' }}>{msg.text}</div>
       )}
