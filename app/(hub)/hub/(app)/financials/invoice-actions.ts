@@ -19,6 +19,7 @@ import {
   squareConfigured,
   listUnpaidSquareInvoices,
 } from '@/lib/square-invoices'
+import { squareEnvName } from '@/lib/square'
 
 async function operator() {
   const supabase = createClient()
@@ -520,6 +521,14 @@ type FindSquareResult =
       ok: true
       amountCents: number
       number: string
+      /**
+       * Which Square this answer came from. The client reads SQUARE_ENV, falling
+       * back to SQUARE_ENVIRONMENT, and anything that is not exactly 'production'
+       * silently means Sandbox. An empty list from the sandbox and an empty list
+       * from a live account that genuinely holds nothing look identical, and only
+       * one of them is a problem — so the answer says which Square it asked.
+       */
+      environment: 'production' | 'sandbox'
       matches: SquareInvoiceSummary[]
       others: SquareInvoiceSummary[]
     }
@@ -577,6 +586,7 @@ export async function findSquareCandidates(args: {
     ok: true,
     amountCents: invoice.amount_cents,
     number: invoice.number,
+    environment: squareEnvName,
     matches,
     others: open.value.filter((o) => !matchIds.has(o.id) && !linked.includes(o.id)),
   }

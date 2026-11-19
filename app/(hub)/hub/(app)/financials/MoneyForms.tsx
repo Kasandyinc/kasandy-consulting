@@ -21,6 +21,7 @@ type FoundSquare = {
   amountCents: number
   matches: SquareCandidate[]
   others: SquareCandidate[]
+  environment: 'production' | 'sandbox'
 }
 
 const cadFromCents = (cents: number) =>
@@ -290,6 +291,19 @@ export function ImportSquareButton({ invoiceId }: { invoiceId: string }) {
   return (
     <div style={{ display: 'grid', gap: 8, minWidth: 300 }}>
       {looking && <div style={{ fontSize: 11.5, color: 'var(--muted)' }}>Asking Square…</div>}
+
+      {/* An empty list from the sandbox and an empty list from a live account that
+          genuinely holds nothing look identical, and only one of them is a problem.
+          A sandbox invoice that DOES match is worse still — it would link a real
+          bill to test money and read as reconciled. The client reads SQUARE_ENV,
+          falling back to SQUARE_ENVIRONMENT, and anything that is not exactly
+          'production' means Sandbox with nothing on screen to say so. */}
+      {found?.environment === 'sandbox' && (
+        <div style={{ fontSize: 11.5, color: 'var(--bad)', lineHeight: 1.5 }}>
+          This asked Square <strong>Sandbox</strong>, not the live account. Set
+          SQUARE_ENV to <code>production</code> — anything found here is test money.
+        </div>
+      )}
 
       {found && found.matches.length > 0 && (
         <div style={{ display: 'grid', gap: 4 }}>
