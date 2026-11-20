@@ -35,6 +35,25 @@ function walk(dir: string, out: string[] = []): string[] {
 const ALL_FILES = walk(join(ROOT, 'app')).concat(walk(join(ROOT, 'lib')))
 const read = (p: string) => readFileSync(p, 'utf8')
 
+/**
+ * The same file with its comments removed.
+ *
+ * Several contracts here assert that a defect's shape does NOT appear in a file.
+ * The comment explaining that defect contains its shape — that is the point of the
+ * comment — so a plain text search finds it and the contract fails against code
+ * that is correct. It happened twice in one sitting, and the tempting fix each
+ * time is to weaken the search until the prose slips past it, which weakens it
+ * against the defect too.
+ *
+ * So the prose is removed instead and the assertion stays exact. Deliberately
+ * crude: it does not understand strings containing '//' or '/*', which is fine
+ * because every caller is matching code shapes, not string literals.
+ */
+const code = (p: string) =>
+  read(p)
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+
 // ─── 1 · The cadence steps agree with the database ──────────────────────────
 // What broke: the composer offered PHONE, the save action accepted PHONE, and the
 // outreach_drafts constraint allowed only E1/E2/E3. Saving a phone script passed
@@ -1660,12 +1679,89 @@ test('the environment is read from one place, not re-derived', () => {
   // reading of those variables is a second chance to disagree with the client that
   // actually makes the calls.
   const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
-  // Matched on the env read itself, not the name: the doc comment here has to be
-  // free to explain which variables lib/square reads and why that drifted once.
   assert.doesNotMatch(
-    actions,
-    /process\.env\.SQUARE_ENV/,
+    code(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts')),
+    /SQUARE_ENV/,
     'the environment is being re-derived instead of imported',
   )
   assert.match(actions, /import \{ squareEnvName \} from '@\/lib\/square'/)
+})
+
+// ─── 25 · Square has to be told who the invoice is for ─────────────────────
+//
+// createSquareInvoice read the client's name and email into fields it then
+// ignored, and passed `primaryRecipient: { customerId: undefined }`. Square
+// refuses that — "customer_id is required" — so EVERY issue attempt failed at
+// Square, from the day the integration shipped. It compiled, it type-checked, the
+// suite was green, and the screen offered an Issue button that could not work.
+
+test('the Square customer id is a required input, not an optional one', () => {
+  // Optional-with-no-fallback is what let `undefined` look deliberate. Required
+  // moves it from a runtime refusal to a question the compiler asks.
+  const src = read(join(ROOT, 'lib/square-invoices.ts'))
+  const type = src.slice(
+    src.indexOf('export type CreateSquareInvoiceInput'),
+    src.indexOf('export type CreateSquareInvoiceInput') + 900,
+  )
+  assert.match(type, /\n  customerId: string\n/, 'customerId is optional or gone')
+})
+
+test('the invoice is addressed to a customer, never to undefined', () => {
+  // Read without comments: the comment above this field explains the defect, so it
+  // necessarily contains the string being searched for.
+  const src = code(join(ROOT, 'lib/square-invoices.ts'))
+  assert.doesNotMatch(src, /customerId: undefined/, 'the empty recipient is back')
+  assert.match(src, /primaryRecipient: \{ customerId: input\.customerId \}/)
+})
+
+test('a client with no contact email is refused before Square is called', () => {
+  // Square's own wording for this names our bug, not the missing thing a person
+  // can go and fix.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  const issue = actions.slice(actions.indexOf('export async function issueInvoice'))
+  const refusal = issue.indexOf('has no contact email on the client')
+  const create = issue.indexOf('createSquareInvoice(')
+  assert.ok(refusal !== -1, 'the missing-email refusal is gone')
+  assert.ok(refusal < create, 'Square is called before the contact email is checked')
+})
+
+test('a client is not given a second Square customer on every issue', () => {
+  // Square does not deduplicate customers. One profile per invoice means a payment
+  // history spread across four identical-looking records.
+  const actions = read(join(ROOT, 'app/(hub)/hub/(app)/financials/invoice-actions.ts'))
+  assert.match(actions, /client\?\.square_customer_id/, 'the stored customer id is no longer reused')
+  assert.match(
+    actions,
+    /square_customer_id: customerId/,
+    'a newly created Square customer is no longer written back to the client',
+  )
+
+  const lib = read(join(ROOT, 'lib/square-invoices.ts'))
+  const finder = lib.slice(lib.indexOf('export async function findOrCreateSquareCustomer'))
+  const search = finder.indexOf('customers.search')
+  const create = finder.indexOf('customers.create')
+  assert.ok(search !== -1 && create !== -1 && search < create, 'customers are created without searching first')
+})
+
+test('a failed customer search does not become a duplicate customer', () => {
+  // If Square cannot be asked whether this person exists, creating one anyway is
+  // exactly the outcome the search is there to prevent.
+  const lib = read(join(ROOT, 'lib/square-invoices.ts'))
+  const finder = lib.slice(lib.indexOf('export async function findOrCreateSquareCustomer'))
+  const searchBlock = finder.slice(finder.indexOf('customers.search'), finder.indexOf('customers.create'))
+  assert.match(searchBlock, /return failure\(/, 'a search failure now falls through to creating a customer')
+})
+
+test('the customer create is keyed so a retry cannot mint a second profile', () => {
+  const lib = read(join(ROOT, 'lib/square-invoices.ts'))
+  const finder = lib.slice(lib.indexOf('export async function findOrCreateSquareCustomer'))
+  assert.match(finder, /idempotencyKey: `client-\$\{input\.referenceId\}`/)
+})
+
+test('one Square customer cannot be shared by two clients', () => {
+  // Two of our clients billed as one Square customer merges two organisations'
+  // payment histories, which is the version of this that is hard to unpick later.
+  const sql = read(join(ROOT, 'supabase/migrations/20261120000027_client_square_customer.sql'))
+  assert.match(sql, /create unique index if not exists clients_square_customer_id_unique/)
+  assert.match(sql, /where square_customer_id is not null/)
 })

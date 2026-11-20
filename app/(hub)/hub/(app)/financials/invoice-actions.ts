@@ -18,6 +18,7 @@ import {
   recordExternalPayment,
   squareConfigured,
   listUnpaidSquareInvoices,
+  findOrCreateSquareCustomer,
 } from '@/lib/square-invoices'
 import { squareEnvName } from '@/lib/square'
 
@@ -235,7 +236,7 @@ export async function issueInvoice(args: {
   const [{ data: invoice }, { data: settings }] = await Promise.all([
     supabase
       .from('invoices')
-      .select('*, clients(id, orgs(name)), engagement_phases(name, billing_trigger, verified_at, send_on)')
+      .select('*, clients(id, square_customer_id, orgs(name)), engagement_phases(name, billing_trigger, verified_at, send_on)')
       .eq('id', args.invoiceId)
       .maybeSingle(),
     supabase.from('settings').select('gst_number, square_location_id').maybeSingle(),
@@ -306,13 +307,71 @@ export async function issueInvoice(args: {
     }
   }
 
-  // Who the invoice is for. Read for the Square record rather than decided here.
+  // ── Who Square addresses this to ──────────────────────────────────────────
+  //
+  // Square bills a customer record, not an email address. This read the contact's
+  // name and email, then passed `customerId: undefined` and ignored both — so
+  // every issue failed at Square with "customer_id is required" and no invoice
+  // this platform raised ever reached it.
+  //
+  // The id is reused from the client row when it is there. Square does not
+  // deduplicate customers: resolving afresh each time would leave one profile per
+  // invoice, and a client whose payment history is spread over four identical
+  // profiles cannot be reconciled.
   const { data: contact } = await supabase
     .from('client_users')
     .select('name, email')
     .eq('client_id', invoice.client_id)
     .limit(1)
     .maybeSingle()
+
+  const client = invoice.clients as
+    | { id: string; square_customer_id: string | null; orgs: { name: string } | null }
+    | null
+
+  let customerId = client?.square_customer_id ?? null
+
+  if (!customerId) {
+    if (!contact?.email) {
+      // Said before Square is called, because Square's own wording for this is
+      // "customer_id is required", which names our bug rather than the missing
+      // thing a person can actually go and fix.
+      return {
+        ok: false,
+        error: `${invoice.number} has no contact email on the client, so Square has nobody to address it to. Add one under the client first.`,
+      }
+    }
+
+    const customer = await findOrCreateSquareCustomer({
+      email: contact.email,
+      name: contact.name ?? '',
+      companyName: client?.orgs?.name ?? '',
+      referenceId: invoice.client_id,
+    })
+    if (!customer.ok) return { ok: false, error: `Square refused the customer: ${customer.error}` }
+
+    customerId = customer.value.id
+
+    // Stored before the invoice is created. If the invoice call then fails, the
+    // retry reuses this customer rather than making a second one.
+    await supabase
+      .from('clients')
+      .update({ square_customer_id: customerId })
+      .eq('id', invoice.client_id)
+
+    if (customer.value.created) {
+      await supabase.from('audit_log').insert({
+        actor: email,
+        action: 'client.square_customer_created',
+        entity: 'clients',
+        entity_id: invoice.client_id,
+        meta: {
+          message: `Created a Square customer for ${client?.orgs?.name ?? 'this client'}`,
+          square_customer_id: customerId,
+        },
+      })
+    }
+  }
 
   const square = await createSquareInvoice({
     number: invoice.number,
@@ -321,8 +380,7 @@ export async function issueInvoice(args: {
     taxCents: invoice.tax_cents,
     totalCents: invoice.amount_cents,
     dueOn: invoice.due_on ?? dueOnFrom(today()),
-    clientName: contact?.name ?? '',
-    clientEmail: contact?.email ?? '',
+    customerId,
     locationId,
   })
 

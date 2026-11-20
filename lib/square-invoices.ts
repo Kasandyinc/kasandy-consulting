@@ -138,8 +138,17 @@ export type CreateSquareInvoiceInput = {
   taxCents: number
   totalCents: number
   dueOn: string
-  clientName: string
-  clientEmail: string
+  /**
+   * The Square customer this invoice is addressed to.
+   *
+   * Required, and not optional-with-a-fallback. Square refuses an invoice with no
+   * primary recipient — "customer_id is required" — and this passed
+   * `{ customerId: undefined }` while carrying the client's name and email in
+   * fields it then ignored. It read as deliberate, it type-checked, and it meant
+   * every single issue attempt failed at Square. Making the id a required input
+   * moves that from a runtime refusal to something the compiler asks about.
+   */
+  customerId: string
   locationId: string
 }
 
@@ -186,7 +195,7 @@ export async function createSquareInvoice(
         orderId,
         invoiceNumber: input.number,
         title: input.description,
-        primaryRecipient: { customerId: undefined },
+        primaryRecipient: { customerId: input.customerId },
         deliveryMethod: 'SHARE_MANUALLY',
         acceptedPaymentMethods: { card: true, bankAccount: false, squareGiftCard: false },
         paymentRequests: [
@@ -262,3 +271,67 @@ export function squareConfigured(): { ok: boolean; reason?: string } {
 }
 
 export { squareEnvName }
+
+
+/**
+ * The Square customer record for a client, found or created.
+ *
+ * Square addresses an invoice to a customer, not to an email, so one has to exist
+ * before an invoice can. Nothing here created one, which is why every issue
+ * attempt came back "customer_id is required".
+ *
+ * Searched by exact email before creating. Square does not deduplicate customers:
+ * creating on every issue would leave one profile per invoice, and a client whose
+ * payment history is spread across four identical-looking profiles cannot be
+ * reconciled by anyone. The caller stores the id it gets back, so the search is a
+ * safety net for a record created in the dashboard rather than the normal path.
+ *
+ * Returns the id and whether it was created, because "we made a new customer for
+ * an existing client" is worth seeing in an audit trail.
+ */
+export async function findOrCreateSquareCustomer(input: {
+  email: string
+  /** The person's name, for the invoice's recipient line. */
+  name: string
+  /** The organisation — what the invoice is actually billed to. */
+  companyName: string
+  /** Our client id, carried into Square so the two records point at each other. */
+  referenceId: string
+}): Promise<SquareResult<{ id: string; created: boolean }>> {
+  const email = input.email.trim().toLowerCase()
+  if (!email) {
+    return { ok: false, error: 'No email address for this client, so Square has nobody to address the invoice to.' }
+  }
+
+  try {
+    const found = await squareClient.customers.search({
+      limit: BigInt(1),
+      query: { filter: { emailAddress: { exact: email } } },
+    })
+    const existing = found.customers?.[0]
+    if (existing?.id) return { ok: true, value: { id: existing.id, created: false } }
+  } catch (err) {
+    // A failed search must not become a duplicate customer. If Square cannot be
+    // asked whether this person exists, creating one anyway is the outcome this
+    // function exists to prevent.
+    return failure(err, `searching Square for customer ${email}`)
+  }
+
+  try {
+    const [givenName, ...rest] = input.name.trim().split(/\s+/).filter(Boolean)
+    const created = await squareClient.customers.create({
+      // Keyed on our client id: a retry cannot mint a second profile.
+      idempotencyKey: `client-${input.referenceId}`,
+      givenName: givenName || undefined,
+      familyName: rest.length ? rest.join(' ') : undefined,
+      companyName: input.companyName.trim() || undefined,
+      emailAddress: email,
+      referenceId: input.referenceId,
+    })
+    const id = created.customer?.id
+    if (!id) return { ok: false, error: 'Square accepted the customer but returned no id.' }
+    return { ok: true, value: { id, created: true } }
+  } catch (err) {
+    return failure(err, `creating Square customer for ${email}`)
+  }
+}
