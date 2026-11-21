@@ -15,6 +15,7 @@ import {
   sendBookingCreated,
   sendBookingRescheduled,
   sendBookingCancelled,
+  sendBookingUpdated,
 } from '@/lib/booking-notify'
 import { getSlotStatuses, isDateBookable, getDaySlots, getDayOfWeek } from '@/lib/bookings'
 import { SLOT_DURATION_MINS, slotToUTC } from '@/lib/pacific-time'
@@ -545,6 +546,8 @@ export async function rescheduleBooking(args: {
  * claim; a name typed into the hub is the same claim from a different keyboard.
  */
 export async function createBookingFromHub(args: {
+  /** Where the meeting physically is, when it is somewhere. */
+  location?: string | null
   name: string
   email: string
   organisation?: string
@@ -605,6 +608,7 @@ export async function createBookingFromHub(args: {
     topic: args.topic,
     organisation: args.organisation,
     meetingLink,
+    location: args.location,
     source: 'hub',
     status: 'confirmed',
     durationMins: duration,
@@ -655,6 +659,7 @@ export async function createBookingFromHub(args: {
       time: args.time,
       durationMins: duration,
       meetingLink,
+      location: args.location ?? null,
       timezone: null,
     },
     invite: { uid: icsUidFor(created.id), sequence: 0 },
@@ -789,13 +794,25 @@ async function attachOrgToHubBooking(args: {
  * through the unique index, bump the invite sequence and send the notice, and an
  * "edit" that quietly changed the time would do none of those.
  */
+/**
+ * Declared rather than inferred, because the caller branches on `warning` and an
+ * inferred union whose early returns omit the field makes that unreachable.
+ */
+type EditDetailsResult =
+  | { ok: false; error: string }
+  | { ok: true; changed: string[]; emailSent: boolean; warning?: string }
+
 export async function editBookingDetails(args: {
   bookingId: string
   topic?: string
   notes?: string
   durationMins?: number
   meetingLink?: string
-}) {
+  /** Where the meeting physically is. Empty string clears it back to virtual. */
+  location?: string
+  /** "Don't email the client" — for a change they already know about. */
+  notifyClient?: boolean
+}): Promise<EditDetailsResult> {
   const supabase = createClient()
   const {
     data: { user },
@@ -805,7 +822,7 @@ export async function editBookingDetails(args: {
 
   const { data: before } = await supabase
     .from('bookings')
-    .select('id, topic, notes, duration_mins, meeting_link')
+    .select('id, name, email, topic, notes, duration_mins, meeting_link, location, starts_at, ics_uid, status')
     .eq('id', args.bookingId)
     .maybeSingle()
 
@@ -832,7 +849,9 @@ export async function editBookingDetails(args: {
     patch.meeting_link = link || null
   }
 
-  if (!Object.keys(patch).length) return { ok: true, changed: [] }
+  if (args.location !== undefined) patch.location = args.location.trim() || null
+
+  if (!Object.keys(patch).length) return { ok: true, changed: [], emailSent: false }
 
   const { error } = await supabase.from('bookings').update(patch).eq('id', args.bookingId)
   if (error) return { ok: false, error: error.message }
@@ -845,18 +864,97 @@ export async function editBookingDetails(args: {
     if (from !== to) changed[key] = { from, to }
   }
 
+  /**
+   * Which of these the client's calendar actually shows.
+   *
+   * This is the part that was missing. Every edit logged `emailed: false`, so
+   * moving a session from online to a café in Surrey updated the hub and left the
+   * client holding an entry that still read "Virtual — link to follow". The hub
+   * looked right, the invite was wrong, and nothing said so — the same shape as
+   * the reschedule that sent a second event and the cancellation that sent none.
+   *
+   * Notes are excluded because they are ours: they appear on no invite. The rest
+   * are all on the calendar entry, so changing one without re-sending means the
+   * client is working from a document we know to be out of date.
+   */
+  const CALENDAR_FIELDS = ['topic', 'duration_mins', 'meeting_link', 'location']
+  const calendarChanged = Object.keys(changed).filter((k) => CALENDAR_FIELDS.includes(k))
+
+  let mail: { sent: boolean; error?: string } = { sent: false }
+  let invite: { uid: string; sequence: number } | null = null
+
+  // A cancelled booking has no live calendar entry to correct, and an update
+  // against a cancelled event would resurrect it in the client's calendar.
+  const live = before.status !== 'cancelled'
+
+  if (calendarChanged.length && live && args.notifyClient !== false) {
+    // A higher SEQUENCE or the client's calendar ignores the update entirely —
+    // accepted by us, silently dropped by Outlook.
+    invite = await bumpIcsSequence(args.bookingId)
+
+    if (invite) {
+      const when = utcToPacificParts(new Date(before.starts_at as string))
+      const { data: settings } = await supabase
+        .from('settings')
+        .select('default_meeting_link')
+        .maybeSingle()
+
+      mail = await sendBookingUpdated({
+        facts: {
+          name: before.name as string,
+          email: before.email as string,
+          topic: (patch.topic as string | null) ?? (before.topic as string | null) ?? 'Strategy call',
+          date: when.dateStr,
+          time: when.timeStr,
+          durationMins:
+            (patch.duration_mins as number | undefined) ??
+            (before.duration_mins as number | null) ??
+            SLOT_DURATION_MINS,
+          meetingLink:
+            ((patch.meeting_link as string | null | undefined) !== undefined
+              ? (patch.meeting_link as string | null)
+              : (before.meeting_link as string | null)) ||
+            settings?.default_meeting_link?.trim() ||
+            process.env.MEETING_LINK?.trim() ||
+            '',
+          location:
+            (patch.location as string | null | undefined) !== undefined
+              ? (patch.location as string | null)
+              : (before.location as string | null),
+          timezone: null,
+        },
+        invite,
+        notifyClient: true,
+      })
+    }
+  }
+
   if (Object.keys(changed).length) {
     await supabase.from('audit_log').insert({
       actor: user!.email,
       action: 'booking.details_edited',
       entity: 'bookings',
       entity_id: args.bookingId,
-      meta: { changed, emailed: false },
+      meta: {
+        changed,
+        calendar_changed: calendarChanged,
+        emailed: mail.sent,
+        ...(invite ? { ics_sequence: invite.sequence } : {}),
+      },
     })
   }
 
   revalidatePath('/calendar')
-  return { ok: true, changed: Object.keys(changed) }
+  return {
+    ok: true,
+    changed: Object.keys(changed),
+    emailSent: mail.sent,
+    ...(calendarChanged.length && !mail.sent && live && args.notifyClient !== false
+      ? {
+          warning: `Saved, but the updated invite did not send: ${mail.error ?? 'no invite identity'}. The client's calendar still shows the old details.`,
+        }
+      : {}),
+  }
 }
 
 // ─── Task 5 · Cancel, and say so ─────────────────────────────────────────────

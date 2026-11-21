@@ -807,15 +807,77 @@ test('a cancellation .ics can actually remove the event', () => {
     'the cancellation invents a UID instead of reusing the original')
 })
 
-test('editing details sends nothing', () => {
-  // A system that emails on every edit trains people to stop reading its email,
-  // which is how the one that matters — the reschedule — gets missed.
+test('editing details emails only when the calendar entry changed', () => {
+  /**
+   * Replaces "editing details sends nothing".
+   *
+   * That contract's reason was right and is kept: a system that emails on every
+   * edit trains people to stop reading its email, which is how the one that
+   * matters gets missed. Its rule was too broad. Topic, duration, meeting link and
+   * location are all ON the client's calendar entry, so changing one and sending
+   * nothing leaves her working from a document we know to be wrong — a session
+   * moved from online to a café in Surrey, with her invite still reading
+   * "Virtual — link to follow".
+   *
+   * So: notes send nothing, the calendar fields re-issue the invite.
+   */
   const src = read(join(ROOT, 'app/(hub)/hub/(app)/calendar/actions.ts'))
   const fn = src.slice(src.indexOf('export async function editBookingDetails'))
   const body = fn.slice(0, fn.indexOf('\n// ─── Task 5'))
-  assert.doesNotMatch(body, /sendBooking/, 'editing a booking now emails the client')
-  assert.doesNotMatch(body, /starts_at/, 'editing can now move a booking without a reschedule')
+
+  // Still true, and the reason the old contract existed: provenance is ours.
+  const fields = body.match(/const CALENDAR_FIELDS = \[([^\]]*)\]/)
+  assert.ok(fields, 'the list of calendar-visible fields is gone')
+  assert.doesNotMatch(fields![1], /notes/, 'editing provenance now emails the client')
+  for (const f of ['topic', 'duration_mins', 'meeting_link', 'location']) {
+    assert.match(fields![1], new RegExp(`'${f}'`), `${f} is on the invite but no longer re-sends it`)
+  }
+
+  // An update the client's calendar will not accept is the same as none.
+  assert.match(body, /bumpIcsSequence\(args\.bookingId\)/, 'the updated invite reuses the old SEQUENCE')
+  assert.match(body, /sendBookingUpdated\(/, 'a calendar change no longer re-issues the invite')
+
+  // Unchanged from the original contract.
+  assert.doesNotMatch(body, /patch\.starts_at/, 'editing can now move a booking without a reschedule')
   assert.match(body, /action: 'booking\.details_edited'/, 'edits are no longer audited')
+})
+
+test('an updated invite is an update, not a new event and not a reschedule', () => {
+  const notify = read(join(ROOT, 'lib/booking-notify.ts'))
+  const fn = notify.slice(notify.indexOf('export async function sendBookingUpdated'))
+  const body = fn.slice(0, fn.indexOf('\nexport async function', 10))
+  // REQUEST with the original UID replaces the entry. A fresh UID would leave the
+  // client holding two events, which is the defect the reschedule path already had.
+  assert.match(body, /attachment\(args\.facts, args\.invite, 'REQUEST'\)/)
+  // Not "Rescheduled": a client who reads that, sees the same time and stops
+  // reading is a client who misses the new address.
+  assert.match(body, /subjects\.clientUpdated/)
+})
+
+test('a cancelled booking is not re-invited by an edit', () => {
+  // An update against a cancelled event puts it back in the client's calendar.
+  const src = read(join(ROOT, 'app/(hub)/hub/(app)/calendar/actions.ts'))
+  const fn = src.slice(src.indexOf('export async function editBookingDetails'))
+  const body = fn.slice(0, fn.indexOf('\n// ─── Task 5'))
+  assert.match(body, /before\.status !== 'cancelled'/, 'editing a cancelled booking can re-invite the client')
+})
+
+test('the invite carries a physical address when there is one', () => {
+  // LOCATION is what a phone navigates from. It was derived from the join link, so
+  // an in-person session put a Teams URL where the address should be — or, with no
+  // link, the words "Virtual — link to follow" for a session in Surrey.
+  const ics = read(join(ROOT, 'lib/ics.ts'))
+  assert.match(ics, /const location = where \|\| p\.meetingLink \|\| 'Virtual — link to follow'/)
+  // Absent location must behave exactly as before, or the website's discovery call
+  // changes shape for no reason.
+  assert.match(ics, /location\?: string \| null/)
+})
+
+test('a booking with no location still produces the invite it always did', () => {
+  // The website books 20-minute calls and passes no address. That path must be
+  // untouched: it is the one piece of this that was verified working.
+  const route = read(join(ROOT, 'app/api/bookings/create/route.ts'))
+  assert.doesNotMatch(route, /location/, 'the website booking flow now sets a location')
 })
 
 test('every booking a hub action writes is audited', () => {

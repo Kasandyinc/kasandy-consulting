@@ -13,6 +13,8 @@ const BOOKINGS_COLUMNS = new Set([
   'notes', 'cancelled_reason', 'created_at', 'updated_at',
   'meeting_notes', 'notes_updated_at', 'linked_by', 'linked_at',
   'ics_uid', 'ics_sequence',
+  // 20261121000028 — where an in-person meeting physically is.
+  'location',
 ])
 
 const BOOKING_STATUSES = new Set([

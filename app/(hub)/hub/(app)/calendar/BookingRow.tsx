@@ -80,6 +80,7 @@ export default function BookingRow({
   const [topic, setTopic] = useState(booking.topic ?? '')
   const [provenance, setProvenance] = useState(booking.notes ?? '')
   const [duration, setDuration] = useState(booking.duration_mins)
+  const [place, setPlace] = useState(booking.location ?? '')
 
   // Cancel
   const [cancelling, setCancelling] = useState(false)
@@ -454,6 +455,13 @@ export default function BookingRow({
                     style={{ width: '100%', fontSize: 13, marginTop: 6 }}
                   />
 
+                  <input
+                    value={place}
+                    onChange={(e) => setPlace(e.target.value)}
+                    placeholder="Location — leave empty for a virtual meeting"
+                    style={{ width: '100%', fontSize: 13, marginTop: 6 }}
+                  />
+
                   <div className="row" style={{ gap: 8, marginTop: 6, alignItems: 'center' }}>
                     <input
                       type="number"
@@ -481,11 +489,24 @@ export default function BookingRow({
                           notes: provenance,
                           durationMins: duration,
                           meetingLink: link,
+                          location: place,
                         })
                         setEditing(false)
                         if (res.ok) {
                           const n = res.changed?.length ?? 0
-                          say(true, n ? `Saved ${n} change${n === 1 ? '' : 's'}. No email sent.` : 'Nothing changed.')
+                          // The old copy always said "No email sent", which stopped
+                          // being true the moment a change to the topic, duration,
+                          // link or location started re-issuing the invite.
+                          say(
+                            true,
+                            !n
+                              ? 'Nothing changed.'
+                              : res.warning
+                                ? res.warning
+                                : res.emailSent
+                                  ? `Saved ${n} change${n === 1 ? '' : 's'} and sent the client an updated invite.`
+                                  : `Saved ${n} change${n === 1 ? '' : 's'}. Nothing on the invite changed, so no email was sent.`,
+                          )
                         } else {
                           say(false, res.error ?? 'Failed.')
                         }
@@ -497,8 +518,9 @@ export default function BookingRow({
                   </button>
 
                   <p className="mono" style={{ fontSize: 10.5, color: 'var(--muted)', marginTop: 8 }}>
-                    To change the time, use Reschedule — that one tells the client and
-                    updates the invite they already hold.
+                    Topic, location, duration and link are on the client's calendar
+                    entry, so changing one re-issues the invite she holds. Provenance
+                    is ours and sends nothing. To change the time, use Reschedule.
                   </p>
                 </div>
               </div>

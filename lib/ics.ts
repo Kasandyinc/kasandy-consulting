@@ -30,6 +30,18 @@ export type ICSParams = {
   topic: string
   uid: string
   meetingLink: string      // join URL (Microsoft Teams); may be empty
+  /**
+   * Where the meeting physically is, when it is somewhere.
+   *
+   * Optional, and absent means exactly what it used to: the location is the join
+   * link. That keeps the website's 20-minute discovery call, which passes no
+   * address, producing a byte-identical invite.
+   *
+   * When present it wins. LOCATION is the field a phone navigates from, so an
+   * address belongs there and a URL does not — a client driving to Surrey cannot
+   * use a Teams link, and the invite previously gave her nothing else.
+   */
+  location?: string | null
   durationMinutes: number  // length of the call, in minutes
   /**
    * REQUEST creates or updates the event; CANCEL removes it. A cancellation must
@@ -51,7 +63,8 @@ export function generateICS(p: ICSParams): string {
   const startUTC = slotToUTC(p.dateStr, p.timeStr)
   const endUTC   = new Date(startUTC.getTime() + p.durationMinutes * 60 * 1000)
   const nowUTC   = new Date()
-  const location = p.meetingLink || 'Virtual — link to follow'
+  const where = p.location?.trim() ?? ''
+  const location = where || p.meetingLink || 'Virtual — link to follow'
   // Derived, never hardcoded — the same rule the confirmation emails already follow.
   // A September invite that says PST invites the client to arrive an hour out.
   const zone     = pacificLabel(p.dateStr)
@@ -69,9 +82,16 @@ export function generateICS(p: ICSParams): string {
     `⏰ IMPORTANT: This meeting is at ${p.timeStr} ${zone} (Pacific Time, Vancouver BC).\n` +
     `If you are outside of BC, please double-check your local time before joining.\n` +
     `\n` +
+    // An in-person session names the place first: that is the thing the attendee
+    // needs on the morning. A link is still listed when there is one, because a
+    // room and a link together is how a session with members in Edmonton and
+    // Ottawa actually runs.
+    (where ? `Where:\n${where}\n` : '') +
     (p.meetingLink
-      ? `Join the meeting:\n${p.meetingLink}`
-      : `A virtual meeting link will be sent separately.`)
+      ? `${where ? '\n' : ''}Join the meeting:\n${p.meetingLink}`
+      : where
+        ? ''
+        : `A virtual meeting link will be sent separately.`)
   )
 
   const lines = [

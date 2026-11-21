@@ -61,6 +61,45 @@ export const row = (label: string, value: string) => `
     <td style="padding:8px 0;border-bottom:1px solid #eee;vertical-align:top;">${value}</td>
   </tr>`
 
+/**
+ * Minimal HTML escaping for operator-entered text.
+ *
+ * The address is typed into the hub by a person, and a stray ampersand in a venue
+ * name should render as an ampersand rather than break the row. Narrow on purpose:
+ * this is not a sanitiser and nothing here should be given untrusted input.
+ */
+const esc = (v: string) =>
+  v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+/**
+ * The address row, when the meeting happens somewhere.
+ *
+ * Linked to a maps search rather than printed flat: the attendee reading this is
+ * deciding how to get there, and the next thing they do is look it up.
+ */
+const locationRow = (f: BookingEmailFacts) => {
+  const where = f.location?.trim()
+  if (!where) return ''
+  const href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(where)}`
+  return row('Location', `<a href="${href}" style="color:#8B4513;font-weight:bold;">${esc(where)}</a>`)
+}
+
+/**
+ * What kind of meeting this is.
+ *
+ * Said "Virtual (link to follow)" whenever there was no join link, which for an
+ * in-person session is a promise of a link that is never coming — and it sat
+ * directly above the place the address should have been.
+ */
+const formatCell = (f: BookingEmailFacts) => {
+  const where = f.location?.trim()
+  if (f.meetingLink) {
+    const link = `<a href="${f.meetingLink}" style="color:#8B4513;font-weight:bold">Microsoft Teams — join link below</a>`
+    return where ? `In person, and online — ${link}` : link
+  }
+  return where ? 'In person' : 'Virtual (link to follow)'
+}
+
 export type BookingEmailFacts = {
   name: string
   email: string
@@ -71,6 +110,11 @@ export type BookingEmailFacts = {
   time: string
   durationMins: number
   meetingLink: string
+  /**
+   * Where the meeting physically is, when it is somewhere. Optional, so the
+   * website's discovery call — which has no address — builds exactly as before.
+   */
+  location?: string | null
   /** The visitor's own IANA timezone, when we know it. */
   timezone?: string | null
 }
@@ -108,7 +152,8 @@ export function clientBookingHtml(f: BookingEmailFacts): string {
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;font-family:Georgia,serif;font-size:14px;color:#1a1a1a;">
 ${row('Date &amp; Time', `<strong>${pstDisplay}</strong>`)}
 ${row('Duration', `${f.durationMins} minutes`)}
-${row('Format', f.meetingLink ? `<a href="${f.meetingLink}" style="color:#8B4513;font-weight:bold">Microsoft Teams — join link below</a>` : 'Virtual (link to follow)')}
+${row('Format', formatCell(f))}
+${locationRow(f)}
 ${row('Topic', f.topic)}
     </table>
   </div>
@@ -154,6 +199,7 @@ ${row('When', `<strong>${pstDisplay}</strong>`)}
 ${row('Name', f.name)}
 ${row('Email', `<a href="mailto:${f.email}" style="color:#8B4513;">${f.email}</a>`)}
 ${row('Topic', f.topic)}
+${locationRow(f)}
 ${f.meetingLink ? row('Meeting Link', `<a href="${f.meetingLink}" style="color:#8B4513;">${f.meetingLink}</a>`) : ''}
 ${row('Their TZ', f.timezone || '—')}
 ${f.timezone && f.timezone !== 'Unknown' ? row('Their Time', localDisplay) : ''}
@@ -209,7 +255,8 @@ export function clientRescheduledHtml(
 ${row('Was', `<span style="color:#999;text-decoration:line-through;">${wasDisplay}</span>`)}
 ${row('Now', `<strong>${pstDisplay}</strong>`)}
 ${row('Duration', `${f.durationMins} minutes`)}
-${row('Format', f.meetingLink ? `<a href="${f.meetingLink}" style="color:#8B4513;font-weight:bold">Microsoft Teams — join link below</a>` : 'Virtual (link to follow)')}
+${row('Format', formatCell(f))}
+${locationRow(f)}
 ${row('Topic', f.topic)}
     </table>
   </div>
@@ -256,6 +303,7 @@ ${row('Now', `<strong>${pstDisplay}</strong>`)}
 ${row('Name', f.name)}
 ${row('Email', `<a href="mailto:${f.email}" style="color:#8B4513;">${f.email}</a>`)}
 ${row('Topic', f.topic)}
+${locationRow(f)}
 ${f.meetingLink ? row('Meeting Link', `<a href="${f.meetingLink}" style="color:#8B4513;">${f.meetingLink}</a>`) : ''}
   </table>
   <br><p>Updated calendar invite attached — it replaces the original rather than adding to it. Reply to this email to contact the client.</p>
@@ -339,6 +387,11 @@ export const subjects = {
   jackeeBooked:      (name: string, date: string, time: string) => `📅 New Booking: ${name} — ${formatPacificDisplay(date, time)}`,
   clientRescheduled: (date: string, time: string) => `Rescheduled: Your Strategy Call — ${formatPacificDisplay(date, time)}`,
   jackeeRescheduled: (name: string, date: string, time: string) => `🔄 Rescheduled: ${name} — ${formatPacificDisplay(date, time)}`,
+  // Details changed but the time did not. Deliberately not "Rescheduled": a client
+  // who reads that and sees the same time assumes a mistake and stops reading, which
+  // is the moment the new address goes unnoticed.
+  clientUpdated:     (date: string, time: string) => `Updated: Your Strategy Call — ${formatPacificDisplay(date, time)}`,
+  jackeeUpdated:     (name: string, date: string, time: string) => `✏️ Updated: ${name} — ${formatPacificDisplay(date, time)}`,
   clientCancelled:   (date: string, time: string) => `Cancelled: Your Strategy Call — ${formatPacificDisplay(date, time)}`,
   jackeeCancelled:   (name: string, date: string, time: string) => `❌ Cancelled: ${name} — ${formatPacificDisplay(date, time)}`,
 }

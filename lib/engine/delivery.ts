@@ -50,6 +50,11 @@ export type Booking = {
   timezone: string
   status: BookingStatus
   meeting_link: string | null
+  /**
+   * Where the meeting physically is, when it is somewhere. Null is virtual, where
+   * meeting_link is the location. Both may be set: a room that remote members join.
+   */
+  location: string | null
   source: string
   notes: string | null
   cancelled_reason: string | null
