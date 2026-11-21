@@ -51,6 +51,15 @@ export type HubBookingInput = {
   visitorTimezone?: string | null
   meetingLink?: string | null
   /**
+   * Where the meeting physically happens, when it happens somewhere. Null or
+   * absent means virtual, which is what every booking was until now.
+   *
+   * Separate from meetingLink rather than replacing it: a session can be in a room
+   * AND online, which is how one with members in Edmonton and Ottawa actually
+   * runs. Collapsing the two would force a choice the sessions do not make.
+   */
+  location?: string | null
+  /**
    * Where the booking came from. 'website' for the public form, 'hub' for one an
    * operator entered by hand. Defaulted rather than required so the website's call
    * site is unchanged, but always written explicitly to the row.
@@ -105,6 +114,7 @@ export function bookingRow(input: HubBookingInput, id?: string) {
     // row is a decision this code made and not a property of the schema.
     source: input.source ?? 'website',
     meeting_link: input.meetingLink?.trim() || null,
+    location: input.location?.trim() || null,
     notes: input.notes?.trim() || defaultNotes(input),
   }
 }

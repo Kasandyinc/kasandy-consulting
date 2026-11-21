@@ -48,6 +48,7 @@ function attachment(
     topic: f.topic,
     uid: invite.uid,
     meetingLink: f.meetingLink,
+    location: f.location,
     durationMinutes: f.durationMins,
     method,
     sequence: invite.sequence,
@@ -111,6 +112,51 @@ export async function sendBookingCreated(args: {
       to: args.facts.email,
       replyTo: REPLY_TO,
       subject: subjects.clientBooked(args.facts.date, args.facts.time),
+      html: clientBookingHtml(args.facts),
+      attachments: [ics],
+    })
+  }
+
+  return send(messages)
+}
+
+/**
+ * A booking whose details changed without its time changing.
+ *
+ * This did not exist, and that was a hole with teeth. editBookingDetails wrote the
+ * new values and logged `emailed: false` — so moving a session from online to a
+ * café in Surrey updated the hub and left the client holding a calendar entry that
+ * still said "Virtual — link to follow". She would have driven nowhere.
+ *
+ * Carries the original UID and a higher SEQUENCE, exactly as a reschedule does:
+ * that is what makes a calendar replace the entry it holds instead of adding a
+ * second one. The only thing that differs from a reschedule is that the time is
+ * unchanged, which is why it is not called one — a client who reads "Rescheduled",
+ * sees the same time and stops reading is a client who misses the new address.
+ */
+export async function sendBookingUpdated(args: {
+  facts: BookingEmailFacts
+  invite: InviteIdentity
+  notifyClient: boolean
+}): Promise<SendOutcome> {
+  const ics = attachment(args.facts, args.invite, 'REQUEST')
+  const messages: Message[] = [
+    {
+      from: FROM,
+      to: JACKEE_EMAILS,
+      replyTo: args.facts.email,
+      subject: subjects.jackeeUpdated(args.facts.name, args.facts.date, args.facts.time),
+      html: jackeeBookingHtml({ ...args.facts, heading: 'Booking details updated' }),
+      attachments: [ics],
+    },
+  ]
+
+  if (args.notifyClient) {
+    messages.unshift({
+      from: FROM,
+      to: args.facts.email,
+      replyTo: REPLY_TO,
+      subject: subjects.clientUpdated(args.facts.date, args.facts.time),
       html: clientBookingHtml(args.facts),
       attachments: [ics],
     })

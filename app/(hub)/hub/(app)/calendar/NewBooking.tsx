@@ -26,13 +26,14 @@ export default function NewBooking({ orgs }: { orgs: { id: string; name: string 
   const [topic, setTopic] = useState('')
   const [when, setWhen] = useState({ date: '', time: '' })
   const [duration, setDuration] = useState(20)
+  const [place, setPlace] = useState('')
   const [override, setOverride] = useState(false)
   const [notifyClient, setNotifyClient] = useState(true)
 
   const reset = () => {
     setName(''); setEmail(''); setOrgChoice(''); setOrganisation('')
     setTopic(''); setWhen({ date: '', time: '' }); setDuration(20)
-    setOverride(false); setNotifyClient(true)
+    setOverride(false); setNotifyClient(true); setPlace('')
   }
 
   if (!open) {
@@ -104,6 +105,23 @@ export default function NewBooking({ orgs }: { orgs: { id: string; name: string 
 
             <div>
               <label className="mono" style={{ fontSize: 11, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>
+                LOCATION
+              </label>
+              <input
+                value={place}
+                onChange={(e) => setPlace(e.target.value)}
+                placeholder="Venue and full address — leave empty for a virtual meeting"
+                style={{ width: '100%', fontSize: 13 }}
+              />
+              <p className="mono" style={{ fontSize: 10.5, color: 'var(--muted)', marginTop: 5, lineHeight: 1.5 }}>
+                Goes into the calendar invite as the location, which is what the
+                client's phone navigates from. Leave it empty and the invite reads
+                virtual, with the meeting link as the location.
+              </p>
+            </div>
+
+            <div>
+              <label className="mono" style={{ fontSize: 11, color: 'var(--muted)', display: 'block', marginBottom: 5 }}>
                 TOPIC
               </label>
               <textarea
@@ -164,6 +182,7 @@ export default function NewBooking({ orgs }: { orgs: { id: string; name: string 
                       date: when.date,
                       time: when.time,
                       durationMins: duration,
+                      location: place,
                       override,
                       notifyClient,
                     })
